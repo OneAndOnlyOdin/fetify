@@ -3,6 +3,7 @@ import * as bodyParser from 'body-parser'
 import { config } from './env'
 import { logMiddleware, createLogger } from './logger'
 import api from './api'
+import front from './api/front'
 
 export function createServer(id: number): void {
   const { app, log } = createApp(id)
@@ -32,6 +33,7 @@ export function createApp(id: number) {
   app.use(logMiddleware)
 
   app.use('/api', api)
+  app.use(front)
 
   app.use(errorHandler)
 

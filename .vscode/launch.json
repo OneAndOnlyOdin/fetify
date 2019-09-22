@@ -8,7 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "Launch API",
-      "program": "${workspaceFolder}/build/src/index.js",
+      "program": "${workspaceFolder}/src/index.ts",
       "outFiles": ["${workspaceFolder}/build/**/*.js"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "openOnSessionStart",
