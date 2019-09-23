@@ -1,0 +1,47 @@
+@import './colors.scss';
+
+input[type='text'],
+input[type='password'] {
+  border: 1px solid $color-accent;
+  box-shadow: none;
+  height: 40px;
+  padding: 0px 16px;
+  font-size: 14px;
+  outline: 0;
+
+  &:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+    color: #ccc;
+  }
+}
+
+input[type='checkbox'] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+input + span.checkbox {
+  position: static;
+  display: inline-block;
+  cursor: pointer;
+  border: 1px solid $color-accent;
+  background-color: white;
+  transition: 0.2s;
+  font-size: 35px;
+  height: 35px;
+  width: 35px;
+  transition: 0.2s;
+  background-position: center;
+  background-size: contain;
+}
+
+input:checked + span.checkbox {
+  background-color: $color-accept;
+}
+
+label {
+  font-size: 16px;
+  user-select: none;
+}

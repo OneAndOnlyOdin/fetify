@@ -4,9 +4,15 @@ import { StoredEvent } from '../es'
 
 export type Callback<T, U> = (collection: Collection<T>) => U
 
+export enum Table {
+  Bookmark = 'bookmarks',
+  Events = 'events'
+}
+
 export const database = connect(
   config.dbUri,
   {
+    useUnifiedTopology: true,
     useNewUrlParser: true,
     autoReconnect: true,
     reconnectTries: Infinity,
@@ -22,10 +28,12 @@ export interface BookmarkDocument {
 }
 
 export const bookmarks = <T>(cb: Callback<BookmarkDocument, T>) =>
-  getCollection<any>('bookmarks').then(cb)
+  getCollection<any>(Table.Bookmark).then(cb)
 
-export function getEventsCollection<T>() {
-  return database.then(client => client.collection<StoredEvent<T>>('events'))
+export function events<T>() {
+  return database.then(client =>
+    client.collection<StoredEvent<T>>(Table.Events)
+  )
 }
 
 function getCollection<T>(name: string) {

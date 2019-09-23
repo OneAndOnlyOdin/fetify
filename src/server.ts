@@ -1,5 +1,6 @@
 import * as express from 'express'
 import * as bodyParser from 'body-parser'
+import * as cors from 'cors'
 import { config } from './env'
 import { logMiddleware, createLogger } from './logger'
 import api from './api'
@@ -24,10 +25,11 @@ export function createServer(id: number): void {
 }
 
 export function createApp(id: number) {
-  const log = createLogger('game-api-entry')
+  const log = createLogger('api')
   log.fields.workerId = id
   const app = express()
 
+  app.use(cors())
   app.use(bodyParser.urlencoded({ extended: true }))
   app.use(bodyParser.json())
   app.use(logMiddleware)
@@ -41,14 +43,15 @@ export function createApp(id: number) {
 }
 
 function errorHandler(
-  ex: any,
+  err: any,
   req: express.Request,
   res: express.Response,
   _next: express.NextFunction
 ) {
   const logger = req.log
 
-  logger.error({ ex }, 'Unhandled error')
-  res.status(ex.status || 500).send({ message: 'Internal server error' })
+  logger.error({ err }, 'Unhandled error')
+  const message = err.status ? err.message : 'Internal server error'
+  res.status(err.status || 500).send({ message })
   return
 }

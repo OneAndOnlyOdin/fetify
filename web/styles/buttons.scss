@@ -1,0 +1,19 @@
+button {
+  cursor: pointer;
+  background-color: $color-accent;
+  border-radius: 0;
+  border: 0;
+  font-size: 16px;
+  padding: 12px;
+  color: black;
+  outline: 0;
+
+  &:hover {
+    background-color: lighten($color-accent, 20%);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background-color: darken($color-accent, 20%);
+  }
+}

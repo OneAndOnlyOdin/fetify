@@ -1,5 +1,5 @@
 import VueRouter from 'vue-router'
-import Home from './Home.vue'
+import Home from './Home'
 
 export { router }
 

@@ -1,4 +1,4 @@
-import { getEventsCollection } from '../../db/event'
+import { events } from '../../db/event'
 import { Timestamp } from 'bson'
 import { ESEvent, StoredEvent, NewEvent } from '../types'
 import { StoreReader } from './reader'
@@ -6,7 +6,7 @@ import { StoreWriter } from './writer'
 import { isAggregateVersionConflict, VersionConflictError } from './error'
 
 export function createMongoReader<TEvent extends ESEvent>(stream: string) {
-  const collection = getEventsCollection()
+  const collection = events()
 
   const getEventsFrom = async (
     position: Timestamp,
@@ -65,7 +65,7 @@ export function createMongoReader<TEvent extends ESEvent>(stream: string) {
 }
 
 export function createMongoWriter<TEvent extends ESEvent>(stream: string) {
-  const collection = getEventsCollection()
+  const collection = events()
   const append = async (version: number, ...events: NewEvent<TEvent>[]) => {
     if (!events.length) {
       return

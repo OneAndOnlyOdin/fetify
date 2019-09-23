@@ -1,3 +1,8 @@
+export type ExtractType<
+  T extends U['type'],
+  U extends { type: string }
+> = U extends { type: T } ? U : never
+
 export type ESWriter<TEvent extends ESEvent> = {
   append: AppendEvents<TEvent>
 }
@@ -11,6 +16,21 @@ export type ESEvent = {
   type: string
   aggregateId: string
 }
+
+export type DomainEvent<T extends string, U = {}> = {
+  type: T
+  aggregateId: string
+} & U
+
+export type DomainCmd<T extends string, U = {}> = {
+  type: T
+  aggregateId: string
+} & U
+
+export type DomainAgg<T extends {}> = {
+  aggregateId: string
+  version: number
+} & T
 
 export type NewEvent<TEvent = unknown> = ESEvent & {
   event: TEvent

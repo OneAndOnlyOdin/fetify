@@ -1,0 +1,25 @@
+import { wrap, StatusError } from '../util'
+import { userDomain } from '../../domain/user'
+
+type Body = {
+  alias?: string
+  email?: string
+}
+
+export const update = wrap(async (req, res) => {
+  const { alias, email }: Body = req.body
+  if (!alias || !email) {
+    throw new StatusError('No changes specified', 400)
+  }
+
+  const aggregateId = req.user!.username
+  if (alias) {
+    await userDomain.cmd.UpdateAlias({ aggregateId, alias })
+  }
+
+  if (email) {
+    await userDomain.cmd.UpdateEmail({ aggregateId, email })
+  }
+
+  res.send('OK')
+})

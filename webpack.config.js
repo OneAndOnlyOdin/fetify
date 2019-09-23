@@ -86,7 +86,7 @@ module.exports = {
             loader: 'sass-loader',
             options: {
               prependData: `
-                @import './web/styles/all.scss';
+                @import './web/styles/main.scss';
             `
             }
           }

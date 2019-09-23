@@ -8,6 +8,8 @@ export interface Env {
   port: number
   dbUri: string
   dbName: string
+  jwtSecret: string
+  jwtExpiry: number
 }
 
 const defaults: Env = {
@@ -15,7 +17,9 @@ const defaults: Env = {
   logLevel: 'info',
   port: 3000,
   dbUri: 'mongodb://localhost:27017',
-  dbName: 'fetify'
+  dbName: 'fetify',
+  jwtSecret: '',
+  jwtExpiry: 24
 }
 
 export const config: Env = {
@@ -23,8 +27,12 @@ export const config: Env = {
   logLevel: getEnv('LOG_LEVEL') || defaults.logLevel,
   port: Number(getEnv('PORT') || defaults.port),
   dbUri: getEnv('DB_URI') || defaults.dbUri,
-  dbName: getEnv('DB_NAME') || defaults.dbName
+  dbName: getEnv('DB_NAME') || defaults.dbName,
+  jwtSecret: getEnv('JWT_SECRET') || defaults.jwtSecret,
+  jwtExpiry: Number(getEnv('JWT_EXPIRY') || defaults.jwtExpiry)
 }
+
+if (!config.jwtSecret) throw new Error('JWT_SECRET not set')
 
 function getEnv(key: string): string | undefined {
   return process.env[key]

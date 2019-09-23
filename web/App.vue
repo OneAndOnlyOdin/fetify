@@ -1,13 +1,31 @@
 <script lang="ts">
-import Vue from "vue";
+import Vue from 'vue'
+import Header from './Header.vue'
 
-export default Vue.extend({});
+export default Vue.extend({
+  components: { Header },
+})
 </script>
 
 <template>
-  <router-view></router-view>
+  <div class="page">
+    <Header />
+
+    <div class="content">
+      <router-view></router-view>
+    </div>
+  </div>
 </template>
 
 
 <style lang="scss" scoped>
+.body {
+  width: 100vw;
+  height: 100vh;
+}
+
+.content {
+  height: calc(100vh - 80px);
+  padding: 16px;
+}
 </style>

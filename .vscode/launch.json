@@ -12,7 +12,8 @@
       "outFiles": ["${workspaceFolder}/build/**/*.js"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "openOnSessionStart",
-      "envFile": "${workspaceFolder}/.env"
+      "envFile": "${workspaceFolder}/.env",
+      "sourceMaps": true
     }
   ]
 }
