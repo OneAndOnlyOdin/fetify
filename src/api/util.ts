@@ -42,6 +42,7 @@ export const authMiddleware: RequestHandler = (req, _, next) => {
     }
 
     req.user = result as any
+    req.user!.username = (result as any).userId
     next()
   } catch (err) {
     req.log.error({ err }, 'Failed to verify token')

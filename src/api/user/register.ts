@@ -28,5 +28,5 @@ export const register = wrap(async (req, res) => {
 
   const token = await auth.createToken(username)
 
-  res.send(token)
+  res.json(token)
 })

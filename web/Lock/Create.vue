@@ -1,21 +1,9 @@
 <script lang="ts">
 import Vue, { PropType } from 'vue'
 import { Modal, Dropdown } from '../elements'
-import { LockConfig, LockAction } from '../../src/domain/game/types'
-
-interface Data {
-  owner: 'self' | 'other'
-  time: {
-    type: LockConfig['time']['type']
-    amount: string
-    multiplier: 'hours' | 'days'
-  }
-  interval: {
-    amount: string
-    type: 'mins' | 'hours' | 'days'
-  }
-  actions: Array<LockAction & { value: string; desc: string }>
-}
+import { CreateData, create, Action } from './util'
+import { webSockets } from '../store/socket'
+import { locks } from '../store'
 
 export default Vue.extend({
   components: { Modal, Dropdown },
@@ -27,8 +15,57 @@ export default Vue.extend({
     upper(value: string) {
       return `${value.slice(0, 1).toUpperCase()}${value.slice(1)}`
     },
+    toggleShowActions() {
+      this.showActions = !this.showActions
+    },
+    async create() {
+      const id = await create(this.$data as any)
+      const dto = await webSockets.subscribe({ type: 'lock', id })
+      locks.state.locks.push(dto)
+    },
+    estimate() {
+      let count = 0
+      let doubles = 0
+
+      const actions: Action[] = this.$data.actions
+      const type = this.$data.interval.type
+      const factor = type === 'mins' ? 1 : type === 'hours' ? 60 : 1440
+      const intervalMins = Number(this.$data.interval.amount) * factor
+
+      for (const action of actions) {
+        const value = Number(action.value)
+
+        switch (action.type) {
+          case 'blank':
+            count += intervalMins * value
+            break
+
+          case 'freeze':
+            count += intervalMins * 2 * value
+
+          case 'increase':
+            count += intervalMins * 3 * value
+
+          case 'decrease':
+            break
+
+          case 'double':
+            doubles += value
+            break
+        }
+
+        if (doubles === 0) return Math.round(count / 60)
+
+        while (doubles !== 0) {
+          count *= 2
+          doubles--
+        }
+
+        return Math.round(count / 60)
+      }
+    },
   },
-  data(): Data {
+  data(): CreateData {
     return {
       owner: 'self',
       time: {
@@ -40,6 +77,7 @@ export default Vue.extend({
         amount: '10',
         type: 'mins',
       },
+      showActions: true,
       actions: [
         { type: 'blank', value: '10', desc: 'has no effect' },
         {
@@ -108,32 +146,46 @@ export default Vue.extend({
         </Dropdown>
       </div>
 
-      <div v-if="time.type === 'variable'">
-        <label>Draw Card Interval</label>
-        <input style="width: 60px" type="number" v-model="interval.amount" />
-        <Dropdown v-model="interval.type">
-          <option value="mins">Minutes</option>
-          <option value="hours">Hours</option>
-          <option value="days">Days</option>
-        </Dropdown>
-      </div>
+      <div class="variable" v-if="time.type === 'variable'">
+        <div>
+          <label>Estimated duration:</label>
+          <div style="padding: 12px 0">
+            average: {{estimate() / 2}} hours,
+            longest: {{estimate()}} hours
+            <br />
+          </div>
+        </div>
+        <div>
+          <label>Cards</label>
+        </div>
 
-      <div v-if="time.type === 'variable'">
-        <label>Cards</label>
-      </div>
+        <div>
+          <label>Draw Card Interval</label>
+          <input style="width: 60px" type="number" v-model="interval.amount" />
+          <Dropdown v-model="interval.type">
+            <option value="mins">Minutes</option>
+            <option value="hours">Hours</option>
+            <option value="days">Days</option>
+          </Dropdown>
+        </div>
 
-      <div v-for="action in actions" :key="action.type">
-        <template v-if="time.type === 'variable'">
+        <div>
+          <label>Show actions to locked player?</label>
+          <input type="checkbox" v-model="showActions" />
+          <span class="checkbox" @click="toggleShowActions" />
+        </div>
+
+        <div v-for="action in actions" :key="action.type">
           <label class="small">{{upper(action.type)}}: {{action.desc}}</label>
           <input type="number" v-model="action.value" />
-        </template>
+        </div>
       </div>
     </content>
 
     <template slot="footer">
       <div style="float:right">
         <button>Cancel</button>
-        <button>Create</button>
+        <button @click="create">Create</button>
       </div>
     </template>
   </Modal>
@@ -170,6 +222,20 @@ content {
   label.small + input {
     width: 40px;
     height: 30px;
+  }
+
+  .variable {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    text-align: center;
+
+    > div {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
   }
 }
 </style>

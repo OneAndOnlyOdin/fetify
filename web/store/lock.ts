@@ -1,25 +1,22 @@
-import { LockConfig } from '../../src/domain/game/types'
+import { LockDomain } from '../../src/domain/game/lock'
 import { api } from './api'
+import { LockDTO } from '../../src/domain/game/lock/store'
 
 type LockState = {
-  locks: Lock[]
-  lock?: Lock
-}
-
-type Lock = {
-  id: string
-  config: LockConfig
+  locks: LockDTO[]
+  lock?: LockDTO
 }
 
 export const state: LockState = {
-  locks: []
+  locks: [],
 }
 
 export async function getLocks() {
-  const locks = await api.get<Lock[]>('/locks')
+  const locks = await api.get<LockDTO[]>('/api/lock')
   state.locks = locks
 }
 
-export async function createLock(config: LockConfig) {
-  const result = await api.post('/lock', config)
+export async function createLock(config: LockDomain.LockConfig) {
+  const result = await api.post<string>('/api/lock', config)
+  return result
 }

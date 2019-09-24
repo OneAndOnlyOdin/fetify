@@ -21,6 +21,7 @@ input[type='checkbox'] {
   opacity: 0;
   width: 0;
   height: 0;
+  content: '✓';
 }
 
 input + span.checkbox {
@@ -30,12 +31,12 @@ input + span.checkbox {
   border: 1px solid $color-accent;
   background-color: white;
   transition: 0.2s;
-  font-size: 35px;
-  height: 35px;
+  font-size: 14px;
+  height: 33px;
   width: 35px;
   transition: 0.2s;
   background-position: center;
-  background-size: contain;
+  color: black;
 }
 
 input:checked + span.checkbox {

@@ -5,6 +5,7 @@ import { config } from './env'
 import { logMiddleware, createLogger } from './logger'
 import api from './api'
 import front from './api/front'
+import { setupWebsocketServer } from './sockets'
 
 export function createServer(id: number): void {
   const { app, log } = createApp(id)
@@ -17,8 +18,11 @@ export function createServer(id: number): void {
     log.info('Press CTRL-C to stop.')
   })
 
+  const { interval } = setupWebsocketServer(server)
+
   process.on('SIGTERM', () => {
     server.close(() => {
+      clearInterval(interval)
       log.info(`Server stopped. App received SIGTERM`)
     })
   })
