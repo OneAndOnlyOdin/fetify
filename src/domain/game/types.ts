@@ -20,7 +20,7 @@ export type LockConfig = {
   type: 'lock'
   time: LockTime
   intervalMins: number
-  owner: 'holder' | 'self'
+  owner: 'other' | 'self'
   maxUsers?: number
   actions: Array<{ action: LockAction; amount: number }>
 }

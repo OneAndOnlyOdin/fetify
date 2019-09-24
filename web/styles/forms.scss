@@ -1,6 +1,7 @@
 @import './colors.scss';
 
 input[type='text'],
+input[type='number'],
 input[type='password'] {
   border: 1px solid $color-accent;
   box-shadow: none;

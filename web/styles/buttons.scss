@@ -9,7 +9,7 @@ button {
   outline: 0;
 
   &:hover {
-    background-color: lighten($color-accent, 20%);
+    background-color: lighten($color-accent, 10%);
   }
 
   &:disabled {

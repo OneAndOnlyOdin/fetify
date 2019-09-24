@@ -1,0 +1,29 @@
+.card {
+  border: 1px solid $color-accent;
+  height: 100%;
+
+  .body {
+    color: black;
+    font-size: 14px;
+  }
+
+  .title {
+    padding: 8px;
+    background-color: $color-primary;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .subtitle {
+    padding: 4px 8px;
+    background-color: $color-secondary;
+    color: $color-primary;
+    font-size: 14px;
+    font-weight: normal;
+  }
+
+  .content {
+    padding: 8px;
+  }
+}
