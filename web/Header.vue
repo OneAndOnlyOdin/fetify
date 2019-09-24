@@ -8,6 +8,11 @@ export default Vue.extend({
       auth: auth.state,
     }
   },
+  methods: {
+    logout() {
+      auth.logout()
+    },
+  },
 })
 </script>
 
@@ -17,7 +22,9 @@ export default Vue.extend({
 
     <div class="mid">Nav</div>
 
-    <div class="right">N/A</div>
+    <div class="right">
+      <button @click="logout">Logout</button>
+    </div>
   </header>
 </template>
 

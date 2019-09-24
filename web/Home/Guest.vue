@@ -59,6 +59,15 @@ export default Vue.extend({
 <template>
   <div class="page">
     <div class="box">
+      <div class="center">
+        <div class="pointer" :class="{ selected: !register }" @click="register = false">
+          <h3>Login</h3>
+        </div>
+        <div class="pointer" :class="{ selected: register }" @click="register = true">
+          <h3>Register</h3>
+        </div>
+      </div>
+
       <div>
         <input type="text" placeholder="Username" v-model="username" />
       </div>
@@ -69,12 +78,6 @@ export default Vue.extend({
 
       <div>
         <input type="password" placeholder="Confirm" :disabled="!register" v-model="confirm" />
-      </div>
-
-      <div style="display: flex; align-items: center; justify-content: space-between">
-        <label>First time?</label>
-        <input type="checkbox" v-model="register" />
-        <span class="checkbox" @click="flipRegister" />
       </div>
 
       <div style="color: red" v-if="error.length > 0">{{error}}</div>
@@ -107,5 +110,17 @@ export default Vue.extend({
 .center {
   display: flex;
   justify-content: space-around;
+}
+
+.selected {
+  border-bottom: 2px solid $color-accept;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+h3 {
+  margin: 0 16px;
 }
 </style>

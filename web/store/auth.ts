@@ -14,6 +14,8 @@ export const state: AuthState = {
   username: ''
 }
 
+hydrateToken()
+
 export async function register(
   username: string,
   password: string,
@@ -24,10 +26,8 @@ export async function register(
     password,
     confirm
   })
-  state.loggedIn = true
-  state.token = token
 
-  state.username = username
+  handleToken(token)
 }
 
 export async function login(username: string, password: string) {
@@ -35,12 +35,42 @@ export async function login(username: string, password: string) {
     username,
     password
   })
-  state.loggedIn = true
+
   handleToken(token)
 }
 
+export function logout() {
+  localStorage.removeItem('state')
+  state.loggedIn = false
+  state.username = ''
+
+  delete state.alias
+  delete state.email
+  delete state.token
+}
+
+type Token = {
+  alias: string
+  email: string
+  exp: number
+  expires: number
+  iat: number
+  userId: string
+}
+
 function handleToken(token: string) {
-  const payload = jwt.decode(token) as any
+  localStorage.setItem('state', token)
+  const payload = jwt.decode(token) as Token
+  state.token = token
+  state.loggedIn = true
+  state.username = payload.userId
   state.alias = payload.alias
   state.email = payload.email
+}
+
+function hydrateToken() {
+  const token = localStorage.getItem('state')
+  if (!token) return
+
+  handleToken(token)
 }

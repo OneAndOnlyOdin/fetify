@@ -3,7 +3,9 @@ import Vue from 'vue'
 import { auth } from '../store'
 export default Vue.extend({
   data() {
-    auth: auth.state
+    return {
+      auth: auth.state,
+    }
   },
 })
 </script>
