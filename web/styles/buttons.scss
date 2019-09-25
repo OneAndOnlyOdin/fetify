@@ -16,4 +16,11 @@ button {
     cursor: not-allowed;
     background-color: darken($color-accent, 20%);
   }
+
+  &.success {
+    background-color: $color-unlocked;
+    &:hover {
+      background-color: lighten($color-unlocked, 10%);
+    }
+  }
 }

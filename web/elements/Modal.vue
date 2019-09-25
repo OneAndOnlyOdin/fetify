@@ -41,6 +41,10 @@ export default Vue.extend({
   bottom: 0;
   left: 0;
   right: 0;
+
+  @include mobile {
+    height: 100vh;
+  }
 }
 .overlay {
   width: 100%;
@@ -55,15 +59,16 @@ export default Vue.extend({
 .header {
   color: black;
   font-size: 18px;
+  height: 32px;
 }
 
 .container {
+  overflow-y: none;
   z-index: 1;
   width: 416px;
   padding: 16px;
   background-color: white;
   grid-gap: 0px;
-  overflow-y: auto;
   border: none;
   border-radius: 0;
   margin: auto;
@@ -72,8 +77,8 @@ export default Vue.extend({
 
   @include mobile {
     max-height: unset;
-    width: 100%;
-    height: 100%;
+    height: calc(100% - 16px);
+    padding: 8px;
   }
 }
 
@@ -88,9 +93,19 @@ export default Vue.extend({
 .content {
   overflow-y: auto;
   width: 100%;
+
+  @include mobile {
+    height: calc(100vh - 112px);
+  }
 }
 
 .footer {
+  overflow-y: none;
   margin-top: 16px;
+  height: 58px;
+
+  @include mobile {
+    margin-top: 8px;
+  }
 }
 </style>

@@ -61,9 +61,11 @@ export default Vue.extend({
 
           case 'freeze':
             count += intervalMins * 2 * value
+            break
 
           case 'increase':
             count += intervalMins * 3 * value
+            break
 
           case 'decrease':
             break
@@ -132,7 +134,6 @@ export default Vue.extend({
         <div>
           <label>Estimated duration:</label>
           <div style="padding: 12px 0">
-            average: {{estimate() / 2}} hours,
             longest: {{estimate()}} hours
             <br />
           </div>
@@ -143,7 +144,7 @@ export default Vue.extend({
 
         <div>
           <label>Draw Card Interval</label>
-          <input style="width: 60px" type="number" v-model="interval.amount" />
+          <input style="width: 50px" type="number" v-model="interval.amount" />
           <Dropdown v-model="interval.type">
             <option value="mins">Minutes</option>
             <option value="hours">Hours</option>

@@ -18,30 +18,38 @@ export default Vue.extend({
 
 <template>
   <header>
-    <div class="left">
-      <h3>Fetify</h3>
-    </div>
+    <div class="container">
+      <div class="left">
+        <h3>Fetify</h3>
+      </div>
 
-    <div class="mid">
-      <router-link to="/">Home</router-link>
-      <router-link to="/locks">Locks</router-link>
-    </div>
+      <div class="mid">
+        <router-link to="/">Home</router-link>
+        <router-link to="/locks">Locks</router-link>
+      </div>
 
-    <div class="right">
-      <button @click="logout">Logout</button>
+      <div class="right">
+        <button @click="logout">Logout</button>
+      </div>
     </div>
   </header>
 </template>
 
 <style lang="scss" scoped>
-header {
-  padding: 12px;
+.container {
+  width: 100%;
   background-color: $color-primary;
-  width: 100vw;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+  // height: 60px;
+}
+header {
+  // margin: 12px 0;
+  padding: 12px;
+  background-color: $color-primary;
+  width: 100vw;
 
   .left {
     width: 200px;
@@ -54,7 +62,7 @@ header {
   .mid {
     width: calc(100vw - 400px - 24px);
     @include mobile {
-      width: calc(100vw - 200px - 24px);
+      width: calc(100vw - 100px - 24px);
     }
   }
 
@@ -62,6 +70,10 @@ header {
     text-align: right;
     float: right;
     width: 200px;
+
+    @include mobile {
+      width: 100px;
+    }
   }
 
   h3 {

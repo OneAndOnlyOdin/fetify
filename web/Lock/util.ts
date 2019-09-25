@@ -1,5 +1,5 @@
 import { LockDomain } from '../../src/domain/game/lock'
-import { createLock, ClientLock } from '../store/lock'
+import { createLock } from '../store/lock'
 import { LockConfig } from '../../src/domain/game/lock/types'
 
 export type Action = LockDomain.LockAction & { value: string; desc: string }
@@ -41,31 +41,6 @@ export async function create(data: CreateData) {
   }
 
   return createLock(cfg)
-}
-
-export function nextLockDraw(lock: ClientLock) {
-  return toDuration(lock.drawSeconds)
-}
-
-const ONE_HOUR = 3600
-const ONE_DAY = 86400
-
-type Duration = [number, number, number, number]
-
-function toDuration(value: number) {
-  const days = Math.floor(value / ONE_DAY)
-  const hours = Math.floor(value / ONE_HOUR) % 24
-  const mins = Math.floor(value / 60) % 60
-  const secs = value % 60
-
-  return {
-    duration: [days, hours, mins, secs] as Duration,
-    seconds: value,
-    text:
-      value <= 0
-        ? 'now'
-        : `${days}d:${hours}h:${mins}m:${secs}s`.replace('0d:', ''),
-  }
 }
 
 export const actionOptions: Action[] = [
