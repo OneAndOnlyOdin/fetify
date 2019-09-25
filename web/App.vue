@@ -19,13 +19,13 @@ export default Vue.extend({
 
 
 <style lang="scss" scoped>
-.body {
-  width: 100vw;
-  height: 100vh;
-}
-
 .content {
   height: calc(100vh - 80px);
+  width: calc(100% - 32px);
   padding: 16px;
+
+  @include mobile {
+    // width: 100%;
+  }
 }
 </style>

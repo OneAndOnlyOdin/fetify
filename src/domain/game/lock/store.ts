@@ -68,6 +68,8 @@ export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
   const lastHistory = lock.history.slice(-1)[0]
   const unlockDate = lastHistory && !lock.isOpen ? undefined : lastHistory.date
 
+  lock.history.sort((l, r) => (l.date > r.date ? -1 : l.date == r.date ? 0 : 1))
+
   return {
     id: lock.id,
     created: lock.created,

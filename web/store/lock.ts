@@ -15,14 +15,14 @@ export const state: LockState = {
   locks: [],
 }
 
-setInterval(updateLocks, 900)
+setInterval(updateLocks, 500)
 
 webSockets.on(({ type, payload }) => {
   if (type !== 'lock') return
 
   const existing = state.locks.find(lock => lock.id === payload.id)
   if (!existing) {
-    state.locks.push({ ...payload, drawSeconds: 0 })
+    state.locks.unshift({ ...payload, drawSeconds: 0 })
     updateLocks()
     return
   }
@@ -72,5 +72,6 @@ function updateLocks() {
 }
 
 const win: any = window
+
 win.clearLocks = (events: boolean = false) =>
   api.post('/api/admin/clear-lock', { events }).then(console.log)

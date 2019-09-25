@@ -6,6 +6,7 @@ import { logMiddleware, createLogger } from './logger'
 import api from './api'
 import front from './api/front'
 import { setupWebsocketServer } from './sockets'
+import { CommandError } from './es/errors'
 
 export function createServer(id: number): void {
   const { app, log } = createApp(id)
@@ -53,6 +54,11 @@ function errorHandler(
   _next: express.NextFunction
 ) {
   const logger = req.log
+
+  if (err instanceof CommandError) {
+    res.status(400).send({ message: 'Bad request' })
+    return
+  }
 
   logger.error({ err }, 'Unhandled error')
   const message = err.status ? err.message : 'Internal server error'

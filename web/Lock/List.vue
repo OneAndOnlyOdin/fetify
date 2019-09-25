@@ -43,7 +43,7 @@ export default Vue.extend({
 
 <template>
   <div class="page">
-    <div>
+    <div style="margin-bottom: 16px">
       <button @click="openCreate">Create</button>
     </div>
 
@@ -101,16 +101,13 @@ export default Vue.extend({
   justify-content: center;
 
   button {
-    width: 50%;
+    width: 100%;
   }
 }
 
 .page {
   display: flex;
   flex-direction: column;
-  > div {
-    padding: 8px;
-  }
 }
 
 .locked {

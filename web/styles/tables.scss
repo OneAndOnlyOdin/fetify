@@ -1,0 +1,46 @@
+@import './colors.scss';
+
+.table {
+  width: 100%;
+  border-spacing: 0;
+  border: 1px solid $color-accent;
+
+  th {
+    font-weight: 600;
+    background-color: $color-primary;
+    color: white;
+    padding: 16px;
+    text-align: left;
+  }
+
+  td {
+    padding: 16px;
+  }
+
+  tr:nth-child(even) {
+    background-color: lighten($color-accent, 10%);
+  }
+  &.disabled {
+    td {
+      background-color: darken($color-accent, 10%);
+    }
+  }
+
+  &.hover {
+    tr {
+      &:hover {
+        background-color: $color-secondary;
+      }
+    }
+  }
+
+  &.condensed {
+    td {
+      padding: 8px;
+    }
+
+    th {
+      padding: 8px;
+    }
+  }
+}

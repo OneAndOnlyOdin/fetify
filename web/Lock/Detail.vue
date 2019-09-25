@@ -38,8 +38,11 @@ export default Vue.extend({
   },
   methods: {
     format: common.formatDate,
+    elapsed: common.elapsedSince,
     async drawCard(card: number) {
       if (!this.lock) return
+      if (this.lock.drawSeconds !== 0) return
+
       this.draw.loading = true
       this.draw.card = card
 
@@ -80,27 +83,39 @@ export default Vue.extend({
     <div v-if="!lock && !loading">Lock not found</div>
     <div v-if="!lock && loading">Loading...</div>
     <div v-if="lock" class="lockdetail">
-      <div>Drawable: {{lock.drawSeconds === 0 ? 'yes' : 'no'}}</div>
+      <div class="cards" v-if="!lock.isOpen">
+        <div class="action-grid">
+          <div v-for="card in cards" :key="card">
+            <div class="card" :class="{ locked: lock.drawSeconds !== 0 }" @click="drawCard(card)">
+              <div v-if="card === draw.card" class="content">
+                <div v-if="!draw.drawn">...</div>
+                <div v-if="draw.drawn">{{draw.drawn.type}}</div>
+              </div>
 
-      <div class="action-grid">
-        <div v-for="card in cards" :key="card">
-          <div class="card" @click="drawCard(card)">
-            <div v-if="card === draw.card" class="content">
-              <div v-if="!draw.drawn">...</div>
-              <div v-if="draw.drawn">{{draw.drawn.type}}</div>
+              <div v-if="card !== draw.card" class="content">#{{card + 1}}</div>
             </div>
-
-            <div v-if="card !== draw.card" class="content">#{{card + 1}}</div>
           </div>
         </div>
       </div>
 
       <div>
-        History
-        <div
-          v-for="(history, i) in lock.history"
-          :key="i"
-        >{{format(history.date)}}: {{history.type}}</div>
+        <h1>History</h1>
+        <table class="table condensed">
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Type</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(history, i) in lock.history" :key="i">
+              <td>{{elapsed(history.date)}} ago</td>
+              <td>{{history.type}}</td>
+              <td>{{format(history.date)}}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -115,24 +130,40 @@ export default Vue.extend({
   > div:nth-child(1) {
     margin-top: 0;
   }
+
+  td {
+    width: 33%;
+  }
 }
+.cards {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 .action-grid {
   display: grid;
   align-items: center;
-  grid-template-columns: repeat(auto-fit, 80px);
+  grid-template-columns: repeat(auto-fit, 64px);
   row-gap: 12px;
   column-gap: 12px;
+  width: 100%;
 
   .card {
+    border-radius: 5px;
+    border: 2px solid $color-unlocked;
+    background-color: lighten($color-unlocked, 10%);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-around;
-    height: 80px;
+    height: 60px;
+  }
 
-    &:hover {
-      background-color: lighten($color-accent, 10%);
-    }
+  .locked {
+    cursor: not-allowed;
+    border: 2px solid $color-locked;
+    background-color: lighten($color-locked, 10%);
   }
 }
 </style>

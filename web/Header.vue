@@ -43,13 +43,11 @@ export default Vue.extend({
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  // height: 60px;
 }
+
 header {
-  // margin: 12px 0;
   padding: 12px;
   background-color: $color-primary;
-  width: 100vw;
 
   .left {
     width: 200px;
@@ -61,8 +59,9 @@ header {
 
   .mid {
     width: calc(100vw - 400px - 24px);
+
     @include mobile {
-      width: calc(100vw - 100px - 24px);
+      width: calc(100% - 100px - 24px);
     }
   }
 
