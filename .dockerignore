@@ -1,0 +1,9 @@
+node_modules/
+build/
+.vscode/
+*.js
+*.map
+Dockerfile
+.env
+
+!webpack.config.js

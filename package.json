@@ -15,7 +15,8 @@
   },
   "homepage": "https://github.com/seikho/fetify#readme",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && yarn web",
+    "build:web": "REACT_APP_NODE_ENV=production webpack --config webpack.config.js",
     "clean": "rimraf build",
     "web": "REACT_APP_NODE_ENV=dev webpack --config webpack.config.js --watch",
     "serve": "REACT_APP_NODE_ENV=dev webpack-dev-server --config webpack.config.js --watch"
