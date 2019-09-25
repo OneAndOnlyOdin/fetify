@@ -2,6 +2,7 @@ import { eventHandler } from '../../../es'
 import { LockEvent } from './types'
 import { upsertLock, LockSchema, getLock, updateLock, toLockDto } from './store'
 import { svcSockets } from '../../../sockets/publish'
+import { lockCmd } from './command'
 
 export const lockMgr = eventHandler.createMongoHandler<LockEvent>({
   bookmark: 'lock-bookmark',
@@ -9,9 +10,10 @@ export const lockMgr = eventHandler.createMongoHandler<LockEvent>({
   name: 'lock-manager',
 })
 
-lockMgr.handle('LockCreated', async ({ event }) => {
+lockMgr.handle('LockCreated', async ({ event, timestamp }) => {
   const lock: LockSchema = {
     id: event.aggregateId,
+    created: timestamp,
     isOpen: false,
     actions: event.actions,
     config: event.config,
@@ -23,7 +25,7 @@ lockMgr.handle('LockCreated', async ({ event }) => {
 
   svcSockets.toUser(lock.ownerId, {
     type: 'lock',
-    payload: toLockDto(lock),
+    payload: toLockDto(lock, lock.ownerId),
   })
 })
 
@@ -38,6 +40,16 @@ lockMgr.handle('CardDrawn', async ({ event, timestamp }) => {
     actions: event.actions,
     history: lock.history.concat(item),
   })
+
+  if (event.cardType !== 'unlock') return
+
+  const unlocks = lock.config.actions.filter(action => action.type === 'unlock')
+    .length
+  const seen = lock.history.filter(hist => hist.type === 'unlock').length + 1
+
+  if (seen >= unlocks) {
+    await lockCmd.CompleteLock({ aggregateId: event.aggregateId })
+  }
 })
 
 lockMgr.handle('LockJoined', async ({ event }) => {

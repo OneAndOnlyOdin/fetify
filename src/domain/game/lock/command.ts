@@ -28,7 +28,7 @@ const lockRepo = repo.createMongoRepo<LockEvent, LockAgg>({
 
 export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
   {
-    CreateLock: async (cmd, agg) => {
+    CreateLock: async cmd => {
       validateConfig(cmd.config)
 
       return {
@@ -36,7 +36,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
         aggregateId: cmd.aggregateId,
         ownerId: cmd.userId,
         actions: createConfigActions(cmd.config),
-        config: agg.config,
+        config: cmd.config,
       }
     },
     JoinLock: async (cmd, agg) => {

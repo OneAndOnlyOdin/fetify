@@ -11,7 +11,7 @@ export type UserCmd =
   | DomainCmd<'UpdateEmail', { email: string }>
 
 export type User = {
-  username: string
+  userId: string
   alias?: string
   email?: string
 }

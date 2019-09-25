@@ -21,7 +21,7 @@ async function createUser(username: string, password: string) {
   await table.then(coll => coll.insertOne({ username, hash }))
 }
 
-async function getUser(username: string): Promise<Auth | null> {
+async function getUser(username: string) {
   const user = await table.then(coll => coll.findOne({ username }))
   return user
 }
@@ -53,7 +53,7 @@ async function createToken(userId: string) {
   const expires = Date.now() + ONE_HOUR_MS * config.jwtExpiry
   const payload = {
     expires,
-    ...profile
+    ...profile,
   }
 
   const expiresIn = (ONE_HOUR_MS * config.jwtExpiry) / 1000
@@ -65,5 +65,5 @@ export const auth = {
   createUser,
   createToken,
   getUser,
-  compare
+  compare,
 }

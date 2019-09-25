@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import user from './user'
 import lock from './game-lock'
+import admin from './admin'
 
 export { router as default }
 
@@ -8,4 +9,10 @@ const router = Router()
 
 router.use('/user', user)
 router.use('/lock', lock)
-router.get('/health-check', (_, res) => res.send('OK'))
+router.use('/admin', admin)
+router.get('/healthcheck', (_, res) =>
+  res.json({
+    status: 'OK',
+    now: new Date().toISOString(),
+  })
+)

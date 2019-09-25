@@ -69,11 +69,11 @@ export default Vue.extend({
       </div>
 
       <div>
-        <input type="text" placeholder="Username" v-model="username" />
+        <input type="text" placeholder="Username" v-model="username" v-on:keyup.enter="signin" />
       </div>
 
       <div>
-        <input type="password" placeholder="Password" v-model="password" />
+        <input type="password" placeholder="Password" v-on:keyup.enter="signin" v-model="password" />
       </div>
 
       <div>

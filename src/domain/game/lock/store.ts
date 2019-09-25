@@ -1,30 +1,41 @@
 import { database } from '../../../db/event'
-import { LockConfig, LockAction } from './types'
+import { LockConfig, LockAction, LockHistory } from './types'
+import { secondsTilDraw } from './util'
 
 export type LockSchema = {
   id: string
+  created: Date
   ownerId: string
   playerId?: string
   config: LockConfig
   actions: LockAction[]
-  history: Array<{ type: LockAction['type']; date: Date }>
+  history: LockHistory[]
   isOpen: boolean
 }
 
 export type LockDTO = {
   id: string
+  created: Date
   ownerId: string
   playerId?: string
   config: LockConfig
-  history: Array<{ type: LockAction['type']; date: Date }>
-  counts: { [type in LockAction['type']]?: number }
+  history: LockHistory[]
+  counts?: { [type in LockAction['type']]?: number }
+  totalActions: number
   isOpen: boolean
+  draw?: Date
 }
 
 const coll = database.then(db => db.collection<LockSchema>('gameLock'))
 
 export async function getLocks(userId: string) {
-  const locks = await coll.then(coll => coll.find({ userId }))
+  const locks = await coll.then(coll =>
+    coll
+      .find({
+        $or: [{ ownerId: { $eq: userId } }, { playerId: { $eq: userId } }],
+      })
+      .toArray()
+  )
   return locks
 }
 
@@ -44,20 +55,39 @@ export function updateLock(id: string, lock: Partial<LockSchema>) {
 
 type ActionCount = { [type in LockAction['type']]?: number }
 
-export function toLockDto(lock: LockSchema): LockDTO {
+export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
+  const counts = getCounts(lock, forUser)
+  const seconds = secondsTilDraw({
+    history: lock.history,
+    since: new Date(),
+    config: lock.config,
+  })
+  const draw = seconds > 0 ? new Date(Date.now() + seconds * 1000) : undefined
+
+  return {
+    id: lock.id,
+    created: lock.created,
+    isOpen: lock.isOpen,
+    config: lock.config,
+    history: lock.history,
+    ownerId: lock.ownerId,
+    playerId: lock.playerId,
+    draw,
+    ...counts,
+  }
+}
+
+function getCounts(lock: LockSchema, forUser: string) {
+  const totalActions = lock.actions.length
+  if (lock.playerId === forUser && !lock.config.showActions) {
+    return { totalActions }
+  }
+
   const counts = lock.actions.reduce<ActionCount>((prev, curr) => {
     const count = prev[curr.type] || 0
     prev[curr.type] = count + 1
     return prev
   }, {})
 
-  return {
-    id: lock.id,
-    isOpen: lock.isOpen,
-    config: lock.config,
-    history: lock.history,
-    counts,
-    ownerId: lock.ownerId,
-    playerId: lock.playerId,
-  }
+  return { counts, totalActions }
 }

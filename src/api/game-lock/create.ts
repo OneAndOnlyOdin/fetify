@@ -15,6 +15,6 @@ export const createLock = wrap(async (req, res) => {
   lockCmd.CreateLock({
     aggregateId: id,
     config: body,
-    userId: user.username,
+    userId: user.userId,
   })
 })

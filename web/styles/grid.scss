@@ -13,11 +13,3 @@
     grid-template-columns: 1fr;
   }
 }
-
-.grid-auto {
-  display: grid;
-  align-items: center;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  column-gap: 16px;
-  row-gap: 16px;
-}

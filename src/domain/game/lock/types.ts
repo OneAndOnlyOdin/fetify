@@ -53,5 +53,10 @@ export type LockAgg = {
   config: LockConfig
   actions: LockAction[]
   lastDrawn: Date
-  drawHistory: Array<{ type: LockAction['type']; date: Date }>
+  drawHistory: LockHistory[]
+}
+
+export type LockHistory = {
+  type: LockAction['type']
+  date: Date
 }

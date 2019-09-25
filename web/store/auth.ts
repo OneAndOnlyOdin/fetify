@@ -11,7 +11,7 @@ export type AuthState = {
 
 export const state: AuthState = {
   loggedIn: false,
-  username: ''
+  username: '',
 }
 
 hydrateToken()
@@ -24,7 +24,7 @@ export async function register(
   const token = await api.post<string>('/api/user/register', {
     username,
     password,
-    confirm
+    confirm,
   })
 
   handleToken(token)
@@ -33,7 +33,7 @@ export async function register(
 export async function login(username: string, password: string) {
   const token = await api.post<string>('/api/user/login', {
     username,
-    password
+    password,
   })
 
   handleToken(token)
@@ -63,7 +63,6 @@ function handleToken(token: string) {
   const payload = jwt.decode(token) as Token
   state.token = token
   state.loggedIn = true
-  state.username = payload.userId
   state.alias = payload.alias
   state.email = payload.email
 }

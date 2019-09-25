@@ -12,7 +12,7 @@ export const update = wrap(async (req, res) => {
     throw new StatusError('No changes specified', 400)
   }
 
-  const aggregateId = req.user!.username
+  const aggregateId = req.user!.userId
   if (alias) {
     await userDomain.cmd.UpdateAlias({ aggregateId, alias })
   }

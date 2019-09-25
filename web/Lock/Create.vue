@@ -1,15 +1,36 @@
 <script lang="ts">
 import Vue, { PropType } from 'vue'
 import { Modal, Dropdown } from '../elements'
-import { CreateData, create, Action } from './util'
+import { CreateData, create, Action, actionOptions } from './util'
 import { webSockets } from '../store/socket'
 import { locks } from '../store'
+import { ClientLock } from '../store/lock'
 
 export default Vue.extend({
   components: { Modal, Dropdown },
   props: {
     value: Boolean,
     onHide: { type: Function as PropType<() => void> },
+  },
+  data(): CreateData {
+    return {
+      loading: false,
+      owner: 'self',
+      time: {
+        type: 'variable',
+        amount: '24',
+        multiplier: 'hours',
+      },
+      interval: {
+        amount: '10',
+        type: 'mins',
+      },
+      showActions: true,
+      actions: actionOptions,
+    }
+  },
+  mounted() {
+    this.loading = false
   },
   methods: {
     upper(value: string) {
@@ -21,7 +42,9 @@ export default Vue.extend({
     async create() {
       const id = await create(this.$data as any)
       const dto = await webSockets.subscribe({ type: 'lock', id })
-      locks.state.locks.push(dto)
+      const clientDto: ClientLock = { ...dto, drawSeconds: 0 }
+      locks.state.locks.push(clientDto)
+      this.onHide()
     },
     estimate() {
       let count = 0
@@ -64,43 +87,6 @@ export default Vue.extend({
         return Math.round(count / 60)
       }
     },
-  },
-  data(): CreateData {
-    return {
-      owner: 'self',
-      time: {
-        type: 'variable',
-        amount: '24',
-        multiplier: 'hours',
-      },
-      interval: {
-        amount: '10',
-        type: 'mins',
-      },
-      showActions: true,
-      actions: [
-        { type: 'blank', value: '10', desc: 'has no effect' },
-        {
-          type: 'freeze',
-          value: '2',
-          desc: 'freezes the lock for 2x the interval',
-        },
-        {
-          type: 'increase',
-          value: '10',
-          desc: 'increase the number of blanks by 1-3 ',
-        },
-        {
-          type: 'decrease',
-          value: '5',
-          desc: 'decrease the number of blanks by 1-3',
-        },
-        { type: 'double', value: '2', desc: 'double the number of blanks' },
-        { type: 'half', value: '1', desc: 'halve the number of blanks' },
-        { type: 'unlock', value: '1', desc: 'collect all of these to unlock' },
-        { type: 'task', value: '0', desc: 'do a task! has no other effect' },
-      ],
-    }
   },
 })
 </script>
@@ -184,8 +170,8 @@ export default Vue.extend({
 
     <template slot="footer">
       <div style="float:right">
-        <button>Cancel</button>
-        <button @click="create">Create</button>
+        <button @click="onHide">Cancel</button>
+        <button @click="create" :disabled="loading">Create</button>
       </div>
     </template>
   </Modal>

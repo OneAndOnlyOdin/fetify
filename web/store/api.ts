@@ -5,17 +5,19 @@ const baseUrl = config.apiUrl
 
 export const api = {
   get,
-  post
+  post,
 }
 
-async function get<T>(path: string, query?: any) {
+type Query = { [key: string]: string | number }
+
+async function get<T>(path: string, query: Query = {}) {
   const params = Object.keys(query)
     .map(key => `${key}=${query[key]}`)
     .join('&')
 
   const res = await fetch(`${baseUrl}${path}?${params}`, {
     method: 'get',
-    ...headers()
+    ...headers(),
   })
 
   const json = await res.json()
@@ -33,7 +35,7 @@ async function post<T>(path: string, body = {}) {
   const res = await fetch(`${baseUrl}${path}`, {
     method: 'post',
     body: JSON.stringify(body),
-    ...headers()
+    ...headers(),
   })
 
   const json = await res.json()
@@ -50,7 +52,7 @@ async function post<T>(path: string, body = {}) {
 function headers() {
   const headers: any = {
     Accept: 'application/json',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   }
 
   if (!state.token) {

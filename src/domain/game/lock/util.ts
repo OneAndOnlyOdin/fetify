@@ -1,5 +1,11 @@
 import { StoredEvent } from '../../../es'
-import { LockEvent, LockAgg, LockAction, LockConfig } from './types'
+import {
+  LockEvent,
+  LockAgg,
+  LockAction,
+  LockConfig,
+  LockHistory,
+} from './types'
 
 export function fold(
   { event, timestamp }: StoredEvent<LockEvent>,
@@ -34,6 +40,37 @@ export function fold(
   }
 
   return next
+}
+
+type Opts = {
+  history: LockHistory[]
+  config: LockConfig
+  since?: Date
+}
+export function secondsTilDraw(opts: Opts): number {
+  const action = opts.history.slice(-1)[0]
+  if (!action) return 0
+
+  const factor = action.type === 'freeze' ? 2 : 1
+  const interval = opts.config.intervalMins * 60 * factor
+  const elapsed = Math.floor(
+    (Date.now() - new Date(action.date).valueOf()) * 0.001
+  )
+  const diff = interval - elapsed
+
+  switch (action.type) {
+    case 'freeze':
+    case 'blank':
+    case 'task':
+      return diff <= 0 ? 0 : diff
+
+    case 'decrease':
+    case 'increase':
+    case 'double':
+    case 'half':
+    case 'unlock':
+      return 0
+  }
 }
 
 export function applyAction(action: LockAction, actions: LockAction[]) {

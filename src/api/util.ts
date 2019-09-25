@@ -1,6 +1,7 @@
 import * as jwt from 'jsonwebtoken'
-import { RequestHandler } from 'express'
+import { RequestHandler, Request } from 'express'
 import { config } from '../env'
+import { User } from '../domain/user/types'
 
 export function wrap(handler: RequestHandler): RequestHandler {
   const wrapped: RequestHandler = async (req, res, next) => {
@@ -21,31 +22,46 @@ export class StatusError extends Error {
 }
 
 export const authMiddleware: RequestHandler = (req, _, next) => {
+  const user = getToken(req)
+  if (!user) {
+    return next(new StatusError('Not authorized', 401))
+  }
+
+  req.user = user
+  next()
+}
+
+export const adminMiddleware: RequestHandler = (req, _, next) => {
+  const user = getToken(req)
+  if (!user || user.userId !== 'carl') {
+    return next(new StatusError('Not authorized', 401))
+  }
+
+  req.user = user
+  next()
+}
+
+function getToken(req: Request) {
   const header = req.header('authorization')
-  const unauthed = new StatusError('Not authorized', 401)
   if (!header) {
-    return next(unauthed)
+    return null
   }
 
   if (!header.startsWith('Bearer ')) {
-    return next(unauthed)
+    return null
   }
 
   const token = header.replace('Bearer ', '')
 
   try {
-    const result = jwt.verify(token, config.jwtSecret)
+    const result: any = jwt.verify(token, config.jwtSecret)
     if (typeof result === 'string') {
       const user = JSON.parse(result)
-      req.user = user
-      return next()
+      return user as User
     }
 
-    req.user = result as any
-    req.user!.username = (result as any).userId
-    next()
+    return result as User
   } catch (err) {
-    req.log.error({ err }, 'Failed to verify token')
-    return next(new Error('Internal server error'))
+    return null
   }
 }

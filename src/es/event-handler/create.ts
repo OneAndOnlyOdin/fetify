@@ -56,10 +56,12 @@ export class ESEventHandler<TEvent extends ESEvent, TPosition = unknown> {
 
       const currentMin = new Date().getMinutes()
       if (currentMin !== this.lastMinute) {
-        this.logger.info(
-          { handler: this.name, processed: this.eventsHandled },
-          'Events handled'
-        )
+        if (this.eventsHandled) {
+          this.logger.info(
+            { handler: this.name, processed: this.eventsHandled },
+            'Events handled'
+          )
+        }
         this.lastMinute = currentMin
         this.eventsHandled = 0
       }
@@ -123,6 +125,10 @@ export class ESEventHandler<TEvent extends ESEvent, TPosition = unknown> {
 
   stop = () => {
     this.isRunning = false
+  }
+
+  reset = () => {
+    this.position = undefined
   }
 
   hook = (hook: Hook, handler: () => Promise<void>) => {
