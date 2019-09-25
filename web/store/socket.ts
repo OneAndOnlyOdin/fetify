@@ -40,6 +40,9 @@ function createSocket() {
       try {
         const data = JSON.parse(blob)
         dispatch(data)
+        for (const listener of persistentListeners) {
+          listener(data)
+        }
       } catch (ex) {}
     }
   }
@@ -115,4 +118,9 @@ function subscribe<T extends SocketMsg['type']>(condition: Condition<T>) {
   })
 }
 
-export const webSockets = { subscribe }
+const persistentListeners: any[] = []
+function on(cb: (msg: SocketMsg) => any) {
+  persistentListeners.push(cb)
+}
+
+export const webSockets = { subscribe, on }

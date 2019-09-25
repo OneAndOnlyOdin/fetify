@@ -3,8 +3,6 @@ import Vue, { PropType } from 'vue'
 import { Modal, Dropdown } from '../elements'
 import { CreateData, create, Action, actionOptions } from './util'
 import { webSockets } from '../store/socket'
-import { locks } from '../store'
-import { ClientLock } from '../store/lock'
 
 export default Vue.extend({
   components: { Modal, Dropdown },
@@ -41,9 +39,7 @@ export default Vue.extend({
     },
     async create() {
       const id = await create(this.$data as any)
-      const dto = await webSockets.subscribe({ type: 'lock', id })
-      const clientDto: ClientLock = { ...dto, drawSeconds: 0 }
-      locks.state.locks.push(clientDto)
+      await webSockets.subscribe({ type: 'lock', id })
       this.onHide()
     },
     estimate() {

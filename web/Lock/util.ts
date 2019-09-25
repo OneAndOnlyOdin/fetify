@@ -54,8 +54,8 @@ type Duration = [number, number, number, number]
 
 function toDuration(value: number) {
   const days = Math.floor(value / ONE_DAY)
-  const hours = (value / ONE_HOUR) % 24
-  const mins = (value / 60) % 60
+  const hours = Math.floor(value / ONE_HOUR) % 24
+  const mins = Math.floor(value / 60) % 60
   const secs = value % 60
 
   return {

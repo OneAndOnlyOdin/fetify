@@ -36,10 +36,28 @@ lockMgr.handle('CardDrawn', async ({ event, timestamp }) => {
   }
 
   const item = { type: event.cardType, date: timestamp }
-  await updateLock(event.aggregateId, {
+  const nextLock = {
+    ...lock,
     actions: event.actions,
     history: lock.history.concat(item),
+  }
+
+  await updateLock(event.aggregateId, {
+    actions: nextLock.actions,
+    history: nextLock.history,
   })
+
+  svcSockets.toUser(lock.ownerId, {
+    type: 'lock',
+    payload: toLockDto(nextLock, nextLock.ownerId),
+  })
+
+  if (lock.playerId) {
+    svcSockets.toUser(lock.ownerId, {
+      type: 'lock',
+      payload: toLockDto(nextLock, lock.playerId),
+    })
+  }
 
   if (event.cardType !== 'unlock') return
 

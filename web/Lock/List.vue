@@ -48,7 +48,7 @@ export default Vue.extend({
     </div>
 
     <div class="grid-4">
-      <div class="card" v-for="lock in locks.locks" :key="lock.id">
+      <div class="card" v-for="lock in locks.locks" :key="lock.id" @click="clickLock(lock)">
         <div class="title" :class="{ locked: !lock.isOpen, unlocked: lock.isOpen }">{{lock.id}}</div>
         <div class="content">
           <div>Cards: {{lock.totalActions}}</div>
