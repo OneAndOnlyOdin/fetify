@@ -12,15 +12,11 @@ export default Vue.extend({
     return {
       auth: auth.state,
       locks: locks.state,
-      createOpen: false,
     }
   },
   methods: {
-    closeCreate() {
-      this.createOpen = false
-    },
     openCreate() {
-      this.createOpen = true
+      router.push('/locks/create')
     },
     nextDraw(lock: ClientLock) {
       return common.toDuration(lock.drawSeconds)
@@ -30,7 +26,14 @@ export default Vue.extend({
         router.push(`/locks/${lock.id}`)
       }
     },
-    format: common.formatDate,
+    format(lock: ClientLock) {
+      if (lock.unlockDate) {
+        const diff =
+          new Date(lock.unlockDate).valueOf() - new Date(lock.created).valueOf()
+        return common.toDuration(diff / 1000)
+      }
+      return common.elapsedSince(lock.created)
+    },
   },
   mounted() {
     locks.getLocks()
@@ -42,7 +45,6 @@ export default Vue.extend({
   <div class="page">
     <div>
       <button @click="openCreate">Create</button>
-      <Create :onHide="closeCreate" v-model="createOpen" />
     </div>
 
     <div class="grid-4">
@@ -50,14 +52,23 @@ export default Vue.extend({
         <div class="title" :class="{ locked: !lock.isOpen, unlocked: lock.isOpen }">
           <div class="card-row">
             <div>Owner: {{lock.ownerId === auth.userId ? 'you' : lock.ownerId}}</div>
-            <div style="padding-top: 3px; font-size: 10px; color: #777">#{{lock.id}}</div>
+            <div style="font-size: 10px; color: #777">#{{lock.id}}</div>
           </div>
         </div>
 
         <div class="content">
-          <div>Cards: {{lock.totalActions}}</div>
+          <div class="card-row">
+            <div>Locked:</div>
+            <div>{{format(lock)}}</div>
+          </div>
+
+          <div class="card-row">
+            <div>Cards</div>
+            <div>{{lock.totalActions}}</div>
+          </div>
+
           <div class="draw-button">
-            <button v-if="!lock.isOpen" :class="{ success: lock.drawSeconds === 0 }">
+            <button v-if="!lock.isOpen" :disabled="lock.drawSeconds > 0">
               <span v-if="lock.drawSeconds === 0">Draw</span>
               <span v-if="lock.drawSeconds > 0">{{nextDraw(lock)}}</span>
             </button>
@@ -78,6 +89,10 @@ export default Vue.extend({
   width: 100%;
   display: flex;
   justify-content: space-between;
+}
+
+.content > .card-row {
+  margin-bottom: 8px;
 }
 
 .draw-button {

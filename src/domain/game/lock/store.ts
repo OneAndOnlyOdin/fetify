@@ -23,6 +23,7 @@ export type LockDTO = {
   counts?: { [type in LockAction['type']]?: number }
   totalActions: number
   isOpen: boolean
+  unlockDate?: Date
   draw?: Date
 }
 
@@ -64,6 +65,9 @@ export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
   })
   const draw = seconds > 0 ? new Date(Date.now() + seconds * 1000) : undefined
 
+  const lastHistory = lock.history.slice(-1)[0]
+  const unlockDate = lastHistory && !lock.isOpen ? undefined : lastHistory.date
+
   return {
     id: lock.id,
     created: lock.created,
@@ -73,6 +77,7 @@ export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
     ownerId: lock.ownerId,
     playerId: lock.playerId,
     draw,
+    unlockDate,
     ...counts,
   }
 }

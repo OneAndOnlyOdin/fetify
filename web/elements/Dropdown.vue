@@ -17,12 +17,13 @@ export default Vue.extend({
 select {
   border-radius: 0;
   outline: 0;
+  height: 42px;
 }
 
 .select {
   position: relative;
   display: inline-block;
-  vertical-align: middle;
+  height: 42px;
 }
 
 .select select {
@@ -30,8 +31,7 @@ select {
   color: black;
   font-size: 14px;
   padding: 12px;
-  padding-right: 2.5em;
-  border: 1px solid $color-primary;
+  border: 1px solid $color-accent;
   min-width: 120px;
   text-overflow: '';
   -webkit-appearance: button; /* hide default arrow in chrome OSX */
@@ -48,24 +48,22 @@ select {
   content: '\25BC';
   color: white;
   height: 1em;
-  font-size: 0.625em;
-  line-height: 1;
+  font-size: 0.8em;
+  line-height: 0;
   right: 16px;
   top: 23px;
-  margin-top: -0.5em;
 }
 
 .select select[disabled] {
-  background-color: $color-accent;
+  background-color: $color-primary;
 }
 
 .select::before {
-  border: 1px solid $color-primary;
+  border: 0;
   width: 42px;
   height: 41px;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  background-color: lighten($color-primary, 15%);
+  right: 1px;
+
+  background-color: $color-accent;
 }
 </style>

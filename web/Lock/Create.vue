@@ -90,8 +90,10 @@ export default Vue.extend({
 </script>
 
 <template>
-  <Modal v-model="value" :onHide="onHide">
-    <template slot="header">Create Lock</template>
+  <div class="page">
+    <div style="display: flex; justify-content: center;">
+      <h1>Create Lock</h1>
+    </div>
 
     <content>
       <div>
@@ -103,22 +105,22 @@ export default Vue.extend({
       </div>
 
       <div>
-        <label>
-          Lock Type
-          <br />
-          <span v-if="time.type === 'fixed'">
-            <b>Fixed</b>: The lock runs for a fixed length of time
-          </span>
-
-          <span v-if="time.type === 'variable'">
-            <b>Game</b>: A card game determines when the lock opens
-          </span>
-        </label>
+        <label>Lock Type</label>
 
         <Dropdown v-model="time.type">
           <option value="variable">Game</option>
           <option value="fixed">Fixed</option>
         </Dropdown>
+      </div>
+
+      <div>
+        <span v-if="time.type === 'fixed'">
+          <b>Fixed</b>: The lock runs for a fixed length of time
+        </span>
+
+        <span v-if="time.type === 'variable'">
+          <b>Game</b>: A card game determines when the lock opens
+        </span>
       </div>
 
       <div v-if="time.type === 'fixed'">
@@ -144,12 +146,14 @@ export default Vue.extend({
 
         <div>
           <label>Draw Card Interval</label>
-          <input style="width: 50px" type="number" v-model="interval.amount" />
-          <Dropdown v-model="interval.type">
-            <option value="mins">Minutes</option>
-            <option value="hours">Hours</option>
-            <option value="days">Days</option>
-          </Dropdown>
+          <div style="height: 42px;">
+            <input style="width: 50px" type="number" v-model="interval.amount" />
+            <Dropdown v-model="interval.type">
+              <option value="mins">Minutes</option>
+              <option value="hours">Hours</option>
+              <option value="days">Days</option>
+            </Dropdown>
+          </div>
         </div>
 
         <div>
@@ -165,16 +169,17 @@ export default Vue.extend({
       </div>
     </content>
 
-    <template slot="footer">
-      <div style="float:right">
-        <button @click="onHide">Cancel</button>
-        <button @click="create" :disabled="loading">Create</button>
-      </div>
-    </template>
-  </Modal>
+    <div style="display: flex; justify-content: center;">
+      <button style="width: 120px;" @click="create" :disabled="loading">Create</button>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
+.page {
+  max-width: 800px;
+}
+
 content {
   display: flex;
   flex-direction: column;

@@ -26,6 +26,11 @@ function toDuration(valueSecs: number) {
   return `${seconds} seconds`
 }
 
+function elapsedSince(date: string | Date) {
+  const elapsed = Math.floor((Date.now() - new Date(date).valueOf()) / 1000)
+  return toDuration(elapsed)
+}
+
 const ONE_HOUR = 3600
 const ONE_DAY = 86400
 
@@ -47,4 +52,4 @@ function toRawDuration(valueSecs: number) {
   }
 }
 
-export const common = { formatDate, toDuration, toRawDuration }
+export const common = { formatDate, toDuration, toRawDuration, elapsedSince }
