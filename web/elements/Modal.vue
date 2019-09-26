@@ -12,16 +12,15 @@ export default Vue.extend({
 
 <template>
   <div v-bind:class="{ active: value }" v-if="value" class="modal">
-    <div class="overlay" v-on:click="onHide"></div>
+    <div class="overlay hide-mobile" v-on:click="onHide"></div>
     <div class="container">
       <div class="header">
         <slot name="header"></slot>
         <button v-on:click="onHide" class="close">✕</button>
       </div>
-      <div class="body">
-        <div class="content">
-          <slot></slot>
-        </div>
+
+      <div class="content">
+        <slot></slot>
       </div>
 
       <div class="footer" v-if="!!$slots.footer">
@@ -41,11 +40,8 @@ export default Vue.extend({
   bottom: 0;
   left: 0;
   right: 0;
-
-  @include mobile {
-    height: 100vh;
-  }
 }
+
 .overlay {
   width: 100%;
   height: 100%;
@@ -57,28 +53,35 @@ export default Vue.extend({
 }
 
 .header {
+  background-color: white;
   color: black;
-  font-size: 18px;
-  height: 32px;
+  font-weight: 600;
+  font-size: 16px;
+  min-height: 16px;
+  padding: 16px 0 16px 16px;
+
+  @include mobile {
+    padding: 24px 0 16px 16px;
+  }
 }
 
 .container {
-  overflow-y: none;
   z-index: 1;
   width: 416px;
-  padding: 16px;
   background-color: white;
   grid-gap: 0px;
   border: none;
   border-radius: 0;
   margin: auto;
   display: block;
-  max-height: calc(100vh - 42px + 16px + 32px);
+  max-height: calc(100vh - 200px);
+  overflow-y: none;
 
   @include mobile {
     max-height: unset;
-    height: calc(100% - 16px);
-    padding: 8px;
+    margin: unset;
+    width: 100%;
+    height: 100%;
   }
 }
 
@@ -88,24 +91,22 @@ export default Vue.extend({
   border: 0;
   outline: 0;
   background: transparent;
+  font-size: 16px;
+  margin-right: 16px;
 }
 
 .content {
-  overflow-y: auto;
-  width: 100%;
+  overflow-y: scroll;
+  height: calc(100vh - 200px - 140px);
+  width: calc(100% - 32px);
+  padding: 0 16px;
 
   @include mobile {
-    height: calc(100vh - 112px);
+    height: calc(100% - 140px);
   }
 }
 
 .footer {
-  overflow-y: none;
-  margin-top: 16px;
-  height: 58px;
-
-  @include mobile {
-    margin-top: 8px;
-  }
+  padding: 16px 16px 24px 16px;
 }
 </style>

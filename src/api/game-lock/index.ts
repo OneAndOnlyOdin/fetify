@@ -3,11 +3,14 @@ import { authMiddleware } from '../util'
 import { getLocks } from './get'
 import { createLock } from './create'
 import { drawLockCard } from './draw-lock-card'
+import { joinLock } from './join'
 
 export { router as default }
 
 const router = Router()
 
-router.get('/', authMiddleware, getLocks)
-router.post('/', authMiddleware, createLock)
-router.post('/:id/draw', authMiddleware, drawLockCard)
+router.use(authMiddleware)
+router.get('/', getLocks)
+router.post('/', createLock)
+router.post('/:id/draw', drawLockCard)
+router.post('/:id/join', joinLock)

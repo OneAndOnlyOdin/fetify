@@ -10,6 +10,7 @@ export default Vue.extend({
   components: { Create },
   data() {
     return {
+      joinLockId: '',
       auth: auth.state,
       locks: locks.state,
     }
@@ -34,6 +35,9 @@ export default Vue.extend({
       }
       return common.elapsedSince(lock.created)
     },
+    async joinLock() {
+      await locks.joinLock(this.joinLockId)
+    },
   },
   mounted() {
     locks.getLocks()
@@ -44,7 +48,16 @@ export default Vue.extend({
 <template>
   <div class="page">
     <div style="margin-bottom: 16px">
-      <button @click="openCreate">Create</button>
+      <div style="display: flex">
+        <div>
+          <button @click="openCreate">Create</button>
+        </div>
+
+        <div class="input__group" style="margin-left: 16px;">
+          <div class="input__prefix--btn" @click="joinLock">Join</div>
+          <input type="text" placeholder="Enter Lock ID" v-modal="joinLockId" />
+        </div>
+      </div>
     </div>
 
     <div class="grid-4">

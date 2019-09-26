@@ -14,5 +14,5 @@ export const clearLock = wrap(async (_, res) => {
   lockDomain.mgr.reset()
   lockDomain.mgr.start()
 
-  res.json('OK')
+  res.json({ message: 'OK' })
 })

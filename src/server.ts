@@ -13,9 +13,7 @@ export function createServer(id: number): void {
   const port = config.port
 
   const server = app.listen(port, () => {
-    log.info(
-      `App is running at http://localhost:${port}/ in ${app.get('env')} mode.`
-    )
+    log.info(`App is running at http://localhost:${port}/ in ${app.get('env')} mode.`)
     log.info('Press CTRL-C to stop.')
   })
 

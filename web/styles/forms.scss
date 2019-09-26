@@ -1,5 +1,6 @@
 @import './colors.scss';
 
+input,
 input[type='text'],
 input[type='number'],
 input[type='password'] {
@@ -46,4 +47,27 @@ input:checked + span.checkbox {
 label {
   font-size: 16px;
   user-select: none;
+}
+
+.input__group {
+  display: flex;
+  flex-direction: row;
+}
+
+.input__prefix {
+  background-color: $color-accent;
+  border-right: 0;
+  font-size: 16px;
+  padding: 12px 8px;
+}
+.input__prefix--btn {
+  cursor: pointer;
+  background-color: $color-accent;
+  border: 0;
+  font-size: 16px;
+  padding: 12px 8px;
+
+  &:hover {
+    background-color: lighten($color-accent, 10%);
+  }
 }

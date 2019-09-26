@@ -12,7 +12,7 @@ type LockState = {
 export type ClientLock = LockDTO & { drawSeconds: number }
 
 export const state: LockState = {
-  locks: [],
+  locks: []
 }
 
 setInterval(updateLocks, 500)
@@ -39,7 +39,7 @@ export async function getLocks() {
   state.locks = locks.map<ClientLock>(lock => ({
     ...lock,
     created: new Date(lock.created),
-    drawSeconds: 0,
+    drawSeconds: 0
   }))
 
   updateLocks()
@@ -47,7 +47,7 @@ export async function getLocks() {
 
 export async function drawLockCard(lockId: string, card: number) {
   const result = await api.post<LockAction>(`/api/lock/${lockId}/draw`, {
-    card,
+    card
   })
   return result
 }
@@ -55,6 +55,10 @@ export async function drawLockCard(lockId: string, card: number) {
 export async function createLock(config: LockDomain.LockConfig) {
   const result = await api.post<string>('/api/lock', config)
   return result
+}
+
+export async function joinLock(lockId: string) {
+  await api.post<{ message: string }>(`/api/lock/${lockId}/join`)
 }
 
 function updateLocks() {

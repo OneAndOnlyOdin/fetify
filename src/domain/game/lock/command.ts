@@ -1,12 +1,6 @@
 import { store, repo, command } from '../../../es'
 import { LockEvent, LockAgg, LockCommand, LockConfig } from './types'
-import {
-  fold,
-  removeAction,
-  shuffle,
-  applyAction,
-  createConfigActions,
-} from './util'
+import { fold, removeAction, shuffle, applyAction, createConfigActions } from './util'
 import { CommandError } from '../../../es/errors'
 
 const writer = store.createMongoWriter('gameLock')
@@ -21,9 +15,9 @@ const lockRepo = repo.createMongoRepo<LockEvent, LockAgg>({
     actions: [],
     drawHistory: [],
     lastDrawn: new Date(Date.now()),
-    ownerId: '',
+    ownerId: ''
   }),
-  fold,
+  fold
 })
 
 export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
@@ -36,7 +30,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
         aggregateId: cmd.aggregateId,
         ownerId: cmd.userId,
         actions: createConfigActions(cmd.config),
-        config: cmd.config,
+        config: cmd.config
       }
     },
     JoinLock: async (cmd, agg) => {
@@ -44,10 +38,14 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
         throw new CommandError('Lock already has a player')
       }
 
+      if (cmd.userId === agg.ownerId) {
+        throw new CommandError('Cannot join a lock you own')
+      }
+
       return {
         type: 'LockJoined',
         aggregateId: cmd.aggregateId,
-        userId: cmd.userId,
+        userId: cmd.userId
       }
     },
     DrawCard: async (cmd, agg) => {
@@ -68,7 +66,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
         aggregateId: cmd.aggregateId,
         card: cmd.card,
         cardType: action.type,
-        actions: shuffle(nextActions),
+        actions: shuffle(nextActions)
       }
     },
     CompleteLock: async (cmd, agg) => {
@@ -84,7 +82,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
       }
 
       return { type: 'LockCancelled', aggregateId: cmd.aggregateId }
-    },
+    }
   },
   lockRepo,
   writer

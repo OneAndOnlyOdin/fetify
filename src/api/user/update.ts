@@ -21,5 +21,5 @@ export const update = wrap(async (req, res) => {
     await userDomain.cmd.UpdateEmail({ aggregateId, email })
   }
 
-  res.json('OK')
+  res.json({ message: 'OK' })
 })
