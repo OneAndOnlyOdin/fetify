@@ -3,7 +3,7 @@ import { api } from './api'
 
 export type AuthState = {
   loggedIn: boolean
-  username: string
+  userId: string
   token?: string
   alias?: string
   email?: string
@@ -11,7 +11,7 @@ export type AuthState = {
 
 export const state: AuthState = {
   loggedIn: false,
-  username: ''
+  userId: ''
 }
 
 hydrateToken()
@@ -38,7 +38,7 @@ export async function login(username: string, password: string) {
 export function logout() {
   localStorage.removeItem('state')
   state.loggedIn = false
-  state.username = ''
+  state.userId = ''
 
   delete state.alias
   delete state.email
@@ -50,6 +50,7 @@ function handleToken(token: string) {
   const payload = jwt.decode(token) as AuthToken
   state.token = token
   state.loggedIn = true
+  state.userId = payload.userId
   state.alias = payload.alias
   state.email = payload.email
 }

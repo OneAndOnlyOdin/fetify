@@ -22,21 +22,19 @@ export const drawLockCard = wrap(async (req, res) => {
     throw new StatusError('Lock not found', 404)
   }
 
-  if (!canDraw(req.user!.userId, lock)) {
+  const isAuthed = canDraw(req.user!.userId, lock)
+  if (!isAuthed) {
     throw new StatusError('Not allowed to draw on this lock', 403)
   }
 
   const action = lock.actions.find((_, i) => i === cardNo)
   if (!action) {
-    throw new StatusError(
-      'Invalid card number provided: No card in that position found',
-      400
-    )
+    throw new StatusError('Invalid card number provided: No card in that position found', 400)
   }
 
   await lockDomain.cmd.DrawCard({
     aggregateId: id,
-    card,
+    card
   })
 
   res.json(action)
@@ -47,5 +45,5 @@ function canDraw(userId: string, lock: LockSchema) {
     return userId === lock.ownerId
   }
 
-  return lock.playerId && lock.playerId === userId
+  return lock.playerId !== undefined && lock.playerId === userId
 }

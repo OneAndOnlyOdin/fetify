@@ -34,6 +34,10 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
       }
     },
     JoinLock: async (cmd, agg) => {
+      if (agg.config.owner === 'self') {
+        throw new CommandError('Lock is not joinable')
+      }
+
       if (agg.playerId) {
         throw new CommandError('Lock already has a player')
       }

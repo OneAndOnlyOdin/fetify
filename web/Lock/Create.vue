@@ -1,15 +1,12 @@
 <script lang="ts">
-import Vue, { PropType } from 'vue'
+import Vue from 'vue'
 import { Modal, Dropdown } from '../elements'
 import { CreateData, create, Action, actionOptions } from './util'
 import { webSockets } from '../store/socket'
+import { router } from '../router'
 
 export default Vue.extend({
   components: { Modal, Dropdown },
-  props: {
-    value: Boolean,
-    onHide: { type: Function as PropType<() => void> },
-  },
   data(): CreateData {
     return {
       loading: false,
@@ -40,7 +37,7 @@ export default Vue.extend({
     async create() {
       const id = await create(this.$data as any)
       await webSockets.subscribe({ type: 'lock', id })
-      this.onHide()
+      router.push('/locks')
     },
     estimate() {
       let count = 0

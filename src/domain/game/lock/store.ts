@@ -33,7 +33,7 @@ export async function getLocks(userId: string) {
   const locks = await coll.then(coll =>
     coll
       .find({
-        $or: [{ ownerId: { $eq: userId } }, { playerId: { $eq: userId } }],
+        $or: [{ ownerId: { $eq: userId } }, { playerId: { $eq: userId } }]
       })
       .toArray()
   )
@@ -41,9 +41,7 @@ export async function getLocks(userId: string) {
 }
 
 export async function upsertLock(lock: LockSchema) {
-  await coll.then(coll =>
-    coll.updateOne({ id: lock.id }, { $set: lock }, { upsert: true })
-  )
+  await coll.then(coll => coll.updateOne({ id: lock.id }, { $set: lock }, { upsert: true }))
 }
 
 export function getLock(lockId: string) {
@@ -61,12 +59,12 @@ export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
   const seconds = secondsTilDraw({
     history: lock.history,
     since: new Date(),
-    config: lock.config,
+    config: lock.config
   })
   const draw = seconds > 0 ? new Date(Date.now() + seconds * 1000) : undefined
 
   const lastHistory = lock.history.slice(-1)[0]
-  const unlockDate = lastHistory && !lock.isOpen ? undefined : lastHistory.date
+  const unlockDate = lastHistory && !lock.isOpen ? lastHistory.date : undefined
 
   lock.history.sort((l, r) => (l.date > r.date ? -1 : l.date == r.date ? 0 : 1))
 
@@ -80,7 +78,7 @@ export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
     playerId: lock.playerId,
     draw,
     unlockDate,
-    ...counts,
+    ...counts
   }
 }
 

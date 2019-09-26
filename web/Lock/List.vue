@@ -16,6 +16,10 @@ export default Vue.extend({
     }
   },
   methods: {
+    canClickLock(lock: ClientLock) {
+      if (this.auth.userId === lock.ownerId) return true
+      return lock.drawSeconds === 0
+    },
     openCreate() {
       router.push('/locks/create')
     },
@@ -23,9 +27,8 @@ export default Vue.extend({
       return common.toDuration(lock.drawSeconds)
     },
     clickLock(lock: ClientLock) {
-      if (lock.drawSeconds === 0) {
-        router.push(`/locks/${lock.id}`)
-      }
+      console.log('clicked')
+      router.push(`/locks/${lock.id}`)
     },
     format(lock: ClientLock) {
       if (lock.unlockDate) {
@@ -37,9 +40,11 @@ export default Vue.extend({
     },
     async joinLock() {
       await locks.joinLock(this.joinLockId)
+      this.joinLockId = ''
     },
   },
   mounted() {
+    console.log(this.auth.userId)
     locks.getLocks()
   },
 })
@@ -55,13 +60,13 @@ export default Vue.extend({
 
         <div class="input__group" style="margin-left: 16px;">
           <div class="input__prefix--btn" @click="joinLock">Join</div>
-          <input type="text" placeholder="Enter Lock ID" v-modal="joinLockId" />
+          <input type="text" placeholder="Enter Lock ID" v-model="joinLockId" />
         </div>
       </div>
     </div>
 
     <div class="grid-4">
-      <div class="card" v-for="lock in locks.locks" :key="lock.id" @click="clickLock(lock)">
+      <div class="card" v-for="lock in locks.locks" :key="lock.id">
         <div class="title" :class="{ locked: !lock.isOpen, unlocked: lock.isOpen }">
           <div class="card-row">
             <div>Owner: {{lock.ownerId === auth.userId ? 'you' : lock.ownerId}}</div>
@@ -81,9 +86,12 @@ export default Vue.extend({
           </div>
 
           <div class="draw-button">
-            <button v-if="!lock.isOpen" :disabled="lock.drawSeconds > 0">
-              <span v-if="lock.drawSeconds === 0">Draw</span>
-              <span v-if="lock.drawSeconds > 0">{{nextDraw(lock)}}</span>
+            <button v-if="!lock.isOpen" :disabled="!canClickLock(lock)" @click="clickLock(lock)">
+              <template v-if="auth.userId === lock.ownerId">View</template>
+              <template v-if="auth.userId !== lock.ownerId">
+                <span v-if="lock.drawSeconds === 0">Draw</span>
+                <span v-if="lock.drawSeconds > 0">{{nextDraw(lock)}}</span>
+              </template>
             </button>
             <button v-if="lock.isOpen" disabled="true">Unlocked!</button>
           </div>
@@ -94,10 +102,6 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
-.card:hover {
-  cursor: pointer;
-}
-
 .card-row {
   width: 100%;
   display: flex;
