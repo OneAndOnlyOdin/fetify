@@ -11,20 +11,16 @@ export type AuthState = {
 
 export const state: AuthState = {
   loggedIn: false,
-  username: '',
+  username: ''
 }
 
 hydrateToken()
 
-export async function register(
-  username: string,
-  password: string,
-  confirm: string
-) {
+export async function register(username: string, password: string, confirm: string) {
   const token = await api.post<string>('/api/user/register', {
     username,
     password,
-    confirm,
+    confirm
   })
 
   handleToken(token)
@@ -33,7 +29,7 @@ export async function register(
 export async function login(username: string, password: string) {
   const token = await api.post<string>('/api/user/login', {
     username,
-    password,
+    password
   })
 
   handleToken(token)
@@ -49,18 +45,9 @@ export function logout() {
   delete state.token
 }
 
-type Token = {
-  alias: string
-  email: string
-  exp: number
-  expires: number
-  iat: number
-  userId: string
-}
-
 function handleToken(token: string) {
   localStorage.setItem('state', token)
-  const payload = jwt.decode(token) as Token
+  const payload = jwt.decode(token) as AuthToken
   state.token = token
   state.loggedIn = true
   state.alias = payload.alias

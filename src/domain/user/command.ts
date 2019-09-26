@@ -34,14 +34,14 @@ const userRepo = repo.createMongoRepo<UserEvent, UserAggregate>({
 export const userCmd = command.createHandler<UserEvent, UserCmd, UserAggregate>(
   {
     CreateUser: async (cmd, agg) => {
-      if (agg.state !== 'new') throw new Error('User already exists')
+      if (agg.state !== 'new') throw new Error('Command: User already exists')
       return {
         type: 'UserCreated',
         aggregateId: cmd.aggregateId
       }
     },
     UpdateAlias: async (cmd, agg) => {
-      if (agg.state !== 'new') throw new Error('User does not exist')
+      if (agg.state === 'new') throw new Error('User does not exist')
       return {
         type: 'AliasUpdated',
         aggregateId: cmd.aggregateId,
@@ -49,7 +49,7 @@ export const userCmd = command.createHandler<UserEvent, UserCmd, UserAggregate>(
       }
     },
     UpdateEmail: async (cmd, agg) => {
-      if (agg.state !== 'new') throw new Error('User does not exist')
+      if (agg.state === 'new') throw new Error('User does not exist')
       return {
         type: 'EmailUpdated',
         aggregateId: cmd.aggregateId,

@@ -13,7 +13,7 @@ const table = database.then(db => db.collection<Auth>('auth'))
 
 async function createUser(username: string, password: string) {
   const user = await table.then(coll => coll.findOne({ username }))
-  if (!user) {
+  if (user) {
     throw new Error('User already exists')
   }
 
@@ -45,15 +45,18 @@ async function getSalt() {
 
 const ONE_HOUR_MS = 1000 * 60 * 60
 async function createToken(userId: string) {
+  const expires = Date.now() + ONE_HOUR_MS * config.jwtExpiry
   const profile = await userDomain.store.getUser(userId)
-  if (!profile) {
-    throw new Error('No profile found for user')
+  const user = await getUser(userId)
+
+  if (!user && !profile) {
+    throw new Error('User not found')
   }
 
-  const expires = Date.now() + ONE_HOUR_MS * config.jwtExpiry
-  const payload = {
+  const payload: BaseToken = {
     expires,
-    ...profile,
+    userId,
+    ...(profile || {})
   }
 
   const expiresIn = (ONE_HOUR_MS * config.jwtExpiry) / 1000
@@ -65,5 +68,5 @@ export const auth = {
   createUser,
   createToken,
   getUser,
-  compare,
+  compare
 }
