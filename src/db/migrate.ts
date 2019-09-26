@@ -6,14 +6,14 @@ import * as path from 'path'
 type EnsureFunc = (db: Db) => Promise<void>
 
 export async function migrate() {
-  await run('game', path.resolve(__dirname, 'settings.js'), ensureIndexes)
+  await run(path.resolve(__dirname, 'settings.js'), ensureIndexes)
 }
 
-async function run(name: string, configFile: string, ensure: EnsureFunc) {
+async function run(configFile: string, ensure: EnsureFunc) {
   const database = require('migrate-mongo').database
   const up = require('migrate-mongo').up
 
-  const log = createLogger(`migrations-${name}`)
+  const log = createLogger(`migrations`)
 
   /**
    * migrate-mongo will use global.options.file or coalesce to
@@ -30,10 +30,10 @@ async function run(name: string, configFile: string, ensure: EnsureFunc) {
   log.info(`Migrating...`)
   try {
     const applied = await up(db)
-    log.info({ applied }, `Successfully migrated ${name}`)
+    log.info({ applied }, `Successfully migrated`)
     await ensure(db)
     log.info('Successfully ensured indexes')
-  } catch (ex) {
-    log.error({ ex }, 'Failed to migrate')
+  } catch (err) {
+    log.error({ err }, 'Failed to migrate')
   }
 }

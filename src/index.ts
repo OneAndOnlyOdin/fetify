@@ -2,9 +2,14 @@ import { createServer } from './server'
 import { userDomain } from './domain/user'
 import { lockDomain } from './domain/game/lock'
 import { initiate } from './db/message'
+import { migrate } from './db/migrate'
 
-createServer(1)
+async function start() {
+  await migrate()
+  userDomain.mgr.start()
+  lockDomain.mgr.start()
+  createServer(1)
+  initiate()
+}
 
-userDomain.mgr.start()
-lockDomain.mgr.start()
-initiate()
+start()

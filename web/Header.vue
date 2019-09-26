@@ -20,7 +20,7 @@ export default Vue.extend({
   <header>
     <div class="container">
       <div class="left">
-        <h3>Fetify</h3>
+        <h3>Game</h3>
       </div>
 
       <div class="mid">

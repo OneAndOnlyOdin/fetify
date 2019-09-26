@@ -45,7 +45,7 @@ module.exports = {
   devtool: isProd ? '#eval-source-map' : false,
   devServer: {
     open: true,
-    port: 3010,
+    port: Number(process.env.WEB_PORT || 3010),
     hot: true,
     historyApiFallback: true
   },
