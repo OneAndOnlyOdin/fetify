@@ -16,6 +16,12 @@ export default Vue.extend({
     }
   },
   methods: {
+    getStatus(lock: ClientLock) {
+      if (lock.isOpen) return 'Open'
+      if (lock.config.owner === 'self') return 'In Play'
+      if (lock.ownerId && lock.playerId) return 'In Play'
+      return 'Pending'
+    },
     canClickLock(lock: ClientLock) {
       if (this.auth.userId === lock.ownerId) return true
       return lock.drawSeconds === 0
@@ -27,7 +33,6 @@ export default Vue.extend({
       return common.toDuration(lock.drawSeconds)
     },
     clickLock(lock: ClientLock) {
-      console.log('clicked')
       router.push(`/locks/${lock.id}`)
     },
     format(lock: ClientLock) {
@@ -44,7 +49,6 @@ export default Vue.extend({
     },
   },
   mounted() {
-    console.log(this.auth.userId)
     locks.getLocks()
   },
 })
@@ -83,6 +87,11 @@ export default Vue.extend({
           <div class="card-row">
             <div>Cards</div>
             <div>{{lock.totalActions}}</div>
+          </div>
+
+          <div class="card-row">
+            <div>Status</div>
+            <div>{{getStatus(lock)}}</div>
           </div>
 
           <div class="draw-button">

@@ -42,13 +42,12 @@ export default Vue.extend({
     format: common.formatDate,
     elapsed: common.elapsedSince,
     async drawCard(card: number) {
-      if (!this.lock) return
-      if (this.lock.drawSeconds !== 0) return
+      if (!this.canDraw) return
 
       this.draw.loading = true
       this.draw.card = card
 
-      const result = await locks.drawLockCard(this.lock.id, card)
+      const result = await locks.drawLockCard(this.lock!.id, card)
       this.draw.drawn = result
       this.draw.loading = false
 
@@ -80,6 +79,15 @@ export default Vue.extend({
       this.isOwner = auth.state.userId === this.lock.ownerId
     }
   },
+  computed: {
+    canDraw() {
+      const lock: ClientLock = this.$data.lock
+      if (!lock) return false
+      if (lock.drawSeconds !== 0) return false
+      if (lock.config.owner === 'self') return true
+      return lock.playerId === this.$data.auth.userId
+    },
+  },
 })
 </script>
 
@@ -91,11 +99,7 @@ export default Vue.extend({
       <div class="cards" v-if="!lock.isOpen">
         <div class="action-grid">
           <div v-for="card in cards" :key="card">
-            <div
-              class="card"
-              :class="{ locked: isOwner || lock.drawSeconds !== 0 }"
-              @click="drawCard(card)"
-            >
+            <div class="card" :class="{ locked: !canDraw }" @click="drawCard(card)">
               <div v-if="card === draw.card" class="content">
                 <div v-if="!draw.drawn">...</div>
                 <div v-if="draw.drawn">{{draw.drawn.type}}</div>

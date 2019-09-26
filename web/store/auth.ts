@@ -1,5 +1,6 @@
 import * as jwt from 'jsonwebtoken'
 import { api } from './api'
+import { router } from '../router'
 
 export type AuthState = {
   loggedIn: boolean
@@ -43,6 +44,8 @@ export function logout() {
   delete state.alias
   delete state.email
   delete state.token
+
+  router.push('/')
 }
 
 function handleToken(token: string) {
