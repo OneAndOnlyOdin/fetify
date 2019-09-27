@@ -21,8 +21,16 @@
     "web": "REACT_APP_NODE_ENV=dev webpack --config webpack.config.js --watch",
     "serve": "REACT_APP_NODE_ENV=dev webpack-dev-server --config webpack.config.js --watch",
     "build:docker": "docker build -t fetify:latest .",
-    "start:docker": "docker run -dt -p 3040:3000 --restart=always --network fet --env-file .env --name fetify fetify:latest",
-    "start:db": "docker run -dt --restart=always --name fetdb mongo:latest"
+    "db:recreate": "yarn db:remove || true && yarn db:start && sleep 2s && yarn db:init",
+    "// Create an empty database with no migrations": "",
+    "db:empty": "yarn db:remove || true && yarn db:start && sleep 2s && yarn db:init",
+    "// Database helpers": "",
+    "db:start": "docker run --network fet --name fetdb -d  --restart=always -p 27017:27017 mongo:latest mongod --replSet rs0 --bind_ip 0.0.0.0 && sleep 5s",
+    "db:init": "docker exec -it fetdb mongo --eval \"rs.initiate()\" && sleep 5s",
+    "db:shell": "docker exec -it fetdb mongo",
+    "db:kill": "docker kill fetdb",
+    "db:remove": "docker container rm -f -v fetdb",
+    "db:reconfig": "sleep 5s && docker exec -it fetdb mongo --eval \"cfg = rs.config(); cfg.members = [{ _id: 0, host: '127.0.0.1:27017' }]; rs.reconfig(cfg, { force: true });\""
   },
   "dependencies": {
     "bcrypt": "^3.0.6",
