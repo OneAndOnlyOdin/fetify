@@ -47,6 +47,7 @@ type Opts = {
   config: LockConfig
   since?: Date
 }
+
 export function secondsTilDraw(opts: Opts): number {
   const action = opts.history.slice(-1)[0]
   if (!action) return 0
@@ -73,7 +74,20 @@ export function secondsTilDraw(opts: Opts): number {
   }
 }
 
-export function applyAction(action: LockAction, actions: LockAction[]) {
+export function play(
+  playActions: LockAction[],
+  card: number,
+  shuffleCards = true
+) {
+  const { action, actions } = removeAction(playActions, card)
+  const nextActions = applyAction(action, actions)
+  return {
+    actions: shuffleCards ? shuffle(nextActions, action.type) : nextActions,
+    action,
+  }
+}
+
+function applyAction(action: LockAction, actions: LockAction[]) {
   switch (action.type) {
     case 'blank':
     case 'freeze':
@@ -91,13 +105,17 @@ export function applyAction(action: LockAction, actions: LockAction[]) {
     }
 
     case 'double': {
-      const amount = actions.filter(action => action.type === 'blank').length
-      return actions.concat(createActions(amount * 2))
+      const blanks = actions.reduce(countBlanks, 0)
+      const increases = actions.reduce(countIncreases, 0)
+
+      return actions.concat(
+        ...createActions(blanks),
+        ...createActions(increases, 'increase')
+      )
     }
 
     case 'half': {
-      const amount =
-        actions.filter(action => action.type === 'blank').length / 2
+      const amount = actions.reduce(countHalves, 0) / 2
       if (amount === 0) break
       if (amount === 1) return removeBlanks(1, actions)
       return removeBlanks(Math.floor(amount / 2), actions)
@@ -107,13 +125,19 @@ export function applyAction(action: LockAction, actions: LockAction[]) {
   return actions
 }
 
+const countBlanks = (count: number, action: LockAction) =>
+  action.type === 'blank' ? count + 1 : count
+const countIncreases = (count: number, action: LockAction) =>
+  action.type === 'increase' ? count + 1 : count
+const countHalves = (count: number, action: LockAction) =>
+  action.type === 'half' ? count + 1 : count
+
 export function removeAction(actions: LockAction[], index: number) {
-  const action = actions[index]
-  const nextActions = actions.filter((_, i) => i !== index)
-  return { action, actions: nextActions }
+  const action = actions.splice(index, 1)[0]
+  return { action, actions }
 }
 
-function getRand(min: number, max: number) {
+export function getRand(min: number, max: number) {
   const diff = max - min + 1
   const rand = Math.floor(Math.random() * diff)
 
@@ -123,15 +147,16 @@ function getRand(min: number, max: number) {
 function removeBlanks(amount: number, actions: LockAction[]) {
   let removed = 0
 
-  const nextActions = actions.filter(action => {
-    if (removed === amount) return true
-    if (action.type !== 'blank') return true
+  for (let i = 0; i < actions.length; i++) {
+    if (removed === amount) break
+    if (actions[i].type === 'blank') {
+      removed++
+      actions.splice(i, 1)
+      i--
+    }
+  }
 
-    removed++
-    return false
-  })
-
-  return nextActions
+  return actions
 }
 
 function createActions(
@@ -141,23 +166,45 @@ function createActions(
   return Array.from({ length: amount }, () => ({ type }))
 }
 
-export function shuffle(actions: LockAction[]) {
-  const seeded = actions.map(action => ({ ...action, seed: Math.random() }))
-  const sorted = seeded
-    .sort((left, right) =>
-      left.seed > right.seed ? 1 : left.seed === right.seed ? 0 : -1
-    )
-    .map(action => ({ ...action, seed: undefined }))
-  return sorted
-}
-
-export function createConfigActions(config: LockConfig) {
+export function createConfigActions(cfgActions: LockConfig['actions']) {
   const actions: LockAction[] = []
 
-  for (const action of config.actions) {
+  for (const action of cfgActions) {
+    const value = Number(action.amount)
+    if (value <= 0 || isNaN(value)) continue
+
     const newActions = createActions(action.amount, action.type)
     actions.push(...newActions)
   }
 
-  return shuffle(actions)
+  return shuffle(actions, 'increase')
+}
+
+const shuffleActions: LockAction['type'][] = [
+  'increase',
+  'decrease',
+  'double',
+  'half',
+]
+
+function shuffle(actions: LockAction[], type: LockAction['type']) {
+  if (!shuffleActions.includes(type)) {
+    return actions
+  }
+
+  const seeded = actions.map(addSeed)
+  const sorted = seeded.sort(bySeed).map(removeSeed)
+  return sorted
+}
+
+function addSeed(action: LockAction) {
+  return { ...action, seed: Math.random() }
+}
+
+function removeSeed(action: LockAction) {
+  return { ...action, seed: undefined }
+}
+
+function bySeed(left: any, right: any) {
+  return left.seed > right.seed ? 1 : left.seed === right.seed ? 0 : -1
 }

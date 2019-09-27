@@ -52,9 +52,9 @@ export default Vue.extend({
       this.draw.loading = false
 
       setTimeout(() => {
+        this.setLock()
         this.draw.card = -1
         this.draw.drawn = null
-        this.setLock()
       }, 3000)
     },
     async setLock(noRetry?: boolean) {
@@ -83,6 +83,7 @@ export default Vue.extend({
     canDraw() {
       const lock: ClientLock = this.$data.lock
       if (!lock) return false
+      if (this.draw.drawn) return false
       if (lock.drawSeconds !== 0) return false
       if (lock.config.owner === 'self') return true
       return lock.playerId === this.$data.auth.userId
@@ -92,7 +93,7 @@ export default Vue.extend({
 </script>
 
 <template>
-  <div>
+  <div class="page">
     <div v-if="!lock && !loading">Lock not found</div>
     <div v-if="!lock && loading">Loading...</div>
     <div v-if="lock" class="lockdetail">
@@ -100,12 +101,15 @@ export default Vue.extend({
         <div class="action-grid">
           <div v-for="card in cards" :key="card">
             <div class="card" :class="{ locked: !canDraw }" @click="drawCard(card)">
-              <div v-if="card === draw.card" class="content">
+              <div v-if="card === draw.card" class="card-holder">
                 <div v-if="!draw.drawn">...</div>
-                <div v-if="draw.drawn">{{draw.drawn.type}}</div>
+                <div v-if="draw.drawn" class="small">{{draw.drawn.type}}</div>
               </div>
 
-              <div v-if="card !== draw.card" class="content">#{{card + 1}}</div>
+              <div v-if="card !== draw.card" class="card-holder">
+                <span v-if="canDraw">?</span>
+                <span v-if="!canDraw">✗</span>
+              </div>
             </div>
           </div>
         </div>
@@ -135,6 +139,12 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
+.page {
+  margin: -16px;
+  padding: 16px;
+  background-color: $color-accent;
+}
+
 .lockdetail {
   > div {
     margin: 16px 0;
@@ -148,6 +158,7 @@ export default Vue.extend({
     width: 33%;
   }
 }
+
 .cards {
   display: flex;
   justify-content: center;
@@ -163,20 +174,23 @@ export default Vue.extend({
   width: 100%;
 
   .card {
-    border-radius: 5px;
-    border: 2px solid $color-unlocked;
-    background-color: lighten($color-unlocked, 10%);
+    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-around;
     height: 60px;
+    box-shadow: 3px 3px 3px $color-primary;
+    background-color: white;
+    border: 1px solid $color-accent;
   }
 
   .locked {
     cursor: not-allowed;
-    border: 2px solid $color-locked;
-    background-color: lighten($color-locked, 10%);
+  }
+
+  .small {
+    font-size: 12px;
   }
 }
 </style>

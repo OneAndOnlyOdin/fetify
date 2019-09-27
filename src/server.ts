@@ -13,7 +13,9 @@ export function createServer(id: number): void {
   const port = config.port
 
   const server = app.listen(port, () => {
-    log.info(`App is running at http://localhost:${port}/ in ${app.get('env')} mode.`)
+    log.info(
+      `App is running at http://localhost:${port}/ in ${app.get('env')} mode.`
+    )
     log.info('Press CTRL-C to stop.')
   })
 
@@ -54,7 +56,7 @@ function errorHandler(
   const logger = req.log
 
   if (err instanceof CommandError) {
-    res.status(400).send({ message: 'Bad request' })
+    res.status(400).send({ message: err.message })
     return
   }
 

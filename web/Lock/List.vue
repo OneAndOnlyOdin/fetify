@@ -16,6 +16,18 @@ export default Vue.extend({
     }
   },
   methods: {
+    viewMode(lock: ClientLock) {
+      switch (lock.config.owner) {
+        case 'self':
+          return 'player'
+
+        case 'other':
+          return lock.ownerId === this.auth.userId ? 'owner' : 'player'
+
+        default:
+          return 'player'
+      }
+    },
     getStatus(lock: ClientLock) {
       if (lock.isOpen) return 'Open'
       if (lock.config.owner === 'self') return 'In Play'
@@ -35,6 +47,7 @@ export default Vue.extend({
     clickLock(lock: ClientLock) {
       router.push(`/locks/${lock.id}`)
     },
+    toDuration: common.toDuration,
     format(lock: ClientLock) {
       if (lock.unlockDate) {
         const diff =
@@ -74,7 +87,7 @@ export default Vue.extend({
         <div class="title" :class="{ locked: !lock.isOpen, unlocked: lock.isOpen }">
           <div class="card-row">
             <div>Owner: {{lock.ownerId === auth.userId ? 'you' : lock.ownerId}}</div>
-            <div style="font-size: 10px; color: #777">#{{lock.id}}</div>
+            <div style="font-size: 10px; color: #777">{{lock.id}}</div>
           </div>
         </div>
 
@@ -94,10 +107,15 @@ export default Vue.extend({
             <div>{{getStatus(lock)}}</div>
           </div>
 
+          <div class="card-row">
+            <div>Interval</div>
+            <div>{{toDuration(lock.config.intervalMins * 60, true)}}</div>
+          </div>
+
           <div class="draw-button">
             <button v-if="!lock.isOpen" :disabled="!canClickLock(lock)" @click="clickLock(lock)">
-              <template v-if="auth.userId === lock.ownerId">View</template>
-              <template v-if="auth.userId !== lock.ownerId">
+              <template v-if="viewMode(lock) === 'owner'">View</template>
+              <template v-if="viewMode(lock) === 'player'">
                 <span v-if="lock.drawSeconds === 0">Draw</span>
                 <span v-if="lock.drawSeconds > 0">{{nextDraw(lock)}}</span>
               </template>

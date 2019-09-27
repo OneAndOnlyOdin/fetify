@@ -20,13 +20,15 @@ export type LockCommand =
   | DomainCmd<'CancelLock'>
   | DomainCmd<'CompleteLock'>
 
+export type ActionAmount = { type: LockAction['type']; amount: number }
+
 export type LockConfig = {
   type: 'lock'
   time: LockTime
   intervalMins: number
   owner: 'other' | 'self'
   maxUsers?: number
-  actions: Array<{ type: LockAction['type']; amount: number }>
+  actions: ActionAmount[]
   showActions: boolean
 }
 

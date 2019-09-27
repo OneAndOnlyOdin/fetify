@@ -1,15 +1,38 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Modal, Dropdown } from '../elements'
-import { CreateData, create, Action, actionOptions } from './util'
+import {
+  CreateData,
+  create,
+  actionOptions,
+  toLockConfig,
+  estimate,
+} from './util'
 import { webSockets } from '../store/socket'
 import { router } from '../router'
+import { common } from '../common'
+
+type Data = CreateData & {
+  loading: boolean
+  simResults: {
+    valid: boolean
+    min: number
+    avg: number
+    max: number
+  }
+}
 
 export default Vue.extend({
   components: { Modal, Dropdown },
-  data(): CreateData {
+  data(): Data {
     return {
       loading: false,
+      simResults: {
+        valid: false,
+        min: 0,
+        avg: 0,
+        max: 0,
+      },
       owner: 'self',
       time: {
         type: 'variable',
@@ -28,6 +51,7 @@ export default Vue.extend({
     this.loading = false
   },
   methods: {
+    toDuration: common.toDuration,
     upper(value: string) {
       return `${value.slice(0, 1).toUpperCase()}${value.slice(1)}`
     },
@@ -39,48 +63,14 @@ export default Vue.extend({
       await webSockets.subscribe({ type: 'lock', id })
       router.push('/locks')
     },
+    estimate() {},
+  },
+  computed: {
     estimate() {
-      let count = 0
-      let doubles = 0
-
-      const actions: Action[] = this.$data.actions
-      const type = this.$data.interval.type
-      const factor = type === 'mins' ? 1 : type === 'hours' ? 60 : 1440
-      const intervalMins = Number(this.$data.interval.amount) * factor
-
-      for (const action of actions) {
-        const value = Number(action.value)
-
-        switch (action.type) {
-          case 'blank':
-            count += intervalMins * value
-            break
-
-          case 'freeze':
-            count += intervalMins * 2 * value
-            break
-
-          case 'increase':
-            count += intervalMins * 3 * value
-            break
-
-          case 'decrease':
-            break
-
-          case 'double':
-            doubles += value
-            break
-        }
-
-        if (doubles === 0) return Math.round(count / 60)
-
-        while (doubles !== 0) {
-          count *= 2
-          doubles--
-        }
-
-        return Math.round(count / 60)
-      }
+      const cfg = toLockConfig(this.$data as any)
+      const intervals = estimate(cfg)
+      const seconds = cfg.intervalMins * 60
+      return common.toDuration(intervals * seconds, true)
     },
   },
 })
@@ -94,7 +84,7 @@ export default Vue.extend({
 
     <content>
       <div>
-        <label>Owner</label>
+        <label>Lock For</label>
         <Dropdown v-model="owner">
           <option value="self">Self</option>
           <option value="other">Other</option>
@@ -131,11 +121,8 @@ export default Vue.extend({
 
       <div class="variable" v-if="time.type === 'variable'">
         <div>
-          <label>Estimated duration:</label>
-          <div style="padding: 12px 0">
-            longest: {{estimate()}} hours
-            <br />
-          </div>
+          <label>Estimate</label>
+          <div style="padding: 12px 0">{{estimate}}</div>
         </div>
         <div>
           <label>Cards</label>

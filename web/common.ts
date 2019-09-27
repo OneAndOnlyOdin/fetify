@@ -4,12 +4,18 @@ function formatDate(value: string | number | Date) {
   return date.toLocaleString()
 }
 
-function toDuration(valueSecs: number) {
+function toDuration(valueSecs: number, full?: boolean) {
   const now = Math.floor(new Date(valueSecs).valueOf() / 1000)
   const diff = Math.abs(now - valueSecs)
   const {
     duration: [days, hours, minutes, seconds],
   } = toRawDuration(diff)
+
+  if (full) {
+    return [`${days}d`, `${hours}h`, `${minutes}m`, `${seconds}s`]
+      .filter(time => !time.startsWith('0'))
+      .join(':')
+  }
 
   if (days) {
     return `${days} days`

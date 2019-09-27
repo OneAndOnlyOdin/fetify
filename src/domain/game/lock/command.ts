@@ -1,6 +1,6 @@
 import { store, repo, command } from '../../../es'
 import { LockEvent, LockAgg, LockCommand, LockConfig } from './types'
-import { fold, removeAction, shuffle, applyAction, createConfigActions } from './util'
+import { fold, createConfigActions, play } from './util'
 import { CommandError } from '../../../es/errors'
 
 const writer = store.createMongoWriter('gameLock')
@@ -15,9 +15,9 @@ const lockRepo = repo.createMongoRepo<LockEvent, LockAgg>({
     actions: [],
     drawHistory: [],
     lastDrawn: new Date(Date.now()),
-    ownerId: ''
+    ownerId: '',
   }),
-  fold
+  fold,
 })
 
 export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
@@ -29,8 +29,8 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
         type: 'LockCreated',
         aggregateId: cmd.aggregateId,
         ownerId: cmd.userId,
-        actions: createConfigActions(cmd.config),
-        config: cmd.config
+        actions: createConfigActions(cmd.config.actions),
+        config: cmd.config,
       }
     },
     JoinLock: async (cmd, agg) => {
@@ -49,7 +49,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
       return {
         type: 'LockJoined',
         aggregateId: cmd.aggregateId,
-        userId: cmd.userId
+        userId: cmd.userId,
       }
     },
     DrawCard: async (cmd, agg) => {
@@ -62,15 +62,14 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
         throw new CommandError('Card out of bounds')
       }
 
-      const { action, actions } = removeAction(agg.actions, cmd.card)
-      const nextActions = applyAction(action, actions)
+      const { action, actions } = play(agg.actions, cmd.card)
 
       return {
         type: 'CardDrawn',
         aggregateId: cmd.aggregateId,
         card: cmd.card,
         cardType: action.type,
-        actions: shuffle(nextActions)
+        actions,
       }
     },
     CompleteLock: async (cmd, agg) => {
@@ -86,7 +85,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
       }
 
       return { type: 'LockCancelled', aggregateId: cmd.aggregateId }
-    }
+    },
   },
   lockRepo,
   writer
