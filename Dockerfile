@@ -5,9 +5,9 @@ WORKDIR /app
 ADD yarn.lock package.json ./
 RUN yarn
 
-ADD ./build ./
+ADD ./ ./
 
-RUN yarn build:web && yarn --production
+RUN yarn build && yarn build:web && yarn --production
 
 EXPOSE 3000
 
