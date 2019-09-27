@@ -5,7 +5,7 @@ WORKDIR /app
 ADD yarn.lock package.json ./
 RUN yarn
 
-ADD ./ ./
+ADD ./build ./
 
 RUN yarn build:web && yarn --production
 
