@@ -7,7 +7,7 @@ RUN yarn
 
 ADD ./ ./
 
-RUN yarn build && yarn build:web && yarn --production
+RUN yarn tsc && yarn build:web && yarn --production
 
 EXPOSE 3000
 
