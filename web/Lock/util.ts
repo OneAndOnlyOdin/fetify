@@ -10,7 +10,6 @@ import {
   getRand,
   play,
 } from '../../src/domain/game/lock/util'
-import { ETIME } from 'constants'
 
 export type Action = LockDomain.LockAction & { value: string; desc: string }
 

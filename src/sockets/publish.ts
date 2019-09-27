@@ -9,7 +9,13 @@ async function toAll(payload: SocketMsg) {
   })
 }
 
-async function toUser(userId: string, payload: SocketMsg) {
+async function toUser(userId: string | string[], payload: SocketMsg) {
+  if (Array.isArray(userId)) {
+    for (const target of userId) {
+      await toUser(target, payload)
+    }
+    return
+  }
   await publish({
     target: userId,
     type: payload.type,

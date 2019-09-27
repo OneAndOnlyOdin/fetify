@@ -7,7 +7,7 @@ import { lockCmd } from './command'
 export const lockMgr = eventHandler.createMongoHandler<LockEvent>({
   bookmark: 'lock-bookmark',
   eventStream: 'gameLock',
-  name: 'lock-manager'
+  name: 'lock-manager',
 })
 
 lockMgr.handle('LockCreated', async ({ event, timestamp }) => {
@@ -18,14 +18,14 @@ lockMgr.handle('LockCreated', async ({ event, timestamp }) => {
     actions: event.actions,
     config: event.config,
     ownerId: event.ownerId,
-    history: []
+    history: [],
   }
 
   await upsertLock(lock)
 
   svcSockets.toUser(lock.ownerId, {
     type: 'lock',
-    payload: toLockDto(lock, lock.ownerId)
+    payload: toLockDto(lock, lock.ownerId),
   })
 })
 
@@ -39,29 +39,30 @@ lockMgr.handle('CardDrawn', async ({ event, timestamp }) => {
   const nextLock = {
     ...lock,
     actions: event.actions,
-    history: lock.history.concat(item)
+    history: lock.history.concat(item),
   }
 
   await updateLock(event.aggregateId, {
     actions: nextLock.actions,
-    history: nextLock.history
+    history: nextLock.history,
   })
 
-  svcSockets.toUser(lock.ownerId, {
+  svcSockets.toUser(nextLock.ownerId, {
     type: 'lock',
-    payload: toLockDto(nextLock, nextLock.ownerId)
+    payload: toLockDto(nextLock, nextLock.ownerId),
   })
 
   if (lock.playerId) {
-    svcSockets.toUser(lock.ownerId, {
+    svcSockets.toUser(lock.playerId, {
       type: 'lock',
-      payload: toLockDto(nextLock, lock.playerId)
+      payload: toLockDto(nextLock, lock.playerId),
     })
   }
 
   if (event.cardType !== 'unlock') return
 
-  const unlocks = lock.config.actions.filter(action => action.type === 'unlock').length
+  const unlocks = lock.config.actions.filter(action => action.type === 'unlock')
+    .length
   const seen = lock.history.filter(hist => hist.type === 'unlock').length + 1
 
   if (seen >= unlocks) {
@@ -76,7 +77,7 @@ lockMgr.handle('LockJoined', async ({ event }) => {
   }
 
   await updateLock(event.aggregateId, {
-    playerId: event.userId
+    playerId: event.userId,
   })
 
   lock.playerId = event.userId
@@ -85,7 +86,7 @@ lockMgr.handle('LockJoined', async ({ event }) => {
 
   svcSockets.toUser(event.userId, {
     type: 'lock',
-    payload: dto
+    payload: dto,
   })
 })
 
