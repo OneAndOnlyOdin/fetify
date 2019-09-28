@@ -1,6 +1,6 @@
 <script lang="ts">
 import Vue from 'vue'
-import { auth } from '../store'
+import { authApi } from '../store'
 import { api } from '../store/api'
 
 type Data = {
@@ -47,7 +47,7 @@ export default Vue.extend({
           confirm: this.confirm,
         }
         const token = await api.post<string>('/api/user/register', body)
-        auth.handleToken(token)
+        authApi.handleToken(token)
       } catch (ex) {
         this.error = ex.message
       }
@@ -58,7 +58,7 @@ export default Vue.extend({
           username: this.username,
           password: this.password,
         })
-        auth.handleToken(token)
+        authApi.handleToken(token)
       } catch (ex) {
         this.error = ex.message
       }

@@ -1,46 +1,24 @@
 import { LockDomain } from '../../src/domain/game/lock'
 import { api } from './api'
 import { LockDTO } from '../../src/domain/game/lock/store'
-import { time } from '.'
+import { getNow } from './time'
 import { LockAction } from '../../src/domain/game/lock/types'
 import { webSockets } from './socket'
 
-type LockState = {
+export type LockState = {
   locks: ClientLock[]
-  draw: {
-    currentId: string
-    card: number
-    action: LockAction | null
-  }
 }
 
 export type ClientLock = LockDTO & { drawSeconds: number }
 
 export const state: LockState = {
   locks: [],
-  draw: {
-    currentId: '',
-    card: -1,
-    action: null,
-  },
 }
 
 setInterval(updateLocks, 500)
 
 webSockets.on(msg => {
   switch (msg.type) {
-    case 'lock-draw': {
-      if (msg.payload.lockId !== state.draw.currentId) return
-      state.draw.card = msg.payload.card
-      state.draw.action = msg.payload.action
-
-      setTimeout(() => {
-        state.draw.card = -1
-        state.draw.action = null
-      }, 3000)
-      return
-    }
-
     case 'lock': {
       const existing = state.locks.find(lock => lock.id === msg.payload.id)
       if (!existing) {
@@ -49,23 +27,35 @@ webSockets.on(msg => {
         return
       }
 
-      state.locks = state.locks.map(lock => {
-        if (lock.id !== msg.payload.id) return lock
-        return { ...msg.payload, drawSeconds: lock.drawSeconds }
-      })
+      for (const lock of state.locks) {
+        if (lock.id !== msg.payload.id) continue
+
+        for (const key in lock) {
+          if (lock[key] !== msg.payload[key]) {
+            lock[key] = msg.payload[key]
+          }
+        }
+      }
+
       updateLocks()
       return
     }
   }
 })
 
+let debouce = 0
 export async function getLocks() {
+  if (Date.now() - debouce < 5000) return
+  debouce = Date.now()
+
   const locks = await api.get<LockDTO[]>('/api/lock')
-  state.locks = locks.map<ClientLock>(lock => ({
+  const mapped = locks.map<ClientLock>(lock => ({
     ...lock,
     created: new Date(lock.created),
     drawSeconds: 0,
   }))
+
+  state.locks.push(...mapped)
 
   updateLocks()
 }
@@ -86,17 +76,18 @@ export async function joinLock(lockId: string) {
   await api.post<{ message: string }>(`/api/lock/${lockId}/join`)
 }
 
-function updateLocks() {
-  const now = time.getNow().valueOf()
-  for (const lock of state.locks) {
-    if (!lock.draw) {
-      lock.drawSeconds = 0
-      continue
-    }
+export function getDrawSecs(lock: ClientLock, since?: number) {
+  const now = since || getNow().valueOf()
+  if (!lock.draw) return 0
+  const draw = new Date(lock.draw)
+  const until = draw.valueOf() - now
+  return until <= 0 ? 0 : Math.floor(until / 1000)
+}
 
-    const draw = new Date(lock.draw)
-    const until = draw.valueOf() - now
-    lock.drawSeconds = until <= 0 ? 0 : Math.floor(until / 1000)
+function updateLocks() {
+  const now = getNow().valueOf()
+  for (const lock of state.locks) {
+    lock.drawSeconds = getDrawSecs(lock, now)
   }
 }
 

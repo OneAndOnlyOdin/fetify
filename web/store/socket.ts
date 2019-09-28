@@ -40,7 +40,7 @@ function createSocket() {
       try {
         const data = JSON.parse(blob)
         dispatch(data)
-        for (const listener of persistentListeners) {
+        for (const [, listener] of persistentListeners.entries()) {
           listener(data)
         }
       } catch (ex) {}
@@ -118,9 +118,16 @@ function subscribe<T extends SocketMsg['type']>(condition: Condition<T>) {
   })
 }
 
-const persistentListeners: any[] = []
+const persistentListeners = new Map<number, any>()
+let persistId = 0
 function on(cb: (msg: SocketMsg) => any) {
-  persistentListeners.push(cb)
+  const id = ++persistId
+  persistentListeners.set(id, cb)
+  return id
 }
 
-export const webSockets = { subscribe, on }
+function remove(id: number) {
+  persistentListeners.delete(id)
+}
+
+export const webSockets = { subscribe, on, remove }

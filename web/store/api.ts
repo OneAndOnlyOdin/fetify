@@ -1,6 +1,6 @@
 import { state, logout } from './auth'
 import { config } from '../env'
-import { auth } from '.'
+import { authApi } from '.'
 
 const baseUrl = config.apiUrl
 
@@ -16,23 +16,25 @@ async function get<T>(path: string, query: Query = {}) {
     .map(key => `${key}=${query[key]}`)
     .join('&')
 
-  return callApi<T>(`${path}?${params}`, {
+  const { result } = await callApi<T>(`${path}?${params}`, {
     method: 'get',
   })
+  return result
 }
 
 async function post<T>(path: string, body = {}) {
-  return callApi<T>(path, {
+  const { result } = await callApi<T>(path, {
     method: 'post',
     body: JSON.stringify(body),
   })
+  return result
 }
 
 async function callApi<T>(
   path: string,
   opts: RequestInit,
   isRenew: boolean = false
-): Promise<T> {
+): Promise<{ result: T; status: number }> {
   const res = await fetch(`${baseUrl}${path}`, { ...opts, ...headers() })
   const json = await res.json()
 
@@ -43,13 +45,22 @@ async function callApi<T>(
     }
 
     // The API returns 'false' if the token is still valid
-    const newToken = await callApi<string | false>(
+    const { result, status } = await callApi<string | false>(
       '/api/user/renew',
       { method: 'post' },
       true
     )
 
-    if (newToken !== false) auth.handleToken(newToken)
+    if (status !== 200) {
+      throw new StatusError('Unauthorized', 401)
+    }
+
+    // If we received a 401 and renewed successfully, it was unrelated to authentication
+    if (result === false) {
+      throw new StatusError('Unauthorized', 401)
+    }
+
+    authApi.handleToken(result)
     return callApi(path, opts)
   }
 
@@ -57,7 +68,7 @@ async function callApi<T>(
     throw new StatusError(json.message || res.statusText, res.status)
   }
 
-  return json
+  return { result: json, status: res.status }
 }
 
 class StatusError extends Error {
@@ -80,7 +91,11 @@ function headers() {
   return { headers }
 }
 
-const win: any = window
-win.renew = () => {
-  callApi('/api/user/renew', { method: 'post' }, true).then(console.log)
-}
+setInterval(async () => {
+  if (authApi.state.token) {
+    const { result } = await callApi<string | false>('/api/user/renew', {
+      method: 'post',
+    })
+    if (result !== false) authApi.handleToken(result)
+  }
+}, 1800000)

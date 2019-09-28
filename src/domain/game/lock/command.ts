@@ -103,6 +103,7 @@ function canDraw(agg: LockAgg): boolean {
     case 'increase':
     case 'double':
     case 'half':
+    case 'unlock':
       return true
 
     case 'blank':
@@ -112,8 +113,6 @@ function canDraw(agg: LockAgg): boolean {
     case 'freeze':
       return elapsed - intervalMs * 2 >= 0
   }
-
-  return false
 }
 
 function validateConfig(config: LockConfig) {
@@ -129,9 +128,21 @@ function validateConfig(config: LockConfig) {
     throw new CommandError('intervalMins is not a valid number above zero')
   }
 
-  for (const action of config.actions) {
-    if (isNaN(action.amount) || action.amount < 0) {
+  for (const [, amount] of Object.entries(config.actions)) {
+    if (amount === undefined || isNaN(amount) || amount < 0) {
       throw new CommandError('Actions contain invalid values')
     }
+  }
+
+  if (config.actions.unlock === 0) {
+    throw new CommandError('Must have at least 1 unlock')
+  }
+
+  if (
+    config.actions.double > 20 ||
+    config.actions.half > 20 ||
+    config.actions.unlock > 20
+  ) {
+    throw new CommandError('Can only have up to 20 of: double, half, unlock')
   }
 }

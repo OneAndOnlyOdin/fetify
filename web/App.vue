@@ -1,9 +1,14 @@
 <script lang="ts">
 import Vue from 'vue'
 import Header from './Header.vue'
+import { locksApi } from './store'
 
 export default Vue.extend({
   components: { Header },
+  mounted() {
+    // Initialise shared app state
+    locksApi.getLocks()
+  },
 })
 </script>
 

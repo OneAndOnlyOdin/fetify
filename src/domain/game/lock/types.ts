@@ -28,9 +28,11 @@ export type LockConfig = {
   intervalMins: number
   owner: 'other' | 'self'
   maxUsers?: number
-  actions: ActionAmount[]
+  actions: { [type in ActionType]: number }
   showActions: boolean
 }
+
+export type ActionType = LockAction['type']
 
 export type LockAction =
   | { type: 'blank' }

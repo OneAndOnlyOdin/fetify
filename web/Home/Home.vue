@@ -1,6 +1,6 @@
 <script lang="ts">
 import Vue from 'vue'
-import { auth } from '../store'
+import { authApi } from '../store'
 import Guest from './Guest.vue'
 import User from './User.vue'
 
@@ -8,7 +8,7 @@ export default Vue.extend({
   components: { Guest, User },
   data() {
     return {
-      auth: auth.state,
+      auth: authApi.state,
     }
   },
 })

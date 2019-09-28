@@ -1,25 +1,29 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Modal } from '../elements'
-import { locks, auth } from '../store'
+import { locksApi, authApi } from '../store'
 import { ClientLock } from '../store/lock'
 import { LockAction } from '../../src/domain/game/lock/types'
 import { common } from '../common'
-import { AuthState } from '../store/auth'
+import { SocketMsg } from '../../src/sockets/types'
+import { webSockets } from '../store/socket'
 
 type Data = {
-  lockState: typeof locks.state
-  auth: AuthState
-  isOwner: boolean
-  lock: ClientLock | null
+  timer?: NodeJS.Timeout
+  listener: number
   loading: boolean
-  cards: number[]
-
+  lock?: ClientLock
+  drawSeconds: number
   draw: {
     loading: boolean
     card: number
     drawn: LockAction | null
   }
+  remote: {
+    card: number
+    action?: LockAction
+  }
+  cards: Array<{ text: string }>
 }
 
 export default Vue.extend({
@@ -29,25 +33,45 @@ export default Vue.extend({
   },
   data(): Data {
     return {
-      auth: auth.state,
-      lockState: locks.state,
-      isOwner: false,
+      listener: -1,
+      drawSeconds: 0,
       loading: true,
-      lock: null,
-      cards: [],
-
       draw: {
         loading: false,
         card: -1,
         drawn: null,
       },
+      remote: {
+        card: -1,
+      },
+      cards: [],
     }
   },
   methods: {
     format: common.formatDate,
     elapsed: common.elapsedSince,
+    isHolder(): boolean {
+      if (!this.lock) return false
+      if (this.lock.config.owner === 'self') return false
+      return authApi.state.userId === this.lock.ownerId
+    },
+    setCards() {
+      if (!this.lock) return
+      const cards = Array.from({ length: this.lock.totalActions }, (_, i) => ({
+        text: this.cardText(i),
+      }))
+      this.cards = cards
+    },
+    getLock() {
+      return locksApi.state.locks.find(lock => lock.id === this.id)
+    },
     cardText(card: number): string {
+      if (!this.lock) return '✗'
+
       const draw = this.draw
+      if (draw.drawn && card === draw.card) {
+        return draw.drawn.type
+      }
 
       if (!this.canDraw) return '✗'
 
@@ -60,12 +84,6 @@ export default Vue.extend({
           return draw.drawn ? draw.drawn.type : '...'
         }
       }
-
-      const remote = this.lockState.draw
-      if (remote.currentId !== this.id) return '✗'
-      if (!remote.action) return '✗'
-      if (remote.card !== card) return '✗'
-      return remote.action!.type
     },
     async drawCard(card: number) {
       if (!this.canDraw) return
@@ -73,54 +91,73 @@ export default Vue.extend({
       this.draw.loading = true
       this.draw.card = card
 
-      const result = await locks.drawLockCard(this.lock!.id, card)
+      const result = await locksApi.drawLockCard(this.lock!.id, card)
       this.draw.drawn = result
       this.draw.loading = false
+      this.setCards()
 
       setTimeout(() => {
-        this.setLock()
         this.draw.card = -1
         this.draw.drawn = null
+        this.setCards()
       }, 3000)
     },
-    async setLock(noRetry?: boolean) {
-      const lock = locks.state.locks.find(lock => lock.id === this.id)
-      if (lock) {
-        this.lock = lock
-        this.cards = Array.from({ length: lock.totalActions }, (_, i) => i)
-        return
+    onMessage(msg: SocketMsg) {
+      if (!this.lock) return
+      console.log(msg)
+      switch (msg.type) {
+        case 'lock':
+          if (!this.lock) return
+          if (this.lock.id !== this.id) return
+          console.log(msg.payload.draw)
+          this.lock = { ...this.lock, ...msg.payload }
+          this.drawSeconds = locksApi.getDrawSecs(this.lock)
+          return
+
+        case 'lock-draw':
+          if (this.id !== msg.payload.lockId) return
+          if (!this.isHolder()) return
+          this.remote.card = msg.payload.card
+          this.remote.action = msg.payload.action
+
+          setTimeout(() => {
+            this.remote.card = -1
+            this.remote.action = undefined
+          }, 3000)
+          return
       }
-
-      if (noRetry) return
-
-      await locks.getLocks()
-      this.setLock(true)
     },
   },
   async mounted() {
-    locks.state.draw.currentId = this.id
-    this.loading = true
-    await this.setLock()
-    this.loading = false
-    if (this.lock) {
-      this.isOwner = auth.state.userId === this.lock.ownerId
+    this.listener = webSockets.on(this.onMessage)
+    this.lock = this.getLock()
+    if (!this.lock) {
+      await locksApi.getLocks()
+      this.lock = this.getLock()
     }
+    this.setCards()
+    this.loading = false
+    this.timer = setInterval(() => {
+      if (!this.lock) return
+      this.drawSeconds = locksApi.getDrawSecs(this.lock)
+    }, 750)
+  },
+  beforeDestroy() {
+    clearInterval(this.timer!)
+    webSockets.remove(this.listener)
   },
   computed: {
-    canDraw() {
-      const lock: ClientLock = this.$data.lock
-
-      if (!lock || !auth) return false
-      if (this.draw.drawn) return false
-      if (lock.drawSeconds !== 0) return false
-      if (lock.config.owner === 'self') return true
-      return lock.playerId === this.$data.auth.userId
+    isOwner(): boolean {
+      return this.lock ? authApi.state.userId === this.lock.ownerId : false
     },
-    remoteCardType(): string | void {
-      const state = this.lockState.draw
-      if (!state.action) return
+    canDraw(): boolean {
+      const lock = this.lock
 
-      return state.action.type
+      if (!lock) return false
+      if (this.draw.drawn) return false
+      if (this.drawSeconds !== 0) return false
+      if (lock.config.owner === 'self') return true
+      return lock.playerId === authApi.state.userId
     },
   },
 })
@@ -133,10 +170,11 @@ export default Vue.extend({
     <div v-if="lock" class="lockdetail">
       <div class="cards" v-if="!lock.isOpen">
         <div class="action-grid">
-          <div v-for="card in cards" :key="card">
-            <div class="card" :class="{ locked: !canDraw }" @click="drawCard(card)">
+          <div v-for="(card, i) in cards" :key="card">
+            <div class="card" :class="{ locked: !canDraw }" @click="drawCard(i)">
               <div class="card-holder">
-                <div>{{cardText(card)}}</div>
+                <div v-if="remote.card === i">{{remote.action.type}}</div>
+                <div v-if="remote.card !== i">{{card.text}}</div>
               </div>
             </div>
           </div>

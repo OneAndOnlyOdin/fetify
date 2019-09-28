@@ -10,14 +10,20 @@ const router = new VueRouter({
   mode: 'history',
   routes: [
     { path: '/locks/create', component: LockCreate },
-    { path: '/locks/:id', component: LockDetail, props: true },
-    { path: '/locks', component: LockList },
+    {
+      path: '/locks/:id',
+      component: LockDetail,
+      props: true,
+    },
+    {
+      path: '/locks',
+      component: LockList,
+    },
     { path: '/', component: Home },
   ],
 })
 
 export function navigate(path: string) {
-  console.log(router.currentRoute, path)
   if (router.currentRoute.path === path) return
   router.push(path)
 }

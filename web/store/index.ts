@@ -1,5 +1,5 @@
-import * as auth from './auth'
-import * as locks from './lock'
-import * as time from './time'
+import * as authApi from './auth'
+import * as timeApi from './time'
+import * as locksApi from './lock'
 
-export { auth, locks, time }
+export { authApi, locksApi, timeApi }

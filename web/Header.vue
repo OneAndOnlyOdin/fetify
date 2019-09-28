@@ -1,16 +1,16 @@
 <script lang="ts">
 import Vue from 'vue'
-import { auth } from './store'
+import { authApi } from './store'
 
 export default Vue.extend({
   data() {
     return {
-      auth: auth.state,
+      auth: authApi.state,
     }
   },
   methods: {
     logout() {
-      auth.logout()
+      authApi.logout()
     },
   },
 })

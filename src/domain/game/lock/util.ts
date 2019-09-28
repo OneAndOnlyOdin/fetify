@@ -5,7 +5,41 @@ import {
   LockAction,
   LockConfig,
   LockHistory,
+  ActionType,
 } from './types'
+
+export const actionOptions: {
+  [type in ActionType]: { value: number; desc: string; max?: number }
+} = {
+  blank: { value: 10, desc: 'freezes the lock for the interval', max: 365 },
+  decrease: {
+    value: 10,
+    desc: 'decrease the number of blanks by 1-3',
+    max: 100,
+  },
+  increase: {
+    value: 10,
+    desc: 'increase the number of blanks by 1-3',
+    max: 100,
+  },
+  double: {
+    value: 2,
+    desc: 'double the number of blanks and increases',
+    max: 20,
+  },
+  half: {
+    value: 1,
+    desc: 'halve the number of blanks of increases',
+    max: 20,
+  },
+  freeze: { value: 2, desc: 'freezes the lock for 2x the interval', max: 100 },
+  task: {
+    value: 0,
+    desc: 'do a task! and freeze the lock for the interval',
+    max: 100,
+  },
+  unlock: { value: 1, desc: 'collect all of these to unlock', max: 20 },
+}
 
 export function fold(
   { event, timestamp }: StoredEvent<LockEvent>,
@@ -169,11 +203,9 @@ function createActions(
 export function createConfigActions(cfgActions: LockConfig['actions']) {
   const actions: LockAction[] = []
 
-  for (const action of cfgActions) {
-    const value = Number(action.amount)
-    if (value <= 0 || isNaN(value)) continue
-
-    const newActions = createActions(action.amount, action.type)
+  for (const [type, amount] of Object.entries(cfgActions)) {
+    if (!amount) continue
+    const newActions = createActions(amount, type as ActionType)
     actions.push(...newActions)
   }
 

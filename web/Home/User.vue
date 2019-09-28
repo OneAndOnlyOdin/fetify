@@ -1,13 +1,13 @@
 <script lang="ts">
 import Vue from 'vue'
-import { auth } from '../store'
+import { authApi } from '../store'
 import LockList from '../Lock/List.vue'
 
 export default Vue.extend({
   components: { LockList },
   data() {
     return {
-      auth: auth.state,
+      auth: authApi.state,
     }
   },
 })

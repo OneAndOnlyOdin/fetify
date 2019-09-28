@@ -61,8 +61,7 @@ lockMgr.handle('CardDrawn', async ({ event, timestamp }) => {
 
   if (event.cardType !== 'unlock') return
 
-  const unlocks = lock.config.actions.filter(action => action.type === 'unlock')
-    .length
+  const unlocks = lock.config.actions.unlock || 0
   const seen = lock.history.filter(hist => hist.type === 'unlock').length + 1
 
   if (seen >= unlocks) {

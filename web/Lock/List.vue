@@ -1,9 +1,9 @@
 <script lang="ts">
 import Vue from 'vue'
-import { locks, auth } from '../store'
+import { locksApi, authApi } from '../store'
 import Create from './Create.vue'
 import { common } from '../common'
-import { router, navigate } from '../router'
+import { navigate } from '../router'
 import { ClientLock } from '../store/lock'
 
 export default Vue.extend({
@@ -11,8 +11,8 @@ export default Vue.extend({
   data() {
     return {
       joinLockId: '',
-      auth: auth.state,
-      locks: locks.state,
+      locks: locksApi.state,
+      auth: authApi.state,
     }
   },
   methods: {
@@ -22,11 +22,17 @@ export default Vue.extend({
           return 'player'
 
         case 'other':
-          return lock.ownerId === this.auth.userId ? 'owner' : 'player'
+          return lock.ownerId === authApi.state.userId ? 'owner' : 'player'
 
         default:
           return 'player'
       }
+    },
+    getLockFor(lock: ClientLock) {
+      if (lock.config.owner === 'self') return 'you'
+
+      if (lock.ownerId !== authApi.state.userId && !lock.playerId) return '...'
+      return lock.playerId === authApi.state.userId ? 'you' : lock.playerId
     },
     getStatus(lock: ClientLock) {
       if (lock.isOpen) return 'Open'
@@ -35,7 +41,7 @@ export default Vue.extend({
       return 'Pending'
     },
     canClickLock(lock: ClientLock) {
-      if (this.auth.userId === lock.ownerId) return true
+      if (authApi.state.userId === lock.ownerId) return true
       return lock.drawSeconds === 0
     },
     openCreate() {
@@ -57,12 +63,9 @@ export default Vue.extend({
       return common.elapsedSince(lock.created)
     },
     async joinLock() {
-      await locks.joinLock(this.joinLockId)
+      await locksApi.joinLock(this.joinLockId)
       this.joinLockId = ''
     },
-  },
-  mounted() {
-    locks.getLocks()
   },
 })
 </script>
@@ -92,9 +95,9 @@ export default Vue.extend({
         </div>
 
         <div class="content">
-          <div v-if="lock.playerId && auth.userId !== lock.playerId" class="card-row">
+          <div class="card-row">
             <div>Lock for</div>
-            <div>{{lock.playerId}}</div>
+            <div>{{getLockFor(lock)}}</div>
           </div>
           <div class="card-row">
             <div>Locked</div>
@@ -117,7 +120,7 @@ export default Vue.extend({
           </div>
 
           <div class="draw-button">
-            <button v-if="!lock.isOpen" :disabled="!canClickLock(lock)" @click="clickLock(lock)">
+            <button v-if="!lock.isOpen" @click="clickLock(lock)">
               <template v-if="viewMode(lock) === 'owner' && lock.playerId">View</template>
               <template v-if="viewMode(lock) === 'owner' && !lock.playerId">Pending</template>
               <template v-if="viewMode(lock) === 'player'">
@@ -125,7 +128,7 @@ export default Vue.extend({
                 <span v-if="lock.drawSeconds > 0">{{nextDraw(lock)}}</span>
               </template>
             </button>
-            <button v-if="lock.isOpen" disabled="true">Unlocked!</button>
+            <button @click="clickLock(lock)" v-if="lock.isOpen">Unlocked!</button>
           </div>
         </div>
       </div>

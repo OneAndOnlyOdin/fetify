@@ -41,6 +41,13 @@ export const drawLockCard = wrap(async (req, res) => {
     payload: { card: cardNo, action, lockId: lock.id },
   })
 
+  if (lock.playerId) {
+    svcSockets.toUser(lock.playerId, {
+      type: 'lock-draw',
+      payload: { card: cardNo, action, lockId: lock.id },
+    })
+  }
+
   await lockDomain.cmd.DrawCard({
     aggregateId: id,
     card,

@@ -1,16 +1,12 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Modal, Dropdown } from '../elements'
-import {
-  CreateData,
-  create,
-  actionOptions,
-  toLockConfig,
-  estimate,
-} from './util'
+import { CreateData, create, toLockConfig, estimate } from './util'
 import { webSockets } from '../store/socket'
-import { router, navigate } from '../router'
+import { navigate } from '../router'
 import { common } from '../common'
+import { ActionType } from '../../src/domain/game/lock/types'
+import { actionOptions } from '../../src/domain/game/lock/util'
 
 type Data = CreateData & {
   loading: boolean
@@ -44,7 +40,7 @@ export default Vue.extend({
         type: 'mins',
       },
       showActions: true,
-      actions: actionOptions,
+      actions: { ...actionOptions },
     }
   },
   mounted() {
@@ -63,7 +59,25 @@ export default Vue.extend({
       await webSockets.subscribe({ type: 'lock', id })
       navigate('/locks')
     },
-    estimate() {},
+    options() {
+      return Object.entries(actionOptions).map(([type, { desc, max }]) => ({
+        max,
+        type,
+        desc,
+      }))
+    },
+    validateAction(type: ActionType, value: number) {
+      const max = actionOptions[type].max
+      if (!max) return
+
+      if (value > max) {
+        this.actions[type].value = max
+      }
+
+      if (value < 0) {
+        this.actions[type].value = 0
+      }
+    },
   },
   computed: {
     estimate() {
@@ -146,9 +160,13 @@ export default Vue.extend({
           <span class="checkbox" @click="toggleShowActions" />
         </div>
 
-        <div v-for="action in actions" :key="action.type">
-          <label class="small">{{upper(action.type)}}: {{action.desc}}</label>
-          <input type="number" v-model="action.value" />
+        <div v-for="action in options()" :key="action.type">
+          <label class="small">{{upper(action.type)}}: {{action.desc}} [{{action.max}}]</label>
+          <input
+            type="number"
+            v-model.number="actions[action.type].value"
+            v-on:input="validateAction(action.type, Number($event.target.value))"
+          />
         </div>
       </div>
     </content>
