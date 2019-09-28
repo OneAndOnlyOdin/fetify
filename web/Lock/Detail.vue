@@ -17,13 +17,13 @@ type Data = {
   draw: {
     loading: boolean
     card: number
-    drawn: LockAction | null
+    drawn: string | null
   }
   remote: {
     card: number
     action?: LockAction
   }
-  cards: Array<{ text: string }>
+  cards: number[]
 }
 
 export default Vue.extend({
@@ -50,6 +50,7 @@ export default Vue.extend({
   methods: {
     format: common.formatDate,
     elapsed: common.elapsedSince,
+    toDuration: common.toDuration,
     isHolder(): boolean {
       if (!this.lock) return false
       if (this.lock.config.owner === 'self') return false
@@ -57,42 +58,20 @@ export default Vue.extend({
     },
     setCards() {
       if (!this.lock) return
-      const cards = Array.from({ length: this.lock.totalActions }, (_, i) => ({
-        text: this.cardText(i),
-      }))
-      this.cards = cards
+      const length = this.lock.totalActions
+      this.cards = Array.from({ length }, (_, i) => i)
     },
     getLock() {
       return locksApi.state.locks.find(lock => lock.id === this.id)
-    },
-    cardText(card: number): string {
-      if (!this.lock) return '✗'
-
-      const draw = this.draw
-      if (draw.drawn && card === draw.card) {
-        return draw.drawn.type
-      }
-
-      if (!this.canDraw) return '✗'
-
-      switch (draw.card) {
-        case -1: {
-          return '?'
-        }
-        default: {
-          if (card !== draw.card) return '?'
-          return draw.drawn ? draw.drawn.type : '...'
-        }
-      }
     },
     async drawCard(card: number) {
       if (!this.canDraw) return
 
       this.draw.loading = true
-      this.draw.card = card
 
       const result = await locksApi.drawLockCard(this.lock!.id, card)
-      this.draw.drawn = result
+      this.draw.card = card
+      this.draw.drawn = result.type
       this.draw.loading = false
       this.setCards()
 
@@ -104,19 +83,17 @@ export default Vue.extend({
     },
     onMessage(msg: SocketMsg) {
       if (!this.lock) return
-      console.log(msg)
+
       switch (msg.type) {
         case 'lock':
           if (!this.lock) return
           if (this.lock.id !== this.id) return
-          console.log(msg.payload.draw)
           this.lock = { ...this.lock, ...msg.payload }
           this.drawSeconds = locksApi.getDrawSecs(this.lock)
           return
 
         case 'lock-draw':
           if (this.id !== msg.payload.lockId) return
-          if (!this.isHolder()) return
           this.remote.card = msg.payload.card
           this.remote.action = msg.payload.action
 
@@ -147,6 +124,16 @@ export default Vue.extend({
     webSockets.remove(this.listener)
   },
   computed: {
+    cardText(): string {
+      if (!this.lock || this.isHolder()) return '✗'
+      return this.canDraw ? '?' : '✗'
+    },
+    history(): ClientLock['history'] {
+      if (!this.lock) return []
+      return this.lock.history
+        .slice()
+        .sort((l, r) => (l.date > r.date ? -1 : l.date === r.date ? 0 : 1))
+    },
     isOwner(): boolean {
       return this.lock ? authApi.state.userId === this.lock.ownerId : false
     },
@@ -168,13 +155,14 @@ export default Vue.extend({
     <div v-if="!lock && !loading">Lock not found</div>
     <div v-if="!lock && loading">Loading...</div>
     <div v-if="lock" class="lockdetail">
+      <div>Time til next card: {{toDuration(drawSeconds, true) || 'now'}}</div>
       <div class="cards" v-if="!lock.isOpen">
         <div class="action-grid">
           <div v-for="(card, i) in cards" :key="card">
             <div class="card" :class="{ locked: !canDraw }" @click="drawCard(i)">
               <div class="card-holder">
                 <div v-if="remote.card === i">{{remote.action.type}}</div>
-                <div v-if="remote.card !== i">{{card.text}}</div>
+                <div v-if="remote.card !== i">{{draw.card === i ? draw.drawn : cardText}}</div>
               </div>
             </div>
           </div>
@@ -192,7 +180,7 @@ export default Vue.extend({
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(history, i) in lock.history" :key="i">
+            <tr v-for="(history, i) in history" :key="i">
               <td>{{elapsed(history.date)}} ago</td>
               <td>{{history.type}}</td>
               <td>{{format(history.date)}}</td>

@@ -2,6 +2,7 @@ import * as jwt from 'jsonwebtoken'
 import { router, navigate } from '../router'
 
 export type AuthState = {
+  connected: boolean
   loggedIn: boolean
   userId: string
   token?: string
@@ -10,6 +11,7 @@ export type AuthState = {
 }
 
 export const state: AuthState = {
+  connected: false,
   loggedIn: false,
   userId: '',
 }

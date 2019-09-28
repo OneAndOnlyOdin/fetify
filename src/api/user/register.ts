@@ -19,14 +19,16 @@ export const register = wrap(async (req, res) => {
     throw new StatusError('Passwords do not match', 400)
   }
 
+  const lowered = username.toLowerCase()
+
   try {
-    await auth.createUser(username, password)
-    await userCmd.CreateUser({ aggregateId: username })
+    await auth.createUser(lowered, password)
+    await userCmd.CreateUser({ aggregateId: lowered })
   } catch (ex) {
     throw new StatusError(ex.message, 400)
   }
 
-  const token = await auth.createToken(username)
+  const token = await auth.createToken(lowered)
 
   res.json(token)
 })

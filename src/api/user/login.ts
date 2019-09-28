@@ -13,7 +13,8 @@ export const login = wrap(async (req, res) => {
   }
 
   const badLogin = new StatusError('Invalid username or password', 401)
-  const user = await auth.getUser(username)
+  const lowered = username.toLowerCase()
+  const user = await auth.getUser(lowered)
   if (!user) {
     throw badLogin
   }
@@ -23,6 +24,6 @@ export const login = wrap(async (req, res) => {
     throw badLogin
   }
 
-  const token = await auth.createToken(username)
+  const token = await auth.createToken(lowered)
   res.json(token)
 })

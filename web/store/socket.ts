@@ -26,7 +26,9 @@ function createSocket() {
     .replace('http://', 'ws://')
     .replace('https://', 'wss://')
   const ws = new WebSocket(base + '/ws')
+
   ws.onopen = () => {
+    state.connected = true
     login(state.token || '')
   }
 
@@ -48,12 +50,14 @@ function createSocket() {
   }
 
   ws.onclose = () => {
+    state.connected = false
     setTimeout(() => {
       socket = createSocket()
     }, 5000)
   }
 
   ws.onerror = (_error: any) => {
+    state.connected = false
     ws.close()
   }
 
