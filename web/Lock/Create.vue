@@ -9,7 +9,7 @@ import {
   estimate,
 } from './util'
 import { webSockets } from '../store/socket'
-import { router } from '../router'
+import { router, navigate } from '../router'
 import { common } from '../common'
 
 type Data = CreateData & {
@@ -61,7 +61,7 @@ export default Vue.extend({
     async create() {
       const id = await create(this.$data as any)
       await webSockets.subscribe({ type: 'lock', id })
-      router.push('/locks')
+      navigate('/locks')
     },
     estimate() {},
   },

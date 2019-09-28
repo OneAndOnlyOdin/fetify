@@ -7,31 +7,56 @@ import { webSockets } from './socket'
 
 type LockState = {
   locks: ClientLock[]
+  draw: {
+    currentId: string
+    card: number
+    action: LockAction | null
+  }
 }
 
 export type ClientLock = LockDTO & { drawSeconds: number }
 
 export const state: LockState = {
-  locks: []
+  locks: [],
+  draw: {
+    currentId: '',
+    card: -1,
+    action: null,
+  },
 }
 
 setInterval(updateLocks, 500)
 
-webSockets.on(({ type, payload }) => {
-  if (type !== 'lock') return
+webSockets.on(msg => {
+  switch (msg.type) {
+    case 'lock-draw': {
+      if (msg.payload.lockId !== state.draw.currentId) return
+      state.draw.card = msg.payload.card
+      state.draw.action = msg.payload.action
 
-  const existing = state.locks.find(lock => lock.id === payload.id)
-  if (!existing) {
-    state.locks.unshift({ ...payload, drawSeconds: 0 })
-    updateLocks()
-    return
+      setTimeout(() => {
+        state.draw.card = -1
+        state.draw.action = null
+      }, 3000)
+      return
+    }
+
+    case 'lock': {
+      const existing = state.locks.find(lock => lock.id === msg.payload.id)
+      if (!existing) {
+        state.locks.unshift({ ...msg.payload, drawSeconds: 0 })
+        updateLocks()
+        return
+      }
+
+      state.locks = state.locks.map(lock => {
+        if (lock.id !== msg.payload.id) return lock
+        return { ...msg.payload, drawSeconds: lock.drawSeconds }
+      })
+      updateLocks()
+      return
+    }
   }
-
-  state.locks = state.locks.map(lock => {
-    if (lock.id !== payload.id) return lock
-    return { ...payload, drawSeconds: lock.drawSeconds }
-  })
-  updateLocks()
 })
 
 export async function getLocks() {
@@ -39,7 +64,7 @@ export async function getLocks() {
   state.locks = locks.map<ClientLock>(lock => ({
     ...lock,
     created: new Date(lock.created),
-    drawSeconds: 0
+    drawSeconds: 0,
   }))
 
   updateLocks()
@@ -47,7 +72,7 @@ export async function getLocks() {
 
 export async function drawLockCard(lockId: string, card: number) {
   const result = await api.post<LockAction>(`/api/lock/${lockId}/draw`, {
-    card
+    card,
   })
   return result
 }

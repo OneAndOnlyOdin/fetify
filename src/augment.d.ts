@@ -6,7 +6,8 @@ import * as Socket from 'ws'
 declare module 'express-serve-static-core' {
   interface Request {
     log: Logger
-    user?: User
+    user?: AuthToken
+    token?: string
   }
 }
 

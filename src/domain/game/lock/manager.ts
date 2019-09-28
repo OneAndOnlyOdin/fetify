@@ -82,11 +82,14 @@ lockMgr.handle('LockJoined', async ({ event }) => {
 
   lock.playerId = event.userId
 
-  const dto = toLockDto(lock, event.userId)
-
   svcSockets.toUser(event.userId, {
     type: 'lock',
-    payload: dto,
+    payload: toLockDto(lock, event.userId),
+  })
+
+  svcSockets.toUser(lock.ownerId, {
+    type: 'lock',
+    payload: toLockDto(lock, lock.ownerId),
   })
 })
 

@@ -15,3 +15,9 @@ const router = new VueRouter({
     { path: '/', component: Home },
   ],
 })
+
+export function navigate(path: string) {
+  console.log(router.currentRoute, path)
+  if (router.currentRoute.path === path) return
+  router.push(path)
+}

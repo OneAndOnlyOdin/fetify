@@ -3,7 +3,7 @@ import Vue from 'vue'
 import { locks, auth } from '../store'
 import Create from './Create.vue'
 import { common } from '../common'
-import { router } from '../router'
+import { router, navigate } from '../router'
 import { ClientLock } from '../store/lock'
 
 export default Vue.extend({
@@ -39,13 +39,13 @@ export default Vue.extend({
       return lock.drawSeconds === 0
     },
     openCreate() {
-      router.push('/locks/create')
+      navigate('/locks/create')
     },
     nextDraw(lock: ClientLock) {
       return common.toDuration(lock.drawSeconds)
     },
     clickLock(lock: ClientLock) {
-      router.push(`/locks/${lock.id}`)
+      navigate(`/locks/${lock.id}`)
     },
     toDuration: common.toDuration,
     format(lock: ClientLock) {
@@ -92,8 +92,12 @@ export default Vue.extend({
         </div>
 
         <div class="content">
+          <div v-if="lock.playerId && auth.userId !== lock.playerId" class="card-row">
+            <div>Lock for</div>
+            <div>{{lock.playerId}}</div>
+          </div>
           <div class="card-row">
-            <div>Locked:</div>
+            <div>Locked</div>
             <div>{{format(lock)}}</div>
           </div>
 
@@ -114,7 +118,8 @@ export default Vue.extend({
 
           <div class="draw-button">
             <button v-if="!lock.isOpen" :disabled="!canClickLock(lock)" @click="clickLock(lock)">
-              <template v-if="viewMode(lock) === 'owner'">View</template>
+              <template v-if="viewMode(lock) === 'owner' && lock.playerId">View</template>
+              <template v-if="viewMode(lock) === 'owner' && !lock.playerId">Pending</template>
               <template v-if="viewMode(lock) === 'player'">
                 <span v-if="lock.drawSeconds === 0">Draw</span>
                 <span v-if="lock.drawSeconds > 0">{{nextDraw(lock)}}</span>

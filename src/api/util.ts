@@ -1,7 +1,6 @@
 import * as jwt from 'jsonwebtoken'
 import { RequestHandler, Request } from 'express'
 import { config } from '../env'
-import { User } from '../domain/user/types'
 
 export function wrap(handler: RequestHandler): RequestHandler {
   const wrapped: RequestHandler = async (req, res, next) => {
@@ -52,15 +51,15 @@ function getToken(req: Request) {
   }
 
   const token = header.replace('Bearer ', '')
-
+  req.token = token
   try {
     const result: any = jwt.verify(token, config.jwtSecret)
     if (typeof result === 'string') {
       const user = JSON.parse(result)
-      return user as User
+      return user as AuthToken
     }
 
-    return result as User
+    return result as AuthToken
   } catch (err) {
     return null
   }

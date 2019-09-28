@@ -1,5 +1,6 @@
-import { state } from './auth'
+import { state, logout } from './auth'
 import { config } from '../env'
+import { auth } from '.'
 
 const baseUrl = config.apiUrl
 
@@ -15,38 +16,54 @@ async function get<T>(path: string, query: Query = {}) {
     .map(key => `${key}=${query[key]}`)
     .join('&')
 
-  const res = await fetch(`${baseUrl}${path}?${params}`, {
+  return callApi<T>(`${path}?${params}`, {
     method: 'get',
-    ...headers(),
   })
-
-  const json = await res.json()
-  if (res.status >= 400) {
-    const error: any = new Error(res.statusText)
-    error.status = res.status
-    error.message = json.message
-    throw error
-  }
-
-  return json as T
 }
 
 async function post<T>(path: string, body = {}) {
-  const res = await fetch(`${baseUrl}${path}`, {
+  return callApi<T>(path, {
     method: 'post',
     body: JSON.stringify(body),
-    ...headers(),
   })
+}
 
+async function callApi<T>(
+  path: string,
+  opts: RequestInit,
+  isRenew: boolean = false
+): Promise<T> {
+  const res = await fetch(`${baseUrl}${path}`, { ...opts, ...headers() })
   const json = await res.json()
-  if (res.status >= 400) {
-    const error: any = new Error(res.statusText)
-    error.status = res.status
-    error.message = json.message
-    throw error
+
+  if (res.status === 401) {
+    if (isRenew) {
+      logout()
+      throw new StatusError('Unauthorized', 401)
+    }
+
+    // The API returns 'false' if the token is still valid
+    const newToken = await callApi<string | false>(
+      '/api/user/renew',
+      { method: 'post' },
+      true
+    )
+
+    if (newToken !== false) auth.handleToken(newToken)
+    return callApi(path, opts)
   }
 
-  return json as T
+  if (res.status >= 400) {
+    throw new StatusError(json.message || res.statusText, res.status)
+  }
+
+  return json
+}
+
+class StatusError extends Error {
+  constructor(public msg: string, public status: number) {
+    super(msg)
+  }
 }
 
 function headers() {
@@ -61,4 +78,9 @@ function headers() {
 
   headers.Authorization = `Bearer ${state.token}`
   return { headers }
+}
+
+const win: any = window
+win.renew = () => {
+  callApi('/api/user/renew', { method: 'post' }, true).then(console.log)
 }

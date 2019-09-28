@@ -5,8 +5,11 @@ import { locks, auth } from '../store'
 import { ClientLock } from '../store/lock'
 import { LockAction } from '../../src/domain/game/lock/types'
 import { common } from '../common'
+import { AuthState } from '../store/auth'
 
 type Data = {
+  lockState: typeof locks.state
+  auth: AuthState
   isOwner: boolean
   lock: ClientLock | null
   loading: boolean
@@ -26,6 +29,8 @@ export default Vue.extend({
   },
   data(): Data {
     return {
+      auth: auth.state,
+      lockState: locks.state,
       isOwner: false,
       loading: true,
       lock: null,
@@ -41,6 +46,27 @@ export default Vue.extend({
   methods: {
     format: common.formatDate,
     elapsed: common.elapsedSince,
+    cardText(card: number): string {
+      const draw = this.draw
+
+      if (!this.canDraw) return '✗'
+
+      switch (draw.card) {
+        case -1: {
+          return '?'
+        }
+        default: {
+          if (card !== draw.card) return '?'
+          return draw.drawn ? draw.drawn.type : '...'
+        }
+      }
+
+      const remote = this.lockState.draw
+      if (remote.currentId !== this.id) return '✗'
+      if (!remote.action) return '✗'
+      if (remote.card !== card) return '✗'
+      return remote.action!.type
+    },
     async drawCard(card: number) {
       if (!this.canDraw) return
 
@@ -72,6 +98,7 @@ export default Vue.extend({
     },
   },
   async mounted() {
+    locks.state.draw.currentId = this.id
     this.loading = true
     await this.setLock()
     this.loading = false
@@ -82,11 +109,18 @@ export default Vue.extend({
   computed: {
     canDraw() {
       const lock: ClientLock = this.$data.lock
-      if (!lock) return false
+
+      if (!lock || !auth) return false
       if (this.draw.drawn) return false
       if (lock.drawSeconds !== 0) return false
       if (lock.config.owner === 'self') return true
       return lock.playerId === this.$data.auth.userId
+    },
+    remoteCardType(): string | void {
+      const state = this.lockState.draw
+      if (!state.action) return
+
+      return state.action.type
     },
   },
 })
@@ -101,14 +135,8 @@ export default Vue.extend({
         <div class="action-grid">
           <div v-for="card in cards" :key="card">
             <div class="card" :class="{ locked: !canDraw }" @click="drawCard(card)">
-              <div v-if="card === draw.card" class="card-holder">
-                <div v-if="!draw.drawn">...</div>
-                <div v-if="draw.drawn" class="small">{{draw.drawn.type}}</div>
-              </div>
-
-              <div v-if="card !== draw.card" class="card-holder">
-                <span v-if="canDraw">?</span>
-                <span v-if="!canDraw">✗</span>
+              <div class="card-holder">
+                <div>{{cardText(card)}}</div>
               </div>
             </div>
           </div>

@@ -11,7 +11,7 @@ subscribe(listener)
 function listener(msg: Message) {
   const { type, payload } = msg
 
-  const output = JSON.stringify({ event: type, type, payload })
+  const output = JSON.stringify({ type, payload })
 
   const sockets =
     msg.target === 'all' ? getAllSockets() : getUserSockets(msg.target)

@@ -1,6 +1,5 @@
 import * as jwt from 'jsonwebtoken'
-import { api } from './api'
-import { router } from '../router'
+import { router, navigate } from '../router'
 
 export type AuthState = {
   loggedIn: boolean
@@ -12,29 +11,10 @@ export type AuthState = {
 
 export const state: AuthState = {
   loggedIn: false,
-  userId: ''
+  userId: '',
 }
 
 hydrateToken()
-
-export async function register(username: string, password: string, confirm: string) {
-  const token = await api.post<string>('/api/user/register', {
-    username,
-    password,
-    confirm
-  })
-
-  handleToken(token)
-}
-
-export async function login(username: string, password: string) {
-  const token = await api.post<string>('/api/user/login', {
-    username,
-    password
-  })
-
-  handleToken(token)
-}
 
 export function logout() {
   localStorage.removeItem('state')
@@ -44,11 +24,11 @@ export function logout() {
   delete state.alias
   delete state.email
   delete state.token
-
-  router.push('/')
+  router.currentRoute
+  navigate('/')
 }
 
-function handleToken(token: string) {
+export function handleToken(token: string) {
   localStorage.setItem('state', token)
   const payload = jwt.decode(token) as AuthToken
   state.token = token

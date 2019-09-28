@@ -1,6 +1,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { auth } from '../store'
+import { api } from '../store/api'
 
 type Data = {
   username: string
@@ -40,14 +41,24 @@ export default Vue.extend({
     },
     async signup() {
       try {
-        await auth.register(this.username, this.password, this.confirm)
+        const body = {
+          username: this.username,
+          password: this.password,
+          confirm: this.confirm,
+        }
+        const token = await api.post<string>('/api/user/register', body)
+        auth.handleToken(token)
       } catch (ex) {
         this.error = ex.message
       }
     },
     async signin() {
       try {
-        await auth.login(this.username, this.password)
+        const token = await api.post<string>('/api/user/login', {
+          username: this.username,
+          password: this.password,
+        })
+        auth.handleToken(token)
       } catch (ex) {
         this.error = ex.message
       }
@@ -77,7 +88,13 @@ export default Vue.extend({
       </div>
 
       <div>
-        <input type="password" placeholder="Confirm" :disabled="!register" v-model="confirm" />
+        <input
+          type="password"
+          placeholder="Confirm"
+          v-on:keyup.enter="register"
+          :disabled="!register"
+          v-model="confirm"
+        />
       </div>
 
       <div style="color: red" v-if="error.length > 0">{{error}}</div>
