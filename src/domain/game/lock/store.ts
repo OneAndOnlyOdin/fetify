@@ -1,5 +1,5 @@
 import { database } from '../../../db/event'
-import { LockConfig, LockAction, LockHistory } from './types'
+import { LockConfig, LockAction, LockHistory, ActionType } from './types'
 import { secondsTilDraw } from './util'
 
 export type LockSchema = {
@@ -13,6 +13,8 @@ export type LockSchema = {
   isOpen: boolean
 }
 
+export type LockCounts = { [type in ActionType]?: number }
+
 export type LockDTO = {
   id: string
   created: Date
@@ -20,7 +22,7 @@ export type LockDTO = {
   playerId?: string
   config: LockConfig
   history: LockHistory[]
-  counts?: { [type in LockAction['type']]?: number }
+  counts?: LockCounts
   totalActions: number
   isOpen: boolean
   unlockDate?: Date

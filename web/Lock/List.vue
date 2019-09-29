@@ -5,17 +5,46 @@ import Create from './Create.vue'
 import { common } from '../common'
 import { navigate } from '../router'
 import { ClientLock } from '../store/lock'
+import { Dropdown } from '../elements'
+import { AuthState } from '../store/auth'
+
+type Data = {
+  interval?: NodeJS.Timer
+  joinLockId: string
+  locks: ClientLock[]
+  auth: AuthState
+  filter: {
+    unlocked: boolean
+    drawable: boolean
+  }
+}
 
 export default Vue.extend({
-  components: { Create },
-  data() {
+  components: { Create, Dropdown },
+  data(): Data {
     return {
       joinLockId: '',
-      locks: locksApi.state,
+      locks: [],
       auth: authApi.state,
+      filter: {
+        unlocked: false,
+        drawable: false,
+      },
     }
   },
   methods: {
+    toggleFilter(filter: string) {
+      switch (filter) {
+        case 'unlocked':
+          this.filter.unlocked = !this.filter.unlocked
+          break
+
+        case 'drawable':
+          this.filter.drawable = !this.filter.drawable
+          break
+      }
+      common.persist('lock-filters', this.filter)
+    },
     viewMode(lock: ClientLock) {
       switch (lock.config.owner) {
         case 'self':
@@ -67,26 +96,73 @@ export default Vue.extend({
       this.joinLockId = ''
     },
   },
+  computed: {
+    filteredLocks(): ClientLock[] {
+      return this.locks.filter(lock => {
+        if (this.filter.unlocked && lock.isOpen) return false
+        if (this.filter.drawable) {
+          if (lock.isOpen) return false
+          if (lock.drawSeconds !== 0) return false
+        }
+        return true
+      })
+    },
+  },
+  mounted() {
+    this.locks = locksApi.state.locks.slice()
+    setInterval(() => {
+      this.locks = locksApi.state.locks.slice()
+    }, 750)
+    if (!locksApi.state.locks.length) locksApi.getLocks()
+
+    const persisted = common.hydrate<Partial<Data['filter']>>('lock-filters')
+    this.filter = { ...this.filter, ...persisted }
+  },
+  beforeDestroy() {
+    clearInterval(this.interval!)
+  },
 })
 </script>
 
 <template>
   <div class="page">
-    <div style="margin-bottom: 16px">
+    <div style="margin-bottom: 8px">
       <div style="display: flex">
         <div>
-          <button @click="openCreate">Create</button>
+          <Dropdown text="Options">
+            <a>
+              <div class="input__group">
+                <div class="input__prefix--btn" @click="joinLock">Join</div>
+                <input
+                  type="text"
+                  style="width: 92px"
+                  placeholder="Enter Lock ID"
+                  v-model="joinLockId"
+                />
+              </div>
+            </a>
+            <a @click="openCreate">Create Lock</a>
+          </Dropdown>
         </div>
-
-        <div class="input__group" style="margin-left: 16px;">
-          <div class="input__prefix--btn" @click="joinLock">Join</div>
-          <input type="text" placeholder="Enter Lock ID" v-model="joinLockId" />
+        <div style="margin-left: 8px">
+          <Dropdown text="Filters">
+            <a>
+              <label>Unlocked</label>
+              <input type="checkbox" v-model="filter.unlocked" />
+              <span class="checkbox" @click="() => toggleFilter('unlocked')" />
+            </a>
+            <a>
+              <label>Can Draw</label>
+              <input type="checkbox" v-model="filter.drawable" />
+              <span class="checkbox" @click="() => toggleFilter('drawable')" />
+            </a>
+          </Dropdown>
         </div>
       </div>
     </div>
 
     <div class="grid-4">
-      <div class="card" v-for="lock in locks.locks" :key="lock.id">
+      <div class="card" v-for="lock in filteredLocks" :key="lock.id">
         <div class="title" :class="{ locked: !lock.isOpen, unlocked: lock.isOpen }">
           <div class="card-row">
             <div>Owner: {{lock.ownerId === auth.userId ? 'you' : lock.ownerId}}</div>

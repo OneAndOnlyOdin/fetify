@@ -1,6 +1,6 @@
 <script lang="ts">
 import Vue from 'vue'
-import { Modal, Dropdown } from '../elements'
+import { Modal, Select } from '../elements'
 import { CreateData, create, toLockConfig, estimate } from './util'
 import { webSockets } from '../store/socket'
 import { navigate } from '../router'
@@ -19,7 +19,7 @@ type Data = CreateData & {
 }
 
 export default Vue.extend({
-  components: { Modal, Dropdown },
+  components: { Modal, Select },
   data(): Data {
     return {
       loading: false,
@@ -99,19 +99,19 @@ export default Vue.extend({
     <content>
       <div>
         <label>Lock For</label>
-        <Dropdown v-model="owner">
+        <Select v-model="owner">
           <option value="self">Self</option>
           <option value="other">Other</option>
-        </Dropdown>
+        </Select>
       </div>
 
       <div>
         <label>Lock Type</label>
 
-        <Dropdown v-model="time.type">
+        <Select v-model="time.type">
           <option value="variable">Game</option>
           <option value="fixed">Fixed</option>
-        </Dropdown>
+        </Select>
       </div>
 
       <div>
@@ -127,10 +127,10 @@ export default Vue.extend({
       <div v-if="time.type === 'fixed'">
         <label>Fixed Lock Duration</label>
         <input style="width: 60px" type="number" v-model="time.amount" />
-        <Dropdown v-model="time.multiplier">
+        <Select v-model="time.multiplier">
           <option value="hours">Hours</option>
           <option value="days">Days</option>
-        </Dropdown>
+        </Select>
       </div>
 
       <div class="variable" v-if="time.type === 'variable'">
@@ -146,11 +146,11 @@ export default Vue.extend({
           <label>Draw Card Interval</label>
           <div style="height: 42px;">
             <input style="width: 50px" type="number" v-model="interval.amount" />
-            <Dropdown v-model="interval.type">
+            <Select v-model="interval.type">
               <option value="mins">Minutes</option>
               <option value="hours">Hours</option>
               <option value="days">Days</option>
-            </Dropdown>
+            </Select>
           </div>
         </div>
 

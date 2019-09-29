@@ -1,11 +1,11 @@
 import { events } from '../../db/event'
 import { Timestamp } from 'bson'
-import { ESEvent, StoredEvent, NewEvent } from '../types'
+import { ESEvent, StoredEvent, NewEvent, EventStream } from '../types'
 import { StoreReader } from './reader'
 import { StoreWriter } from './writer'
 import { isAggregateVersionConflict, VersionConflictError } from './error'
 
-export function createMongoReader<TEvent extends ESEvent>(stream: string) {
+export function createMongoReader<TEvent extends ESEvent>(stream: EventStream) {
   const collection = events()
 
   const getEventsFrom = async (
@@ -14,7 +14,7 @@ export function createMongoReader<TEvent extends ESEvent>(stream: string) {
   ) => {
     const query: any = {
       stream,
-      position: { $gt: position }
+      position: { $gt: position },
     }
 
     if (filterTypes.length) {
@@ -60,7 +60,7 @@ export function createMongoReader<TEvent extends ESEvent>(stream: string) {
 
   return new StoreReader<TEvent, Timestamp>({
     getEventsById,
-    getEventsFrom
+    getEventsFrom,
   })
 }
 
@@ -78,7 +78,7 @@ export function createMongoWriter<TEvent extends ESEvent>(stream: string) {
       stream,
       version: version + 1 + i,
       position: new Timestamp(0, 0),
-      timestamp: new Date(Date.now())
+      timestamp: new Date(Date.now()),
     }))
 
     try {
@@ -100,7 +100,7 @@ export function createMongoWriter<TEvent extends ESEvent>(stream: string) {
   }
 
   const writer = new StoreWriter<TEvent>({
-    append
+    append,
   })
 
   return writer

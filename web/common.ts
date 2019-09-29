@@ -1,3 +1,14 @@
+function persist(key: string, body: any) {
+  localStorage.setItem(key, JSON.stringify(body))
+}
+
+function hydrate<T>(key: string): T | null {
+  const result = localStorage.getItem(key)
+  if (!result) return null
+
+  return JSON.parse(result)
+}
+
 function formatDate(value: string | number | Date) {
   const date = new Date(value)
 
@@ -7,6 +18,7 @@ function formatDate(value: string | number | Date) {
 function toDuration(valueSecs: number, full?: boolean) {
   const now = Math.floor(new Date(valueSecs).valueOf() / 1000)
   const diff = Math.abs(now - valueSecs)
+
   const {
     duration: [days, hours, minutes, seconds],
   } = toRawDuration(diff)
@@ -34,7 +46,7 @@ function toDuration(valueSecs: number, full?: boolean) {
 
 function elapsedSince(date: string | Date) {
   const elapsed = Math.floor((Date.now() - new Date(date).valueOf()) / 1000)
-  return toDuration(elapsed)
+  return toDuration(Math.floor(elapsed))
 }
 
 const ONE_HOUR = 3600
@@ -46,7 +58,7 @@ function toRawDuration(valueSecs: number) {
   const days = Math.floor(valueSecs / ONE_DAY)
   const hours = Math.floor(valueSecs / ONE_HOUR) % 24
   const mins = Math.floor(valueSecs / 60) % 60
-  const secs = valueSecs % 60
+  const secs = Math.ceil(valueSecs % 60)
 
   return {
     duration: [days, hours, mins, secs] as Duration,
@@ -58,4 +70,11 @@ function toRawDuration(valueSecs: number) {
   }
 }
 
-export const common = { formatDate, toDuration, toRawDuration, elapsedSince }
+export const common = {
+  persist,
+  hydrate,
+  formatDate,
+  toDuration,
+  toRawDuration,
+  elapsedSince,
+}

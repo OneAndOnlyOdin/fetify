@@ -1,69 +1,65 @@
 <script lang="ts">
 import Vue from 'vue'
-
 export default Vue.extend({
-  props: ['value', 'disabled'],
+  props: {
+    text: String,
+  },
+  data() {
+    return {
+      show: false,
+    }
+  },
+  methods: {
+    toggle() {
+      this.show = !this.show
+    },
+  },
 })
 </script>
+
 <template>
-  <span class="select">
-    <select :disabled="disabled" :value="value" @input="$emit('input', $event.target.value)">
+  <div class="dropdown">
+    <button @click="toggle">{{text}} ▼</button>
+    <div class="dropdown-content" :class="{ show }">
       <slot></slot>
-    </select>
-  </span>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
-select {
-  border-radius: 0;
-  outline: 0;
-  height: 42px;
-}
-
-.select {
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
   position: relative;
   display: inline-block;
-  height: 42px;
 }
 
-.select select {
-  background-color: white;
-  color: black;
-  font-size: 14px;
-  padding: 12px;
-  border: 1px solid $color-accent;
-  min-width: 120px;
-  text-overflow: '';
-  -webkit-appearance: button; /* hide default arrow in chrome OSX */
-}
-
-.select::before,
-.select::after {
-  content: '';
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
   position: absolute;
-  pointer-events: none;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
 }
 
-.select::after {
-  content: '\25BC';
-  color: white;
-  height: 1em;
-  font-size: 0.8em;
-  line-height: 0;
-  right: 16px;
-  top: 23px;
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 12px 12px;
+  text-decoration: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.select select[disabled] {
-  background-color: $color-primary;
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+  background-color: #ddd;
 }
 
-.select::before {
-  border: 0;
-  width: 42px;
-  height: 41px;
-  right: 1px;
-
-  background-color: $color-accent;
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {
+  display: block;
 }
 </style>

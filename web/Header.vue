@@ -30,7 +30,7 @@ export default Vue.extend({
       </div>
 
       <div class="right">
-        <button @click="logout">Logout</button>
+        <button v-if="auth.loggedIn" @click="logout">Logout</button>
       </div>
     </div>
   </header>

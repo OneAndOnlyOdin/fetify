@@ -1,9 +1,9 @@
 import { Repo } from './create'
-import { ESEvent, Agg, StoredEvent } from '../types'
+import { ESEvent, Agg, StoredEvent, EventStream } from '../types'
 import { createMongoReader } from '../store'
 
 export type MongoRepoOptions<TEvent extends ESEvent, TAgg extends Agg> = {
-  eventStream: string
+  eventStream: EventStream
   fold: (event: StoredEvent<TEvent>, agg: TAgg) => TAgg
   factory: () => TAgg
 }
@@ -17,7 +17,7 @@ export function createMongoRepo<TEvent extends ESEvent, TAgg extends Agg>(
     name: opts.eventStream,
     factory: opts.factory,
     fold: opts.fold,
-    reader
+    reader,
   })
 
   return repo

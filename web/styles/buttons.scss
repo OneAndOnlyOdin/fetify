@@ -24,3 +24,9 @@ button {
     }
   }
 }
+
+a {
+  &:hover {
+    cursor: pointer;
+  }
+}
