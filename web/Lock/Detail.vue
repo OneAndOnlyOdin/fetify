@@ -3,7 +3,7 @@ import Vue from 'vue'
 import { Modal } from '../elements'
 import { locksApi, authApi } from '../store'
 import { ClientLock } from '../store/lock'
-import { LockAction, LockHistory } from '../../src/domain/game/lock/types'
+import { LockHistory } from '../../src/domain/game/lock/types'
 import { common } from '../common'
 import { SocketMsg } from '../../src/sockets/types'
 import { webSockets } from '../store/socket'
@@ -19,10 +19,6 @@ type Data = {
     loading: boolean
     card: number
     drawn: string | null
-  }
-  remote: {
-    card: number
-    action?: LockAction
   }
   cards: number[]
   history: Array<LockHistory & { since: string }>
@@ -41,9 +37,6 @@ export default Vue.extend({
         card: -1,
         drawn: null,
       },
-      remote: {
-        card: -1,
-      },
       cards: [],
       history: [],
     }
@@ -53,7 +46,7 @@ export default Vue.extend({
     elapsed: common.elapsedSince,
     toDuration: common.toDuration,
     reveal(card: number): boolean {
-      return this.remote.card === card || this.draw.card === card
+      return this.draw.card === card
     },
     isHolder(): boolean {
       if (!this.lock) return false
@@ -74,6 +67,7 @@ export default Vue.extend({
       this.draw.loading = true
 
       const result = await locksApi.drawLockCard(this.lock!.id, card)
+      console.log(result)
       this.draw.card = card
       this.draw.drawn = result.type
       this.draw.loading = false
@@ -104,12 +98,12 @@ export default Vue.extend({
         case 'lock-draw':
           if (this.id !== msg.payload.lockId) return
           if (this.draw.card > -1) return
-          this.remote.card = msg.payload.card
-          this.remote.action = msg.payload.action
+          this.draw.card = msg.payload.card
+          this.draw.drawn = msg.payload.action.type
 
           setTimeout(() => {
-            this.remote.card = -1
-            this.remote.action = undefined
+            this.draw.card = -1
+            this.draw.drawn = null
           }, 3000)
           return
       }
@@ -166,7 +160,10 @@ export default Vue.extend({
     <div v-if="!lock && !loading">Lock not found</div>
     <div v-if="!lock && loading">Loading...</div>
     <div v-if="lock" class="lockdetail">
-      <div>Time til next card: {{toDuration(drawSeconds, true) || 'now'}}</div>
+      <div v-if="!lock.isOpen">
+        <b>Next card available:</b>
+        {{toDuration(drawSeconds, true) || 'now'}}
+      </div>
       <div class="cards" v-if="!lock.isOpen">
         <div class="action-grid">
           <div v-for="(card, i) in cards" :key="card">
@@ -174,7 +171,7 @@ export default Vue.extend({
               <div class="card__inner" :class="{ 'card--flipped': reveal(i) }">
                 <div class="card__front">{{cardText}}</div>
                 <div class="card__back">
-                  <div v-if="remote.card === i">{{draw.drawn || remote.action.type}}</div>
+                  <div v-if="draw.card === i">{{draw.drawn || remote.action.type}}</div>
                 </div>
               </div>
             </div>
@@ -243,10 +240,9 @@ export default Vue.extend({
     cursor: pointer;
 
     height: 60px;
-    box-shadow: 3px 3px 3px $color-primary;
     background-color: transparent;
-    border: 1px solid $color-accent;
     perspective: 1000px;
+    border: 0;
   }
 
   .card__inner {
@@ -274,10 +270,12 @@ export default Vue.extend({
   .card__front,
   .card__back {
     position: absolute;
+    box-shadow: 3px 3px 3px $color-primary;
+    border: 1px solid $color-accent;
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
-    font-size: 16px;
+    font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -291,8 +289,8 @@ export default Vue.extend({
 
   /* Style the back side */
   .card__back {
-    background-color: dodgerblue;
-    color: white;
+    background-color: $color-unlocked;
+    color: black;
     transform: rotateY(180deg);
   }
 

@@ -74,6 +74,9 @@ pop.handle('LockJoined', async ({ event }) => {
 pop.handle('LockCancelled', async ({ aggregateId }) => {
   await updateLock(aggregateId, { isOpen: true })
   const lock = await getLock(aggregateId)
+  if (!lock) return
+
+  lock.isOpen = true
   send(lock)
 })
 
@@ -81,11 +84,13 @@ pop.handle('LockOpened', async ({ aggregateId }) => {
   await updateLock(aggregateId, { isOpen: true })
 
   const lock = await getLock(aggregateId)
+  if (!lock) return
+
+  lock.isOpen = true
   send(lock)
 })
 
-function send(lock: LockSchema | null) {
-  if (!lock) return
+function send(lock: LockSchema) {
   svcSockets.toUser(lock.ownerId, {
     type: 'lock',
     payload: toLockDto(lock, lock.ownerId),

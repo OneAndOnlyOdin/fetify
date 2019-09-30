@@ -32,10 +32,10 @@ export function getLockDraws(lock: ClientLock) {
 
 export function toLockConfig(data: CreateData) {
   const actions: LockConfig['actions'] = {
-    blank: zero(data.actions.blank.value) / 2,
-    decrease: zero(data.actions.decrease.value) / 2,
-    increase: zero(data.actions.increase.value) / 2,
-    double: zero(data.actions.double.value) / 2,
+    blank: zero(data.actions.blank.value),
+    decrease: zero(data.actions.decrease.value),
+    increase: zero(data.actions.increase.value),
+    double: zero(data.actions.double.value),
     half: zero(data.actions.half.value),
     freeze: zero(data.actions.freeze.value),
     task: zero(data.actions.task.value),
