@@ -25,7 +25,7 @@ function createSocket() {
   const base = config.apiUrl
     .replace('http://', 'ws://')
     .replace('https://', 'wss://')
-  const ws = new WebSocket(base + '/ws')
+  const ws = new WebSocket(base + '/')
 
   ws.onopen = () => {
     state.connected = true

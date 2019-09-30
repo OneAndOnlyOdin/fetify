@@ -5,7 +5,7 @@ import { registerSocket } from './register'
 const PING_INTERVAL = 30000
 
 export function setupWebsocketServer(server: http.Server) {
-  const wss = new WebSocket.Server({ path: '/ws', server })
+  const wss = new WebSocket.Server({ path: '/', server })
 
   const interval = setInterval(() => {
     wss.clients.forEach((ws: any) => {
