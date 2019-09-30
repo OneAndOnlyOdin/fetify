@@ -67,7 +67,7 @@ export default Vue.extend({
       this.draw.loading = true
 
       const result = await locksApi.drawLockCard(this.lock!.id, card)
-      console.log(result)
+
       this.draw.card = card
       this.draw.drawn = result.type
       this.draw.loading = false
