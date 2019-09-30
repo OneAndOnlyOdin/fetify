@@ -8,6 +8,7 @@ async function start() {
   await migrate()
   userDomain.mgr.start()
   lockDomain.mgr.start()
+  lockDomain.pop.start()
   createServer(1)
   initiate()
 }

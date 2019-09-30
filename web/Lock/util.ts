@@ -1,7 +1,8 @@
 import { LockDomain } from '../../src/domain/game/lock'
-import { createLock } from '../store/lock'
-import { LockConfig } from '../../src/domain/game/lock/types'
-import { actionOptions } from '../../src/domain/game/lock/util'
+import { createLock, ClientLock } from '../store/lock'
+import { LockConfig, LockHistory } from '../../src/domain/game/lock/types'
+import { getDrawCount, actionOptions } from '../../src/domain/game/lock/util'
+import { common } from '../common'
 
 export type Action = LockDomain.LockAction & { value: string; desc: string }
 
@@ -20,6 +21,15 @@ export interface CreateData {
   showActions: boolean
 }
 
+export function getLockDraws(lock: ClientLock) {
+  if (!lock) return 0
+  return getDrawCount({
+    created: new Date(lock.created),
+    history: lock.history,
+    intervalMins: lock.config.intervalMins,
+  })
+}
+
 export function toLockConfig(data: CreateData) {
   const actions: LockConfig['actions'] = {
     blank: zero(data.actions.blank.value) / 2,
@@ -34,6 +44,7 @@ export function toLockConfig(data: CreateData) {
 
   const cfg: LockConfig = {
     type: 'lock',
+    accumulate: false,
     intervalMins: Number(data.interval.amount),
     maxUsers: 1,
     owner: data.owner,
@@ -57,12 +68,13 @@ export async function create(data: CreateData) {
 
 export function estimate(cfg: LockConfig) {
   const actions = cfg.actions
+  const secs = cfg.intervalMins * 60
 
-  let ints = 0
-  ints += actions.blank + actions.task + actions.unlock
-  ints += actions.increase * 3
-  ints -= actions.decrease * 3
-  ints += actions.freeze * 2
+  let draws = 0
+  draws += actions.blank + actions.task + actions.unlock
+  draws += actions.increase * 3
+  draws -= actions.decrease * 3
+  draws += actions.freeze * 2
 
   let blanks = actions.blank
   let doubles = actions.double
@@ -78,13 +90,23 @@ export function estimate(cfg: LockConfig) {
     halves--
   }
 
-  ints += blanks
-  ints
+  draws += blanks
 
-  return ints
+  return { avg: draws * secs * 0.5, worst: draws * secs }
 }
 
 function zero(value?: number): number {
   if (value && value < 0) return 0
   return value || 0
+}
+
+export function mapHistory(history: LockHistory[]) {
+  return history.sort(sortHistory).map(hist => ({
+    ...hist,
+    since: common.elapsedSince(hist.date),
+  }))
+}
+
+function sortHistory(l: LockHistory, r: LockHistory) {
+  return l.date > r.date ? -1 : l.date === r.date ? 0 : 1
 }

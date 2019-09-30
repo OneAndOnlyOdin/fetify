@@ -1,12 +1,14 @@
 import * as LockDomain from './types'
+import * as store from './store'
 import { lockCmd } from './command'
 import { lockMgr } from './manager'
-import * as store from './store'
+import { lockPopulator } from './populator'
 
 export { LockDomain }
 
 export const lockDomain = {
   store,
   cmd: lockCmd,
-  mgr: lockMgr
+  mgr: lockMgr,
+  pop: lockPopulator,
 }

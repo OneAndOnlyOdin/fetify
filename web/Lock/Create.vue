@@ -82,9 +82,11 @@ export default Vue.extend({
   computed: {
     estimate() {
       const cfg = toLockConfig(this.$data as any)
-      const intervals = estimate(cfg)
-      const seconds = cfg.intervalMins * 60
-      return common.toDuration(intervals * seconds, true)
+      const { avg, worst } = estimate(cfg)
+      return `avg: ${common.toDuration(avg, true)}, worst: ${common.toDuration(
+        worst,
+        true
+      )}`
     },
   },
 })

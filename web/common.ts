@@ -46,6 +46,7 @@ function toDuration(valueSecs: number, full?: boolean) {
 
 function elapsedSince(date: string | Date) {
   const elapsed = Math.floor((Date.now() - new Date(date).valueOf()) / 1000)
+  if (elapsed < 60) return 'a moment'
   return toDuration(Math.floor(elapsed))
 }
 

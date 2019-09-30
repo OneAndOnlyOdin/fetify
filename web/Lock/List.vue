@@ -129,7 +129,7 @@ export default Vue.extend({
     <div style="margin-bottom: 8px">
       <div style="display: flex">
         <div>
-          <Dropdown text="Options">
+          <Dropdown text="Options ▼">
             <a>
               <div class="input__group">
                 <div class="input__prefix--btn" @click="joinLock">Join</div>
@@ -141,11 +141,13 @@ export default Vue.extend({
                 />
               </div>
             </a>
-            <a @click="openCreate">Create Lock</a>
+            <a @click="openCreate">
+              <button style="width: 100%">Create Lock</button>
+            </a>
           </Dropdown>
         </div>
         <div style="margin-left: 8px">
-          <Dropdown text="Filters">
+          <Dropdown text="Filters ▼">
             <a>
               <label>Unlocked</label>
               <input type="checkbox" v-model="filter.unlocked" />
@@ -213,6 +215,10 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
+.page {
+  height: 100%;
+}
+
 .card-row {
   width: 100%;
   display: flex;

@@ -17,7 +17,7 @@ const envs = Object.keys(process.env)
   .reduce(
     (prev, curr) =>
       Object.assign(prev, {
-        [curr.slice(10)]: JSON.stringify(process.env[curr])
+        [curr.slice(10)]: JSON.stringify(process.env[curr]),
       }),
     {}
   )
@@ -28,54 +28,54 @@ const plugins = [
   new VueLoaderPlugin(),
   new HtmlWebpackPlugin({
     inject: true,
-    template: path.resolve(root, 'index.html')
+    template: path.resolve(root, 'index.html'),
   }),
   new webpack.DefinePlugin({
-    'process.env': envs
+    'process.env': envs,
   }),
   new ForkTsChecker({
     tsconfig: 'tsconfig.json',
-    watch: root
+    watch: root,
   }),
-  !isProd && new webpack.HotModuleReplacementPlugin()
+  !isProd && new webpack.HotModuleReplacementPlugin(),
 ].filter(Boolean)
 
 module.exports = {
   mode: isProd ? 'production' : 'development',
-  devtool: isProd ? '#eval-source-map' : false,
+  devtool: isProd ? false : '#eval-source-map',
   devServer: {
     open: true,
     port: Number(process.env.WEB_PORT || 3010),
     hot: true,
-    historyApiFallback: true
+    historyApiFallback: true,
   },
   entry: './web/index.ts',
   output: {
     path: outputFolder,
-    filename: 'bundle.js'
+    filename: 'bundle.js',
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     alias: {
-      vue$: 'vue/dist/vue.esm.browser.min.js'
-    }
+      vue$: 'vue/dist/vue.esm.browser.min.js',
+    },
   },
   module: {
     rules: [
       {
         test: /\.svg$/,
-        loader: 'vue-svg-loader'
+        loader: 'vue-svg-loader',
       },
       {
         test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
-        use: ['file-loader']
+        use: ['file-loader'],
       },
       {
         test: /\.vue$/,
         loader: 'vue-loader',
         options: {
-          esModule: true
-        }
+          esModule: true,
+        },
       },
       {
         test: /\.(s)?css$/,
@@ -87,10 +87,10 @@ module.exports = {
             options: {
               prependData: `
                 @import './web/styles/main.scss';
-            `
-            }
-          }
-        ]
+            `,
+            },
+          },
+        ],
       },
       {
         test: /\.tsx?$/,
@@ -100,12 +100,12 @@ module.exports = {
             options: {
               appendTsSuffixTo: [/\.vue$/],
               configFile: 'tsconfig.json',
-              transpileOnly: true
-            }
-          }
-        ]
-      }
-    ]
+              transpileOnly: true,
+            },
+          },
+        ],
+      },
+    ],
   },
   optimization: {
     usedExports: false,
@@ -118,15 +118,15 @@ module.exports = {
         terserOptions: {
           compress: {
             ecma: 6,
-            inline: 2
+            inline: 2,
           },
           output: {
             comments: false,
-            ecma: 6
-          }
-        }
-      })
-    ]
+            ecma: 6,
+          },
+        },
+      }),
+    ],
   },
-  plugins
+  plugins,
 }

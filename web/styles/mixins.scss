@@ -5,19 +5,19 @@
 }
 
 @mixin desktop {
-  @media (min-width: 801) {
+  @media (min-width: 801px) {
     @content;
   }
 }
 
 .hide-mobile {
   @include mobile {
-    display: none;
+    display: none !important;
   }
 }
 
 .hide-desktop {
   @include desktop {
-    display: none;
+    display: none !important;
   }
 }

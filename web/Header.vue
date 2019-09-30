@@ -1,8 +1,10 @@
 <script lang="ts">
 import Vue from 'vue'
 import { authApi } from './store'
+import { Dropdown } from './elements'
 
 export default Vue.extend({
+  components: { Dropdown },
   data() {
     return {
       auth: authApi.state,
@@ -18,7 +20,7 @@ export default Vue.extend({
 
 <template>
   <header>
-    <div class="container">
+    <div class="container hide-mobile">
       <div class="left">
         <h3>Game</h3>
       </div>
@@ -32,6 +34,20 @@ export default Vue.extend({
       <div class="right">
         <button v-if="auth.loggedIn" @click="logout">Logout</button>
       </div>
+    </div>
+
+    <div class="container hide-desktop">
+      <Dropdown text="Menu">
+        <a>
+          <router-link to="/">Home</router-link>
+        </a>
+        <a>
+          <router-link to="/locks">Locks</router-link>
+        </a>
+        <a>
+          <router-link to="/locks">{{auth.userId}} {{auth.connected ? '✓' : '✗'}}</router-link>
+        </a>
+      </Dropdown>
     </div>
   </header>
 </template>

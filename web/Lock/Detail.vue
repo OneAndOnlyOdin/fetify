@@ -3,10 +3,11 @@ import Vue from 'vue'
 import { Modal } from '../elements'
 import { locksApi, authApi } from '../store'
 import { ClientLock } from '../store/lock'
-import { LockAction } from '../../src/domain/game/lock/types'
+import { LockAction, LockHistory } from '../../src/domain/game/lock/types'
 import { common } from '../common'
 import { SocketMsg } from '../../src/sockets/types'
 import { webSockets } from '../store/socket'
+import { mapHistory } from './util'
 
 type Data = {
   timer?: NodeJS.Timeout
@@ -24,13 +25,12 @@ type Data = {
     action?: LockAction
   }
   cards: number[]
+  history: Array<LockHistory & { since: string }>
 }
 
 export default Vue.extend({
   components: { Modal },
-  props: {
-    id: String,
-  },
+  props: { id: String },
   data(): Data {
     return {
       listener: -1,
@@ -45,12 +45,16 @@ export default Vue.extend({
         card: -1,
       },
       cards: [],
+      history: [],
     }
   },
   methods: {
     format: common.formatDate,
     elapsed: common.elapsedSince,
     toDuration: common.toDuration,
+    reveal(card: number): boolean {
+      return this.remote.card === card || this.draw.card === card
+    },
     isHolder(): boolean {
       if (!this.lock) return false
       if (this.lock.config.owner === 'self') return false
@@ -88,12 +92,18 @@ export default Vue.extend({
         case 'lock':
           if (!this.lock) return
           if (this.lock.id !== this.id) return
-          this.lock = { ...this.lock, ...msg.payload }
-          this.drawSeconds = locksApi.getDrawSecs(this.lock)
+
+          this.lock = {
+            ...msg.payload,
+            drawSeconds: locksApi.getDrawSecs(msg.payload.draw),
+          }
+
+          this.history = mapHistory(msg.payload.history)
           return
 
         case 'lock-draw':
           if (this.id !== msg.payload.lockId) return
+          if (this.draw.card > -1) return
           this.remote.card = msg.payload.card
           this.remote.action = msg.payload.action
 
@@ -114,9 +124,16 @@ export default Vue.extend({
     }
     this.setCards()
     this.loading = false
+    if (this.lock) {
+      this.history = mapHistory(this.lock.history)
+    }
+
     this.timer = setInterval(() => {
       if (!this.lock) return
-      this.drawSeconds = locksApi.getDrawSecs(this.lock)
+      this.drawSeconds = locksApi.getDrawSecs(this.lock.draw)
+      for (const hist of this.history) {
+        hist.since = common.elapsedSince(hist.date)
+      }
     }, 750)
   },
   beforeDestroy() {
@@ -127,12 +144,6 @@ export default Vue.extend({
     cardText(): string {
       if (!this.lock || this.isHolder()) return '✗'
       return this.canDraw ? '?' : '✗'
-    },
-    history(): ClientLock['history'] {
-      if (!this.lock) return []
-      return this.lock.history
-        .slice()
-        .sort((l, r) => (l.date > r.date ? -1 : l.date === r.date ? 0 : 1))
     },
     isOwner(): boolean {
       return this.lock ? authApi.state.userId === this.lock.ownerId : false
@@ -160,9 +171,11 @@ export default Vue.extend({
         <div class="action-grid">
           <div v-for="(card, i) in cards" :key="card">
             <div class="card" :class="{ locked: !canDraw }" @click="drawCard(i)">
-              <div class="card-holder">
-                <div v-if="remote.card === i">{{remote.action.type}}</div>
-                <div v-if="remote.card !== i">{{draw.card === i ? draw.drawn : cardText}}</div>
+              <div class="card__inner" :class="{ 'card--flipped': reveal(i) }">
+                <div class="card__front">{{cardText}}</div>
+                <div class="card__back">
+                  <div v-if="remote.card === i">{{draw.drawn || remote.action.type}}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -181,7 +194,7 @@ export default Vue.extend({
           </thead>
           <tbody>
             <tr v-for="(history, i) in history" :key="i">
-              <td>{{elapsed(history.date)}} ago</td>
+              <td>{{history.since}} ago</td>
               <td>{{history.type}}</td>
               <td>{{format(history.date)}}</td>
             </tr>
@@ -196,7 +209,6 @@ export default Vue.extend({
 .page {
   margin: -16px;
   padding: 16px;
-  background-color: $color-accent;
 }
 
 .lockdetail {
@@ -228,15 +240,60 @@ export default Vue.extend({
   width: 100%;
 
   .card {
-    font-size: 16px;
     cursor: pointer;
+
+    height: 60px;
+    box-shadow: 3px 3px 3px $color-primary;
+    background-color: transparent;
+    border: 1px solid $color-accent;
+    perspective: 1000px;
+  }
+
+  .card__inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+
+  .card__back {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+
+  .card--flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card__front,
+  .card__back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: space-around;
-    height: 60px;
-    box-shadow: 3px 3px 3px $color-primary;
+  }
+
+  /* Style the front side (fallback if image is missing) */
+  .card__front {
     background-color: white;
-    border: 1px solid $color-accent;
+    color: black;
+  }
+
+  /* Style the back side */
+  .card__back {
+    background-color: dodgerblue;
+    color: white;
+    transform: rotateY(180deg);
   }
 
   .locked {

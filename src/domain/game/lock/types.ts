@@ -24,6 +24,7 @@ export type ActionAmount = { type: LockAction['type']; amount: number }
 
 export type LockConfig = {
   type: 'lock'
+  accumulate: boolean
   time: LockTime
   intervalMins: number
   owner: 'other' | 'self'
@@ -50,6 +51,7 @@ export type LockTime =
 
 export type LockAgg = {
   state: 'new' | 'created' | 'opened'
+  created: Date
   aggregateId: string
   ownerId: string
   playerId?: string

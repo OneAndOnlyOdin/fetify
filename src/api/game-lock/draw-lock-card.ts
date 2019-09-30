@@ -1,7 +1,6 @@
 import { wrap, StatusError } from '../util'
 import { lockDomain } from '../../domain/game'
 import { LockSchema } from '../../domain/game/lock/store'
-import { svcSockets } from '../../sockets/publish'
 
 type Body = { card: number }
 
@@ -34,18 +33,6 @@ export const drawLockCard = wrap(async (req, res) => {
       'Invalid card number provided: No card in that position found',
       400
     )
-  }
-
-  svcSockets.toUser(lock.ownerId, {
-    type: 'lock-draw',
-    payload: { card: cardNo, action, lockId: lock.id },
-  })
-
-  if (lock.playerId) {
-    svcSockets.toUser(lock.playerId, {
-      type: 'lock-draw',
-      payload: { card: cardNo, action, lockId: lock.id },
-    })
   }
 
   await lockDomain.cmd.DrawCard({

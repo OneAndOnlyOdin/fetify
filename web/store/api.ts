@@ -83,7 +83,7 @@ function headers() {
     'Content-Type': 'application/json',
   }
 
-  if (!state.token) {
+  if (!state || !state.token) {
     return { headers }
   }
 

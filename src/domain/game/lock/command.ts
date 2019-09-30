@@ -1,6 +1,6 @@
 import { store, repo, command } from '../../../es'
 import { LockEvent, LockAgg, LockCommand, LockConfig } from './types'
-import { fold, createConfigActions, play } from './util'
+import { fold, createConfigActions, play, getDrawCount } from './util'
 import { CommandError } from '../../../es/errors'
 
 const writer = store.createMongoWriter('gameLock')
@@ -9,6 +9,7 @@ const lockRepo = repo.createMongoRepo<LockEvent, LockAgg>({
   eventStream: 'gameLock',
   factory: () => ({
     state: 'new',
+    created: new Date(0),
     aggregateId: '',
     version: 0,
     config: {} as any,
@@ -16,6 +17,7 @@ const lockRepo = repo.createMongoRepo<LockEvent, LockAgg>({
     drawHistory: [],
     lastDrawn: new Date(Date.now()),
     ownerId: '',
+    accumulate: false,
   }),
   fold,
 })
@@ -77,6 +79,11 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
         throw new CommandError('Lock already open')
       }
 
+      const unlocks = agg.config.actions.unlock || 0
+      const seen = agg.drawHistory.filter(hist => hist.type === 'unlock').length
+
+      if (unlocks > seen) return
+
       return { type: 'LockOpened', aggregateId: cmd.aggregateId }
     },
     CancelLock: async (cmd, agg) => {
@@ -92,8 +99,19 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
 )
 
 function canDraw(agg: LockAgg): boolean {
+  if (agg.config.accumulate) {
+    const chances = getDrawCount({
+      intervalMins: agg.config.intervalMins,
+      history: agg.drawHistory,
+      created: agg.created,
+    })
+
+    return chances > 0
+  }
+
   const last = agg.drawHistory.slice(-1)[0]
   if (!last) return true
+
   const time = last.date
   const elapsed = Date.now() - time.valueOf()
   const intervalMs = agg.config.intervalMins * 60 * 1000

@@ -25,7 +25,7 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .content {
-  height: calc(100vh);
+  height: 100vh;
   width: calc(100% - 32px);
   padding: 16px;
 

@@ -76,18 +76,17 @@ export async function joinLock(lockId: string) {
   await api.post<{ message: string }>(`/api/lock/${lockId}/join`)
 }
 
-export function getDrawSecs(lock: ClientLock, since?: number) {
-  const now = since || getNow().valueOf()
-  if (!lock.draw) return 0
-  const draw = new Date(lock.draw)
+export function getDrawSecs(drawAt?: Date) {
+  const now = getNow().valueOf()
+  if (!drawAt) return 0
+  const draw = new Date(drawAt)
   const until = draw.valueOf() - now
   return until <= 0 ? 0 : Math.floor(until / 1000)
 }
 
 function updateLocks() {
-  const now = getNow().valueOf()
   for (const lock of state.locks) {
-    lock.drawSeconds = getDrawSecs(lock, now)
+    lock.drawSeconds = getDrawSecs(lock.draw)
   }
 }
 

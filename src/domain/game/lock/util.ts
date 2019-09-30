@@ -53,6 +53,7 @@ export function fold(
       next.ownerId = event.ownerId
       next.config = event.config
       next.state = 'created'
+      next.created = timestamp
       break
 
     case 'LockCancelled':
@@ -106,6 +107,35 @@ export function secondsTilDraw(opts: Opts): number {
     case 'unlock':
       return 0
   }
+}
+
+type DrawCountOpts = {
+  history: LockHistory[]
+  created: Date
+  since?: Date
+  intervalMins: number
+}
+
+export function getDrawCount(opts: DrawCountOpts) {
+  const now = opts.since ? opts.since.valueOf() : Date.now()
+  const diff = (now - opts.created.valueOf()) * 0.001
+
+  let chances = Math.floor(diff / (opts.intervalMins * 60))
+
+  for (const hist of opts.history) {
+    switch (hist.type) {
+      case 'blank':
+      case 'task':
+        chances--
+        break
+
+      case 'freeze':
+        chances -= 2
+        break
+    }
+  }
+
+  return chances
 }
 
 export function play(

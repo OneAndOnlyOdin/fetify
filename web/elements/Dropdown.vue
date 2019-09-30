@@ -1,25 +1,35 @@
 <script lang="ts">
 import Vue from 'vue'
+
+type Data = {
+  show: boolean
+  parent: any
+}
+
 export default Vue.extend({
   props: {
     text: String,
   },
-  data() {
+  data(): Data {
     return {
       show: false,
+      parent: null,
     }
   },
   methods: {
     toggle() {
       this.show = !this.show
     },
+    hide() {
+      this.show = false
+    },
   },
 })
 </script>
 
 <template>
-  <div class="dropdown">
-    <button @click="toggle">{{text}} ▼</button>
+  <div class="dropdown" v-click-outside="hide">
+    <button @click="toggle">{{text}}</button>
     <div class="dropdown-content" :class="{ show }">
       <slot></slot>
     </div>
@@ -27,13 +37,11 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
-/* The container <div> - needed to position the dropdown content */
 .dropdown {
   position: relative;
   display: inline-block;
 }
 
-/* Dropdown Content (Hidden by Default) */
 .dropdown-content {
   display: none;
   position: absolute;
@@ -43,7 +51,6 @@ export default Vue.extend({
   z-index: 1;
 }
 
-/* Links inside the dropdown */
 .dropdown-content a {
   color: black;
   padding: 12px 12px;
@@ -53,12 +60,10 @@ export default Vue.extend({
   align-items: center;
 }
 
-/* Change color of dropdown links on hover */
 .dropdown-content a:hover {
   background-color: #ddd;
 }
 
-/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
 .show {
   display: block;
 }
