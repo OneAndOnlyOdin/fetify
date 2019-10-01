@@ -28,7 +28,6 @@ select {
 
 .select select {
   background-color: white;
-  color: black;
   font-size: 14px;
   padding: 12px;
   border: 1px solid $color-accent;
@@ -46,7 +45,6 @@ select {
 
 .select::after {
   content: '\25BC';
-  color: white;
   height: 1em;
   font-size: 0.8em;
   line-height: 0;

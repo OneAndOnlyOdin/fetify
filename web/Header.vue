@@ -56,6 +56,7 @@ export default Vue.extend({
 .container {
   width: 100%;
   background-color: $color-primary;
+  color: $color-text;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -99,7 +100,7 @@ header {
   a {
     padding: 12px;
     text-decoration: none;
-    color: black;
+    color: $color-text;
     font-weight: 600;
     cursor: pointer;
     min-width: 60px;

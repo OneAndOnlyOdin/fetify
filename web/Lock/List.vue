@@ -168,7 +168,7 @@ export default Vue.extend({
         <div class="title" :class="{ locked: !lock.isOpen, unlocked: lock.isOpen }">
           <div class="card-row">
             <div>Owner: {{lock.ownerId === auth.userId ? 'you' : lock.ownerId}}</div>
-            <div style="font-size: 10px; color: #777">{{lock.id}}</div>
+            <div class="lock-id">{{lock.id}}</div>
           </div>
         </div>
 
@@ -215,6 +215,10 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
+.lock-id {
+  color: $color-subtext;
+  font-size: 10px;
+}
 .page {
   height: 100%;
 }

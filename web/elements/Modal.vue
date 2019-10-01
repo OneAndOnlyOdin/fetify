@@ -53,8 +53,6 @@ export default Vue.extend({
 }
 
 .header {
-  background-color: white;
-  color: black;
   font-weight: 600;
   font-size: 16px;
   min-height: 16px;

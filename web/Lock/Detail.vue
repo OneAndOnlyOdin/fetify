@@ -75,7 +75,6 @@ export default Vue.extend({
 
       setTimeout(() => {
         this.draw.card = -1
-        this.draw.drawn = null
         this.setCards()
       }, 3000)
     },
@@ -103,7 +102,6 @@ export default Vue.extend({
 
           setTimeout(() => {
             this.draw.card = -1
-            this.draw.drawn = null
           }, 3000)
           return
       }
@@ -270,7 +268,7 @@ export default Vue.extend({
   .card__front,
   .card__back {
     position: absolute;
-    box-shadow: 3px 3px 3px $color-primary;
+    box-shadow: 3px 3px 3px #ccc;
     border: 1px solid $color-accent;
     width: 100%;
     height: 100%;
