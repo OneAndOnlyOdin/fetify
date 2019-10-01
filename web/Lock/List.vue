@@ -69,10 +69,6 @@ export default Vue.extend({
       if (lock.ownerId && lock.playerId) return 'In Play'
       return 'Pending'
     },
-    canClickLock(lock: ClientLock) {
-      if (authApi.state.userId === lock.ownerId) return true
-      return lock.drawSeconds === 0
-    },
     openCreate() {
       navigate('/locks/create')
     },
@@ -167,8 +163,8 @@ export default Vue.extend({
       <div class="card" v-for="lock in filteredLocks" :key="lock.id">
         <div class="title" :class="{ locked: !lock.isOpen, unlocked: lock.isOpen }">
           <div class="card-row">
-            <div>Owner: {{lock.ownerId === auth.userId ? 'you' : lock.ownerId}}</div>
-            <div class="lock-id">{{lock.id}}</div>
+            <div>Lock #{{lock.id}}</div>
+            <div class="lock-id">Edit Name</div>
           </div>
         </div>
 
@@ -221,6 +217,10 @@ export default Vue.extend({
 }
 .page {
   height: 100%;
+}
+
+.card {
+  background-color: $color-primary;
 }
 
 .card-row {

@@ -58,7 +58,7 @@ export default Vue.extend({
           username: this.username,
           password: this.password,
         })
-        authApi.handleToken(token)
+        authApi.handleToken(token, true)
       } catch (ex) {
         this.error = ex.message
       }

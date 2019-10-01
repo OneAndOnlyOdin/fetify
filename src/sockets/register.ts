@@ -1,6 +1,7 @@
 import * as jwt from 'jsonwebtoken'
 import { WebSocket } from 'ws'
 import { Message, subscribe } from '../db/message'
+import { config } from '../env'
 
 const allUsers = new Set<WebSocket>()
 
@@ -68,7 +69,7 @@ export function registerSocket(ws: WebSocket) {
 
 function handleLogin(msg: LoginMessage, socket: WebSocket): string | void {
   try {
-    const { payload } = jwt.decode(msg.payload.token, { complete: true }) as any
+    const payload = jwt.verify(msg.payload.token, config.jwtSecret) as any
     const sockets = userMap.get(payload.userId) || []
     sockets.push(socket)
     socket.userId = payload.userId

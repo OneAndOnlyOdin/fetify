@@ -1,25 +1,16 @@
 import { config } from '../env'
 import { SocketMsg } from '../../src/sockets/types'
-import { state } from './auth'
-
-type ExtractMsg<TType extends SocketMsg['type']> = Extract<
-  SocketMsg,
-  { type: TType }
->['payload']
-
-type Condition<T extends SocketMsg['type']> = {
-  [key in keyof ExtractMsg<T>]?: ExtractMsg<T>[key]
-} & { type: T }
-
-type Listener<T extends SocketMsg['type'] = any> = {
-  condition: Condition<T>
-  callback: (payload: ExtractMsg<T>) => void
-}
+import { state, onAuth } from './auth'
 
 let currentId = 0
 const listeners = new Map<number, Listener>()
 
 let socket = createSocket()
+
+onAuth('login', () => {
+  login(state.token!)
+})
+onAuth('logout', () => logout())
 
 function createSocket() {
   const base = config.apiUrl
@@ -51,6 +42,7 @@ function createSocket() {
 
   ws.onclose = () => {
     state.connected = false
+    state.wsAuthed = false
     setTimeout(() => {
       socket = createSocket()
     }, 5000)
@@ -96,18 +88,21 @@ function login(token: string) {
   }
   const payload = JSON.stringify(message)
   send(payload)
+
+  if (token) state.wsAuthed = true
 }
 
 function send(payload: string) {
   socket.send(payload)
 }
 
-export function logout() {
+function logout() {
   const message = {
     type: 'logout',
   }
   const payload = JSON.stringify(message)
   send(payload)
+  state.wsAuthed = false
 }
 
 function subscribe<T extends SocketMsg['type']>(condition: Condition<T>) {
@@ -135,3 +130,17 @@ function remove(id: number) {
 }
 
 export const webSockets = { subscribe, on, remove }
+
+type ExtractMsg<TType extends SocketMsg['type']> = Extract<
+  SocketMsg,
+  { type: TType }
+>['payload']
+
+type Condition<T extends SocketMsg['type']> = {
+  [key in keyof ExtractMsg<T>]?: ExtractMsg<T>[key]
+} & { type: T }
+
+type Listener<T extends SocketMsg['type'] = any> = {
+  condition: Condition<T>
+  callback: (payload: ExtractMsg<T>) => void
+}

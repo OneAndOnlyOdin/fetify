@@ -28,7 +28,9 @@ export default Vue.extend({
       <div class="mid">
         <router-link to="/">Home</router-link>
         <router-link to="/locks">Locks</router-link>
-        <router-link to="/locks">{{auth.userId}} {{auth.connected ? '✓' : '✗'}}</router-link>
+        <router-link
+          to="/locks"
+        >{{auth.userId}} {{auth.connected ? '✓' : '✗'}} {{auth.wsAuthed ? '✓' : '✗'}}</router-link>
       </div>
 
       <div class="right">
