@@ -10,6 +10,12 @@
   }
 }
 
+@mixin desktop-xl {
+  @media (min-width: 2000px) {
+    @content;
+  }
+}
+
 .hide-mobile {
   @include mobile {
     display: none !important;

@@ -6,41 +6,33 @@ import { LockAction } from '../../src/domain/game/lock/types'
 import { webSockets } from './socket'
 
 export type LockState = {
-  locks: ClientLock[]
+  locks: { [lockId: string]: ClientLock }
 }
 
 export type ClientLock = LockDTO & { drawSeconds: number }
 
 export const state: LockState = {
-  locks: [],
+  locks: {},
 }
-
-setInterval(updateLocks, 500)
 
 webSockets.on(msg => {
   switch (msg.type) {
-    case 'lock': {
-      const existing = state.locks.find(lock => lock.id === msg.payload.id)
+    case 'lock':
+      const lock = msg.payload
+      const existing = state.locks[lock.id]
       if (!existing) {
-        state.locks.unshift({ ...msg.payload, drawSeconds: 0 })
-        updateLocks()
+        state.locks[lock.id] = { ...lock, drawSeconds: 0 }
         return
       }
 
-      for (const lock of state.locks) {
-        if (lock.id !== msg.payload.id) continue
-
-        for (const key in lock) {
-          if (lock[key] !== msg.payload[key]) {
-            lock[key] = msg.payload[key]
-          }
+      for (const key in existing) {
+        if (existing[key] !== lock[key]) {
+          existing[key] = lock[key]
         }
       }
-
-      updateLocks()
-      return
-    }
   }
+
+  return
 })
 
 let debouce = 0
@@ -49,15 +41,13 @@ export async function getLocks() {
   debouce = Date.now()
 
   const locks = await api.get<LockDTO[]>('/api/lock')
-  const mapped = locks.map<ClientLock>(lock => ({
-    ...lock,
-    created: new Date(lock.created),
-    drawSeconds: 0,
-  }))
-
-  state.locks.push(...mapped)
-
-  updateLocks()
+  for (const lock of locks) {
+    state.locks[lock.id] = {
+      ...lock,
+      drawSeconds: 0,
+      created: new Date(lock.created),
+    }
+  }
 }
 
 export async function drawLockCard(lockId: string, card: number) {
@@ -82,12 +72,6 @@ export function getDrawSecs(drawAt?: Date) {
   const draw = new Date(drawAt)
   const until = draw.valueOf() - now
   return until <= 0 ? 0 : Math.floor(until / 1000)
-}
-
-function updateLocks() {
-  for (const lock of state.locks) {
-    lock.drawSeconds = getDrawSecs(lock.draw)
-  }
 }
 
 const win: any = window

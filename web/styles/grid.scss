@@ -29,3 +29,17 @@
     row-gap: 8px;
   }
 }
+
+.grid-4-8 {
+  display: grid;
+  align-items: center;
+  grid-template-areas: '. . . .';
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  column-gap: 16px;
+  row-gap: 16px;
+
+  @include desktop-xl {
+    grid-template-areas: '. . . . . . . .';
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  }
+}

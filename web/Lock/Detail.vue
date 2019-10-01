@@ -59,7 +59,7 @@ export default Vue.extend({
       this.cards = Array.from({ length }, (_, i) => i)
     },
     getLock() {
-      return locksApi.state.locks.find(lock => lock.id === this.id)
+      return locksApi.state.locks[this.id]
     },
     async drawCard(card: number) {
       if (!this.canDraw) return

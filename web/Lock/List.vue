@@ -4,13 +4,14 @@ import { locksApi, authApi } from '../store'
 import Create from './Create.vue'
 import { common } from '../common'
 import { navigate } from '../router'
-import { ClientLock } from '../store/lock'
+import { ClientLock, getDrawSecs } from '../store/lock'
 import { Dropdown } from '../elements'
 import { AuthState } from '../store/auth'
 
 type Data = {
   interval?: NodeJS.Timer
   joinLockId: string
+  knownLocks: Set<string>
   locks: ClientLock[]
   auth: AuthState
   filter: {
@@ -24,6 +25,7 @@ export default Vue.extend({
   data(): Data {
     return {
       joinLockId: '',
+      knownLocks: new Set<string>(),
       locks: [],
       auth: authApi.state,
       filter: {
@@ -91,6 +93,18 @@ export default Vue.extend({
       await locksApi.joinLock(this.joinLockId)
       this.joinLockId = ''
     },
+    updateLocks() {
+      for (const [id, lock] of Object.entries(locksApi.state.locks))
+        if (!this.knownLocks.has(id)) {
+          this.knownLocks.add(id)
+          this.locks.unshift(lock)
+        }
+
+      for (const lock of this.locks) {
+        lock.draw = locksApi.state.locks[lock.id].draw
+        lock.drawSeconds = getDrawSecs(lock.draw)
+      }
+    },
   },
   computed: {
     filteredLocks(): ClientLock[] {
@@ -105,11 +119,9 @@ export default Vue.extend({
     },
   },
   mounted() {
-    this.locks = locksApi.state.locks.slice()
-    setInterval(() => {
-      this.locks = locksApi.state.locks.slice()
-    }, 750)
+    this.updateLocks()
     if (!locksApi.state.locks.length) locksApi.getLocks()
+    setInterval(this.updateLocks, 750)
 
     const persisted = common.hydrate<Partial<Data['filter']>>('lock-filters')
     this.filter = { ...this.filter, ...persisted }
@@ -159,11 +171,11 @@ export default Vue.extend({
       </div>
     </div>
 
-    <div class="grid-4">
+    <div class="grid-4-8">
       <div class="card" v-for="lock in filteredLocks" :key="lock.id">
         <div class="title" :class="{ locked: !lock.isOpen, unlocked: lock.isOpen }">
           <div class="card-row">
-            <div>Lock #{{lock.id}}</div>
+            <div>#{{lock.id}}</div>
             <div class="lock-id">Edit Name</div>
           </div>
         </div>
