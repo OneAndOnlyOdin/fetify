@@ -30,7 +30,7 @@ export default Vue.extend({
   data(): Data {
     return {
       listener: -1,
-      drawSeconds: 0,
+      drawSeconds: -1,
       loading: true,
       draw: {
         loading: false,

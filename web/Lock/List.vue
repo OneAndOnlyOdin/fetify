@@ -75,7 +75,7 @@ export default Vue.extend({
       navigate('/locks/create')
     },
     nextDraw(lock: ClientLock) {
-      return common.toDuration(lock.drawSeconds)
+      return common.toDuration(lock.drawSeconds, true)
     },
     clickLock(lock: ClientLock) {
       navigate(`/locks/${lock.id}`)
@@ -121,7 +121,7 @@ export default Vue.extend({
   mounted() {
     this.updateLocks()
     if (!locksApi.state.locks.length) locksApi.getLocks()
-    setInterval(this.updateLocks, 750)
+    this.interval = setInterval(this.updateLocks, 990)
 
     const persisted = common.hydrate<Partial<Data['filter']>>('lock-filters')
     this.filter = { ...this.filter, ...persisted }
@@ -176,7 +176,7 @@ export default Vue.extend({
         <div class="title" :class="{ locked: !lock.isOpen, unlocked: lock.isOpen }">
           <div class="card-row">
             <div>#{{lock.id}}</div>
-            <div class="lock-id">Edit Name</div>
+            <div class="lock-id"></div>
           </div>
         </div>
 
