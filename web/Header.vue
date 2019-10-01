@@ -49,6 +49,9 @@ export default Vue.extend({
         <a>
           <router-link to="/locks">{{auth.userId}} {{auth.connected ? '✓' : '✗'}}</router-link>
         </a>
+        <a>
+          <button v-if="auth.loggedIn" style="width: 100%" @click="logout">Logout</button>
+        </a>
       </Dropdown>
     </div>
   </header>
