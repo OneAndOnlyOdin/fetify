@@ -38,6 +38,13 @@
   column-gap: 16px;
   row-gap: 16px;
 
+  @include mobile {
+    grid-template-areas: '.' '.' '.' '.';
+    grid-template-columns: 1fr;
+    column-gap: 8px;
+    row-gap: 8px;
+  }
+
   @include desktop-xl {
     grid-template-areas: '. . . . . . . .';
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
