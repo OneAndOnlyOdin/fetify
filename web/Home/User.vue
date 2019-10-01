@@ -29,7 +29,6 @@ content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100%, 100%));
   grid-gap: 16px;
-  padding: 16px;
 }
 
 section {

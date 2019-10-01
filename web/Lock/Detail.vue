@@ -144,7 +144,7 @@ export default Vue.extend({
       const lock = this.lock
 
       if (!lock) return false
-      if (this.draw.drawn) return false
+      if (this.draw.card > -1) return false
       if (this.drawSeconds !== 0) return false
       if (lock.config.owner === 'self') return true
       return lock.playerId === authApi.state.userId
@@ -166,10 +166,10 @@ export default Vue.extend({
         <div class="action-grid">
           <div v-for="(card, i) in cards" :key="card">
             <div class="card" :class="{ locked: !canDraw }" @click="drawCard(i)">
-              <div class="card__inner" :class="{ 'card--flipped': reveal(i) }">
+              <div class="card__inner" :class="{ 'card--flipped': draw.card === i }">
                 <div class="card__front">{{cardText}}</div>
                 <div class="card__back">
-                  <div v-if="draw.card === i">{{draw.drawn || remote.action.type}}</div>
+                  <div>{{draw.drawn}}</div>
                 </div>
               </div>
             </div>
@@ -201,11 +201,6 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
-.page {
-  margin: -16px;
-  padding: 16px;
-}
-
 .lockdetail {
   > div {
     margin: 16px 0;
@@ -268,7 +263,7 @@ export default Vue.extend({
   .card__front,
   .card__back {
     position: absolute;
-    box-shadow: 3px 3px 3px #ccc;
+    box-shadow: 3px 3px 3px #999;
     border: 1px solid $color-accent;
     width: 100%;
     height: 100%;
@@ -281,14 +276,14 @@ export default Vue.extend({
 
   /* Style the front side (fallback if image is missing) */
   .card__front {
-    background-color: white;
+    background-color: $color-secondary;
     color: black;
   }
 
   /* Style the back side */
   .card__back {
     background-color: $color-unlocked;
-    color: black;
+    color: $color-text;
     transform: rotateY(180deg);
   }
 

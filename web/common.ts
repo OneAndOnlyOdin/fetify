@@ -11,8 +11,12 @@ function hydrate<T>(key: string): T | null {
 
 function formatDate(value: string | number | Date) {
   const date = new Date(value)
+  const str = date.toString()
+  const day = date.getDate()
+  const month = str.slice(4, 7)
+  const time = str.slice(16, 24)
 
-  return date.toLocaleString()
+  return `${month} ${day} ${time}`
 }
 
 function toDuration(valueSecs: number, full?: boolean) {

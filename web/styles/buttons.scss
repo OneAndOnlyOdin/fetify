@@ -15,6 +15,7 @@ button {
   &:disabled {
     cursor: not-allowed;
     background-color: darken($color-accent, 20%);
+    color: darken($color-text, 50%);
   }
 
   &.success {

@@ -117,7 +117,6 @@ export default Vue.extend({
   display: flex;
   flex-direction: column;
   border: 1px solid $color-accent;
-  color: black;
 
   > div {
     padding: 12px;
@@ -130,7 +129,7 @@ export default Vue.extend({
 }
 
 .selected {
-  border-bottom: 2px solid $color-accept;
+  border-bottom: 2px solid $color-unlocked;
 }
 
 .pointer {
