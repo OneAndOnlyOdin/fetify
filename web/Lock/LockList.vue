@@ -1,7 +1,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { locksApi, authApi } from '../store'
-import Create from './Create.vue'
+import Create from './CreateLock.vue'
 import { common } from '../common'
 import { navigate } from '../router'
 import { ClientLock, getDrawSecs } from '../store/lock'

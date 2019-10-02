@@ -10,12 +10,6 @@ import { actionOptions } from '../../src/domain/game/lock/util'
 
 type Data = CreateData & {
   loading: boolean
-  simResults: {
-    valid: boolean
-    min: number
-    avg: number
-    max: number
-  }
 }
 
 export default Vue.extend({
@@ -23,12 +17,6 @@ export default Vue.extend({
   data(): Data {
     return {
       loading: false,
-      simResults: {
-        valid: false,
-        min: 0,
-        avg: 0,
-        max: 0,
-      },
       owner: 'self',
       time: {
         type: 'variable',
@@ -40,6 +28,7 @@ export default Vue.extend({
         type: 'mins',
       },
       showActions: true,
+      tasks: [''],
       actions: { ...actionOptions },
     }
   },
@@ -47,7 +36,13 @@ export default Vue.extend({
     this.loading = false
   },
   methods: {
-    toDuration: common.toDuration,
+    ...common,
+    addTask() {
+      this.tasks.push('')
+    },
+    removeTask(pos: number) {
+      this.tasks.splice(pos, 1)
+    },
     upper(value: string) {
       return `${value.slice(0, 1).toUpperCase()}${value.slice(1)}`
     },
@@ -169,6 +164,23 @@ export default Vue.extend({
             v-model.number="actions[action.type].value"
             v-on:input="validateAction(action.type, Number($event.target.value))"
           />
+        </div>
+
+        <div>
+          <h3>
+            Tasks
+            <button @click="addTask">Add Task</button>
+          </h3>
+        </div>
+        <div style="text-align: left;">
+          Tasks are given randomly to the player when a task card is drawn.
+          <br />If no tasks are provided here, the task "Perform a task for the key holder!" will be given.
+        </div>
+        <div v-for="(task, i) in tasks" :key="i">
+          <div style="height: 42px; display: flex;">
+            <button @click="removeTask(i)" style="width: 42px">-</button>
+            <input type="text" v-model="tasks[i]" style="width: 300px" maxlength="255" />
+          </div>
         </div>
       </div>
     </content>

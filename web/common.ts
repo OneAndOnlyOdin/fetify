@@ -20,12 +20,9 @@ function formatDate(value: string | number | Date) {
 }
 
 function toDuration(valueSecs: number, full?: boolean) {
-  const now = Math.floor(new Date(valueSecs).valueOf() / 1000)
-  const diff = Math.abs(now - valueSecs)
-
   const {
     duration: [days, hours, minutes, seconds],
-  } = toRawDuration(diff)
+  } = toRawDuration(valueSecs)
 
   if (full) {
     return [`${days}d`, `${hours}h`, `${minutes}m`, `${seconds}s`]

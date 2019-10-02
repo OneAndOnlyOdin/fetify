@@ -1,8 +1,8 @@
 import VueRouter from 'vue-router'
 import Home from './Home'
-import LockList from './Lock/List.vue'
-import LockDetail from './Lock/Detail.vue'
-import LockCreate from './Lock/Create.vue'
+import LockList from './Lock/LockList.vue'
+import LockDetail from './Lock/LockDetail.vue'
+import LockCreate from './Lock/CreateLock.vue'
 
 export { router }
 

@@ -14,3 +14,17 @@ async function start() {
 }
 
 start()
+
+if (process.env.WEBPACK === 'true') {
+  const webpack = require('webpack')
+  const config = require('../../webpack.config')
+  const compiler = webpack(config)
+  const WebpackDevServer = require('webpack-dev-server')
+  const server = new WebpackDevServer(compiler, {
+    open: true,
+    port: 3010,
+    hot: true,
+    historyApiFallback: true,
+  })
+  server.listen(3010, '0.0.0.0', () => {})
+}

@@ -105,14 +105,21 @@ function logout() {
   state.wsAuthed = false
 }
 
-function subscribe<T extends SocketMsg['type']>(condition: Condition<T>) {
-  return new Promise<ExtractMsg<T>>(resolve => {
+function subscribe<T extends SocketMsg['type']>(
+  condition: Condition<T>,
+  timeoutSecs?: number
+) {
+  return new Promise<ExtractMsg<T>>((resolve, reject) => {
+    const timer = timeoutSecs ? setTimeout(() => reject('Timeout')) : undefined
     // TODO: Can timeout here by calling reject in setTimeout then remove the listener
     const id = ++currentId
 
     listeners.set(id, {
       condition,
-      callback: msg => resolve(msg as any),
+      callback: msg => {
+        resolve(msg as any)
+        clearTimeout(timer)
+      },
     })
   })
 }

@@ -8,34 +8,36 @@ import {
   ActionType,
 } from './types'
 
+export const defaultTask = 'Perform a task for the key holder!'
+
 export const actionOptions: {
   [type in ActionType]: { value: number; desc: string; max?: number }
 } = {
-  blank: { value: 10, desc: 'freezes the lock for the interval', max: 365 },
+  blank: { value: 10, desc: 'the lock is frozen for the interval', max: 365 },
   decrease: {
     value: 10,
-    desc: 'decrease the number of blanks by 1-3',
+    desc: 'decrease the number of BLANK cards by 1-3',
     max: 100,
   },
   increase: {
     value: 10,
-    desc: 'increase the number of blanks by 1-3',
+    desc: 'increase the number of BLANK cards by 1-3',
     max: 100,
   },
   double: {
     value: 2,
-    desc: 'double the number of blanks and increases',
+    desc: 'double the number of BLANK and INCREASE cards',
     max: 20,
   },
   half: {
     value: 1,
-    desc: 'halve the number of blanks of increases',
+    desc: 'halve the number of BLANK and increase cards',
     max: 20,
   },
   freeze: { value: 2, desc: 'freezes the lock for 2x the interval', max: 100 },
   task: {
     value: 0,
-    desc: 'do a task! and freeze the lock for the interval',
+    desc: 'do a task! the lock is also frozen for the interval',
     max: 100,
   },
   unlock: { value: 1, desc: 'collect all of these to unlock', max: 20 },

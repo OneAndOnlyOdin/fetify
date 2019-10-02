@@ -55,8 +55,6 @@ export type Agg = {
   version: number
 }
 
-export type StateAgg<TState> = Agg & { state: TState }
-
 export type EventTypes<TEvent extends ESEvent> = Array<TEvent['type']>
 
 export type Fold<TEvent extends ESEvent, TAgg extends Agg> = (

@@ -1,6 +1,13 @@
 import { store, repo, command } from '../../../es'
 import { LockEvent, LockAgg, LockCommand, LockConfig } from './types'
-import { fold, createConfigActions, play, getDrawCount } from './util'
+import {
+  fold,
+  createConfigActions,
+  play,
+  getDrawCount,
+  getRand,
+  defaultTask,
+} from './util'
 import { CommandError } from '../../../es/errors'
 
 const writer = store.createMongoWriter('gameLock')
@@ -55,7 +62,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
       }
     },
     DrawCard: async (cmd, agg) => {
-      if (agg.state === 'opened') throw new CommandError('Lock already open')
+      if (agg.state === 'opened') return
       if (!canDraw(agg)) {
         throw new CommandError('Cannot draw yet')
       }
@@ -67,18 +74,24 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
 
       const { action, actions } = play(agg.actions, cmd.card)
 
+      let task: string | undefined
+
+      if (action.type === 'task') {
+        const rand = getRand(0, agg.config.tasks.length - 1)
+        task = agg.config.tasks[rand] || defaultTask
+      }
+
       return {
         type: 'CardDrawn',
         aggregateId: cmd.aggregateId,
         card: cmd.card,
         cardType: action.type,
         actions,
+        task,
       }
     },
     CompleteLock: async (cmd, agg) => {
-      if (agg.state === 'opened') {
-        throw new CommandError('Lock already open')
-      }
+      if (agg.state === 'opened') return
 
       const unlocks = agg.config.actions.unlock || 0
       const seen = agg.drawHistory.filter(hist => hist.type === 'unlock').length
@@ -88,9 +101,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
       return { type: 'LockOpened', aggregateId: cmd.aggregateId }
     },
     CancelLock: async (cmd, agg) => {
-      if (agg.state === 'opened') {
-        throw new CommandError('Lock already open')
-      }
+      if (agg.state === 'opened') return
 
       return { type: 'LockCancelled', aggregateId: cmd.aggregateId }
     },
@@ -164,4 +175,10 @@ function validateConfig(config: LockConfig) {
   ) {
     throw new CommandError('Can only have up to 20 of: double, half, unlock')
   }
+
+  config.tasks = config.tasks.filter(task => {
+    if (typeof task !== 'string') return false
+    if (task.trim().length === 0) return false
+    return true
+  })
 }

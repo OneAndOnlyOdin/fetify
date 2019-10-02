@@ -11,7 +11,7 @@ export const api = {
 
 type Query = { [key: string]: string | number }
 
-async function get<T>(path: string, query: Query = {}) {
+async function get<T = void>(path: string, query: Query = {}) {
   const params = Object.keys(query)
     .map(key => `${key}=${query[key]}`)
     .join('&')
@@ -22,7 +22,7 @@ async function get<T>(path: string, query: Query = {}) {
   return result
 }
 
-async function post<T>(path: string, body = {}) {
+async function post<T = void>(path: string, body = {}) {
   const { result } = await callApi<T>(path, {
     method: 'post',
     body: JSON.stringify(body),
@@ -30,7 +30,7 @@ async function post<T>(path: string, body = {}) {
   return result
 }
 
-async function callApi<T>(
+async function callApi<T = void>(
   path: string,
   opts: RequestInit,
   isRenew: boolean = false

@@ -66,7 +66,7 @@ export default Vue.extend({
 .container {
   z-index: 1;
   width: 416px;
-  background-color: white;
+  background-color: $color-primary;
   grid-gap: 0px;
   border: none;
   border-radius: 0;

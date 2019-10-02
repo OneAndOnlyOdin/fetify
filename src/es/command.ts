@@ -1,8 +1,7 @@
-import { Agg, NewEvent, ESEvent, Command, StateAgg } from './types'
+import { Agg, NewEvent, ESEvent, Command } from './types'
 import { Repo } from './repo'
 import { StoreWriter } from './store'
 import { VersionConflictError } from './store/error'
-import { CommandError } from './errors'
 import { createLogger, Logger } from '../logger'
 
 const MAX_COMMAND_RETRIES = 3
@@ -49,9 +48,9 @@ export function createHandler<
               event: {
                 aggregateId: cmd.aggregateId,
                 type: event.type,
-                ...event
+                ...event,
               },
-              type: event.type
+              type: event.type,
             }
 
             await writer.append(aggregate.version, toPersist)
@@ -74,55 +73,11 @@ export function createHandler<
   return handler as CmdHandler
 }
 
-export function createStateHandler<
-  TEvt extends ESEvent,
-  TCmd extends Command,
-  TAgg extends StateAgg<unknown>
->(
-  stateDispatcher: StateDispatcher<TEvt, TCmd, TAgg>,
-  repo: Repo<TEvt, TAgg>,
-  writer: StoreWriter<TEvt>,
-  stateError: new (_: string) => Error = CommandError
-) {
-  const dispatcher = {} as Dispatcher<TEvt, TCmd, TAgg>
-  const keys = Object.keys(stateDispatcher) as Array<TCmd['type']>
-  for (const key of keys) {
-    const [handleFunc, ...states] = stateDispatcher[key]
-
-    const wrappedFunc = (
-      cmd: ExtractCmd<TCmd, typeof key>,
-      agg: TAgg,
-      logger: Logger
-    ) => {
-      if (!states.includes(agg.state)) {
-        throw new stateError(
-          `Unable execute command '${cmd.type}' for aggregate in state '${agg.state}'`
-        )
-      }
-      return handleFunc(cmd, agg, logger)
-    }
-    dispatcher[key] = wrappedFunc
-  }
-
-  return createHandler(dispatcher, repo, writer)
-}
-
 type Dispatcher<
   TEvt extends ESEvent,
   TCmd extends Command,
   TAgg extends Agg
 > = { [K in TCmd['type']]: HandleFunc<TEvt, ExtractCmd<TCmd, K>, TAgg> }
-
-type StateDispatcher<
-  TEvt extends ESEvent,
-  TCmd extends Command,
-  TAgg extends StateAgg<unknown>
-> = {
-  [K in TCmd['type']]: [
-    HandleFunc<TEvt, ExtractCmd<TCmd, K>, TAgg>,
-    ...TAgg['state'][]
-  ]
-}
 
 type HandleFunc<
   TEvt extends ESEvent,

@@ -17,6 +17,7 @@ export interface CreateData {
     amount: string
     type: 'mins' | 'hours' | 'days'
   }
+  tasks: string[]
   actions: typeof actionOptions
   showActions: boolean
 }
@@ -51,6 +52,7 @@ export function toLockConfig(data: CreateData) {
     showActions: data.showActions,
     time: { type: 'variable' },
     actions,
+    tasks: (data.tasks || []).filter(Boolean),
   }
 
   return cfg
@@ -72,26 +74,21 @@ export function estimate(cfg: LockConfig) {
 
   let draws = 0
   draws += actions.blank + actions.task + actions.unlock
-  draws += actions.increase * 3
-  draws -= actions.decrease * 3
+  draws += actions.increase * 4
+  draws -= actions.decrease * 4
   draws += actions.freeze * 2
 
   let blanks = actions.blank
   let doubles = actions.double
-  let halves = actions.half
+  let increases = actions.increase
 
   while (doubles > 0) {
     blanks *= 2
+    increases *= 2
     doubles--
   }
 
-  while (halves > 0) {
-    blanks = Math.ceil(blanks / 2)
-    halves--
-  }
-
-  draws += blanks
-
+  draws += blanks - actions.blank + (increases - actions.increase) * 3
   return { avg: draws * secs * 0.5, worst: draws * secs }
 }
 

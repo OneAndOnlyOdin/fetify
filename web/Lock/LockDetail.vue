@@ -1,13 +1,15 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Modal } from '../elements'
+import LockCard from './LockCard.vue'
 import { locksApi, authApi } from '../store'
 import { ClientLock } from '../store/lock'
 import { LockHistory } from '../../src/domain/game/lock/types'
 import { common } from '../common'
-import { SocketMsg } from '../../src/sockets/types'
+import { SocketMsg, LockDraw } from '../../src/sockets/types'
 import { webSockets } from '../store/socket'
 import { mapHistory } from './util'
+import { LockDTO } from '../../src/domain/game/lock/store'
 
 type Data = {
   timer?: NodeJS.Timeout
@@ -18,33 +20,39 @@ type Data = {
   draw: {
     loading: boolean
     card: number
-    drawn: string | null
+    drawn?: string
+    task?: string
   }
   cards: number[]
   history: Array<LockHistory & { since: string }>
+  showCard: {
+    open: boolean
+  }
 }
 
 export default Vue.extend({
-  components: { Modal },
+  components: { Modal, LockCard },
   props: { id: String },
   data(): Data {
     return {
       listener: -1,
       drawSeconds: -1,
       loading: true,
-      draw: {
-        loading: false,
-        card: -1,
-        drawn: null,
-      },
+      draw: { loading: false, card: -1 },
       cards: [],
       history: [],
+      showCard: { open: false },
     }
   },
   methods: {
     format: common.formatDate,
     elapsed: common.elapsedSince,
     toDuration: common.toDuration,
+    closeCard() {
+      this.showCard.open = false
+      this.draw.drawn = undefined
+      this.draw.task = undefined
+    },
     reveal(card: number): boolean {
       return this.draw.card === card
     },
@@ -63,46 +71,45 @@ export default Vue.extend({
     },
     async drawCard(card: number) {
       if (!this.canDraw) return
-
       this.draw.loading = true
-
-      const result = await locksApi.drawLockCard(this.lock!.id, card)
-
+      this.draw.drawn = '???'
       this.draw.card = card
-      this.draw.drawn = result.type
-      this.draw.loading = false
-      this.setCards()
+      await locksApi.drawLockCard(this.lock!.id, card)
 
-      setTimeout(() => {
-        this.draw.card = -1
-        this.setCards()
-      }, 3000)
+      setTimeout(this.unsetDrawn, 3000)
+    },
+    unsetDrawn() {
+      this.draw.card = -1
+    },
+    recvLock(dto: LockDTO) {
+      if (!this.lock || this.lock.id !== dto.id) return
+      this.lock = { ...dto, drawSeconds: locksApi.getDrawSecs(dto.draw) }
+      this.history = mapHistory(dto.history)
+      this.setCards()
+    },
+    recvDraw(draw: LockDraw) {
+      if (this.id !== draw.lockId) return
+      console.log(draw)
+      this.draw.drawn = draw.action.type
+      this.draw.task = draw.task
+
+      if (this.draw.loading) {
+        this.showCard.open = true
+        this.draw.loading = false
+      }
+
+      setTimeout(this.unsetDrawn, 3000)
     },
     onMessage(msg: SocketMsg) {
       if (!this.lock) return
 
       switch (msg.type) {
         case 'lock':
-          if (!this.lock) return
-          if (this.lock.id !== this.id) return
-
-          this.lock = {
-            ...msg.payload,
-            drawSeconds: locksApi.getDrawSecs(msg.payload.draw),
-          }
-
-          this.history = mapHistory(msg.payload.history)
+          this.recvLock(msg.payload)
           return
 
         case 'lock-draw':
-          if (this.id !== msg.payload.lockId) return
-          if (this.draw.card > -1) return
-          this.draw.card = msg.payload.card
-          this.draw.drawn = msg.payload.action.type
-
-          setTimeout(() => {
-            this.draw.card = -1
-          }, 3000)
+          this.recvDraw(msg.payload)
           return
       }
     },
@@ -184,19 +191,20 @@ export default Vue.extend({
             <tr>
               <th>When</th>
               <th>Type</th>
-              <th>Time</th>
+              <th>Detail</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(history, i) in history" :key="i">
-              <td>{{history.since}} ago</td>
+              <td>{{history.since}} ago ({{format(history.date)}})</td>
               <td>{{history.type}}</td>
-              <td>{{format(history.date)}}</td>
+              <td>{{history.extra}}</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+    <LockCard :open="showCard.open" :onHide="closeCard" :card="draw.drawn" :task="draw.task" />
   </div>
 </template>
 

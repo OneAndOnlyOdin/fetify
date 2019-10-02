@@ -8,11 +8,14 @@ export type LockMsg = {
   payload: LockDTO
 }
 
+export type LockDraw = {
+  lockId: string
+  card: number
+  action: LockAction
+  task?: string
+}
+
 export type LockDrawMsg = {
   type: 'lock-draw'
-  payload: {
-    lockId: string
-    card: number
-    action: LockAction
-  }
+  payload: LockDraw
 }

@@ -8,7 +8,12 @@ export type LockEvent =
   | DomainEvent<'LockJoined', { userId: string }>
   | DomainEvent<
       'CardDrawn',
-      { card: number; cardType: LockAction['type']; actions: LockAction[] }
+      {
+        card: number
+        cardType: LockAction['type']
+        actions: LockAction[]
+        task?: string
+      }
     >
   | DomainEvent<'LockOpened'>
   | DomainEvent<'LockCancelled'>
@@ -31,6 +36,7 @@ export type LockConfig = {
   maxUsers?: number
   actions: { [type in ActionType]: number }
   showActions: boolean
+  tasks: string[]
 }
 
 export type ActionType = LockAction['type']
@@ -65,4 +71,5 @@ export type LockAgg = {
 export type LockHistory = {
   type: LockAction['type']
   date: Date
+  extra?: any
 }

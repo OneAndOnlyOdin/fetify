@@ -1,7 +1,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { authApi } from '../store'
-import LockList from '../Lock/List.vue'
+import LockList from '../Lock/LockList.vue'
 
 export default Vue.extend({
   components: { LockList },

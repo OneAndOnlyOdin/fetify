@@ -2,7 +2,6 @@ import { LockDomain } from '../../src/domain/game/lock'
 import { api } from './api'
 import { LockDTO } from '../../src/domain/game/lock/store'
 import { getNow } from './time'
-import { LockAction } from '../../src/domain/game/lock/types'
 import { webSockets } from './socket'
 
 export type LockState = {
@@ -35,10 +34,10 @@ webSockets.on(msg => {
   return
 })
 
-let debouce = 0
+let debounce = 0
 export async function getLocks() {
-  if (Date.now() - debouce < 5000) return
-  debouce = Date.now()
+  if (Date.now() - debounce < 5000) return
+  debounce = Date.now()
 
   const locks = await api.get<LockDTO[]>('/api/lock')
   for (const lock of locks) {
@@ -51,7 +50,7 @@ export async function getLocks() {
 }
 
 export async function drawLockCard(lockId: string, card: number) {
-  const result = await api.post<LockAction>(`/api/lock/${lockId}/draw`, {
+  const result = await api.post(`/api/lock/${lockId}/draw`, {
     card,
   })
   return result

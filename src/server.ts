@@ -49,18 +49,15 @@ export function createApp(id: number) {
 
 function errorHandler(
   err: any,
-  req: express.Request,
+  _req: express.Request,
   res: express.Response,
   _next: express.NextFunction
 ) {
-  const logger = req.log
-
   if (err instanceof CommandError) {
     res.status(400).send({ message: err.message })
     return
   }
 
-  logger.error({ err }, 'Unhandled error')
   const message = err.status ? err.message : 'Internal server error'
   res.status(err.status || 500).send({ message })
   return

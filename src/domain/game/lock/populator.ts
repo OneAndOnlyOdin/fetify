@@ -32,7 +32,15 @@ pop.handle('CardDrawn', async ({ event, timestamp }) => {
     throw new Error('Lock state not found')
   }
 
-  const item = { type: event.cardType, date: timestamp }
+  let extra: any
+
+  switch (event.cardType) {
+    case 'task':
+      extra = event.task
+      break
+  }
+
+  const item = { type: event.cardType, date: timestamp, extra }
   const nextLock = {
     ...lock,
     actions: event.actions,
@@ -51,6 +59,7 @@ pop.handle('CardDrawn', async ({ event, timestamp }) => {
       card: event.card,
       action: { type: event.cardType },
       lockId: event.aggregateId,
+      task: event.task,
     },
   })
 
