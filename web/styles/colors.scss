@@ -12,3 +12,26 @@ $color-unlocked: #1d8921;
 $color-change: #988400;
 $color-multiply: #0b7def;
 $color-task: #8f00af;
+
+.blank {
+  background-color: $color-locked;
+}
+
+.task {
+  background-color: $color-task;
+}
+
+.freeze,
+.half,
+.double {
+  background-color: $color-multiply;
+}
+
+.decrease,
+.increase {
+  background-color: $color-change;
+}
+
+.unlock {
+  background-color: $color-unlocked;
+}

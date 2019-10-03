@@ -175,7 +175,7 @@ export default Vue.extend({
             <div class="card" :class="{ locked: !canDraw }" @click="drawCard(i)">
               <div class="card__inner" :class="{ 'card--flipped': draw.card === i }">
                 <div class="card__front">{{cardText}}</div>
-                <div class="card__back">
+                <div :class="'card__back ' + draw.drawn">
                   <div>{{draw.drawn}}</div>
                 </div>
               </div>
@@ -290,7 +290,6 @@ export default Vue.extend({
 
   /* Style the back side */
   .card__back {
-    background-color: $color-unlocked;
     color: $color-text;
     transform: rotateY(180deg);
   }

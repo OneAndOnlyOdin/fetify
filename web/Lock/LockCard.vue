@@ -28,7 +28,7 @@ export default Vue.extend({
     <template v-slot:header>Lock Card</template>
     <div class="page">
       <div>You drew</div>
-      <div class="card--back" :class="card">
+      <div :class="'card--back ' + card">
         <h1>{{cardType}}</h1>
       </div>
       <div>{{cardInfo}}</div>
@@ -54,31 +54,8 @@ export default Vue.extend({
 
 .card--back {
   margin: 16px 0;
-  background-color: $color-secondary;
   border-radius: 5px;
   border: 1px solid $color-accent;
   padding: 16px;
-}
-
-.blank {
-  background-color: $color-locked;
-}
-
-.task {
-  background-color: $color-task;
-}
-
-.half,
-.double {
-  background-color: $color-multiply;
-}
-
-.decrease,
-.increase {
-  background-color: $color-change;
-}
-
-.unlock {
-  background-color: $color-unlocked;
 }
 </style>
