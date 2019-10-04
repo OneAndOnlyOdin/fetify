@@ -23,6 +23,26 @@ export function raise(toast: Toast) {
   })
 }
 
+export function error(message: string, title?: string) {
+  raise({ type: 'error', title, message })
+}
+
+export function warn(message: string, title?: string) {
+  raise({ type: 'warn', title, message })
+}
+
+export function info(message: string, title?: string) {
+  raise({ type: 'info', title, message })
+}
+
+export function success(message: string, title?: string) {
+  raise({ type: 'success', title, message })
+}
+
+export function normal(message: string, title?: string) {
+  raise({ type: 'default', title, message })
+}
+
 function removeAt() {
   return new Date(Date.now() + 3500)
 }

@@ -64,7 +64,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
     DrawCard: async (cmd, agg) => {
       if (agg.state === 'opened') return
       if (!canDraw(agg)) {
-        throw new CommandError('Cannot draw yet')
+        throw new CommandError('Cannot draw yet', 'CANNOT_DRAW')
       }
 
       const exists = agg.actions[cmd.card] !== undefined

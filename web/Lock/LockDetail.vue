@@ -1,8 +1,8 @@
 <script lang="ts">
 import Vue from 'vue'
-import { Modal } from '../elements'
+import { Modal, Dropdown } from '../elements'
 import LockCard from './LockCard.vue'
-import DeleteLock from './DeleteLock.vue'
+import LockOptions from './LockOptions.vue'
 import { locksApi, authApi, toastApi } from '../store'
 import { ClientLock } from '../store/lock'
 import { LockHistory } from '../../src/domain/game/lock/types'
@@ -33,11 +33,11 @@ type Data = {
   }
   newName: string
   nameLoading: boolean
-  isDeleteOpen: boolean
+  isOptionsOpen: boolean
 }
 
 export default Vue.extend({
-  components: { Modal, LockCard, DeleteLock },
+  components: { Modal, LockCard, LockOptions, Dropdown },
   props: { id: String },
   data(): Data {
     return {
@@ -50,41 +50,25 @@ export default Vue.extend({
       showCard: { open: false },
       newName: '',
       nameLoading: false,
-      isDeleteOpen: false,
+      isOptionsOpen: false,
     }
   },
   methods: {
     format: common.formatDate,
     elapsed: common.elapsedSince,
     toDuration: common.toDuration,
-    async renameLock() {
-      if (!this.lock) return
-      if (this.newName === this.lock.name) return
-      try {
-        this.nameLoading = true
-        await locksApi.renameLock(this.lock.id, this.newName)
-        toastApi.raise({ type: 'success', message: 'Lock has been renamed' })
-      } finally {
-        this.nameLoading = false
-      }
+    openOptions() {
+      this.isOptionsOpen = true
     },
-    async deleteLock() {
-      if (!this.lock) return
-      await locksApi.deleteLock(this.lock.id)
-      this.isDeleteOpen = false
-      navigate('/locks')
+    closeOptions() {
+      this.isOptionsOpen = false
     },
     closeCard() {
       this.showCard.open = false
       this.draw.drawn = undefined
       this.draw.task = undefined
     },
-    openDelete() {
-      this.isDeleteOpen = true
-    },
-    closeDelete() {
-      this.isDeleteOpen = false
-    },
+
     reveal(card: number): boolean {
       return this.draw.card === card
     },
@@ -98,17 +82,34 @@ export default Vue.extend({
       const length = this.lock.totalActions
       this.cards = Array.from({ length }, (_, i) => i)
     },
-    getLock() {
-      return locksApi.state.locks[this.id]
+    async getLock(refresh?: boolean) {
+      if (refresh) {
+        await locksApi.getLocks()
+      }
+
+      this.lock = locksApi.state.locks[this.id]
+      if (!this.lock && !refresh) {
+        this.getLock(true)
+      }
     },
     async drawCard(card: number) {
       if (!this.canDraw) return
       this.draw.loading = true
-      this.draw.drawn = '???'
-      this.draw.card = card
-      await locksApi.drawLockCard(this.lock!.id, card)
-
-      setTimeout(this.unsetDrawn, 1000)
+      try {
+        await locksApi.drawLockCard(this.lock!.id, card)
+        this.draw.drawn = '???'
+        this.draw.card = card
+      } catch (ex) {
+        if (ex.code === 'CANNOT_DRAW') {
+          toastApi.error('Cannot draw yet. Try again soon.')
+        } else {
+          const message = ex.message || 'Try again soon.'
+          toastApi.error(`Failed to draw: ${message}`)
+        }
+        return this.getLock()
+      } finally {
+        setTimeout(this.unsetDrawn, 1000)
+      }
     },
     unsetDrawn() {
       this.draw.card = -1
@@ -152,11 +153,7 @@ export default Vue.extend({
   },
   async mounted() {
     this.listener = webSockets.on(this.onMessage)
-    this.lock = this.getLock()
-    if (!this.lock) {
-      await locksApi.getLocks()
-      this.lock = this.getLock()
-    }
+    await this.getLock()
     this.loading = false
     this.newName = this.lock ? this.lock.name || '' : ''
     this.updateLock()
@@ -208,6 +205,7 @@ export default Vue.extend({
           <div>{{card.chance}}%</div>
         </div>
       </div>
+
       <div class="lock__info">
         <div>
           <div v-if="!lock.isOpen">
@@ -220,23 +218,11 @@ export default Vue.extend({
           </div>
         </div>
 
-        <div style="display: flex;">
-          <div class="input__group">
-            <div
-              @click="renameLock"
-              class="input__prefix--btn"
-              :class="{ disabled: nameLoading }"
-            >Rename</div>
-            <input
-              type="text"
-              v-model="newName"
-              v-on:keyup.enter="renameLock"
-              :disabled="nameLoading"
-            />
-          </div>
-          <button @click="openDelete" style="margin-left: 16px">Delete Lock</button>
+        <div>
+          <button @click="openOptions">Options</button>
         </div>
       </div>
+
       <div class="cards" v-if="!lock.isOpen">
         <div class="action-grid">
           <div v-for="(card, i) in cards" :key="card">
@@ -273,12 +259,7 @@ export default Vue.extend({
       </div>
     </div>
     <LockCard :open="showCard.open" :onHide="closeCard" :card="draw.drawn" :task="draw.task" />
-    <DeleteLock
-      :isOpen="isDeleteOpen"
-      :onHide="closeDelete"
-      :id="lock ? lock.id : ''"
-      :confirm="deleteLock"
-    />
+    <LockOptions :lock="lock" :onHide="closeOptions" :onOpen="openOptions" :isOpen="isOptionsOpen" />
   </div>
 </template>
 
@@ -307,9 +288,15 @@ export default Vue.extend({
   width: 100%;
 }
 
+.lock__opts {
+  @include mobile {
+    margin-top: 8px;
+  }
+}
 .lock__info {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .lock__box {
@@ -343,7 +330,6 @@ export default Vue.extend({
 
   .card {
     cursor: pointer;
-
     height: 60px;
     background-color: transparent;
     perspective: 1000px;
@@ -375,8 +361,8 @@ export default Vue.extend({
   .card__front,
   .card__back {
     position: absolute;
-    box-shadow: 3px 3px 3px #999;
     border: 1px solid $color-accent;
+    border-radius: 5px;
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
@@ -399,7 +385,7 @@ export default Vue.extend({
   }
 
   .locked {
-    cursor: not-allowed;
+    cursor: default;
   }
 
   .small {

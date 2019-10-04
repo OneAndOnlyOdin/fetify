@@ -54,7 +54,8 @@ function errorHandler(
   _next: express.NextFunction
 ) {
   if (err instanceof CommandError) {
-    res.status(400).send({ message: err.message })
+    const code = err.code || 'UNKNOWN'
+    res.status(400).send({ message: err.message, code })
     return
   }
 

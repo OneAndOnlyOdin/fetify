@@ -9,6 +9,7 @@ type Data = {
 export default Vue.extend({
   props: {
     text: String,
+    arrow: Boolean,
   },
   data(): Data {
     return {
@@ -29,7 +30,7 @@ export default Vue.extend({
 
 <template>
   <div class="dropdown" v-click-outside="hide">
-    <button @click="toggle">{{text}}</button>
+    <button @click="toggle">{{text}} {{arrow ? ' ▼' : ''}}</button>
     <div class="dropdown-content" :class="{ show }">
       <slot></slot>
     </div>
