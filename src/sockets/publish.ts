@@ -9,9 +9,12 @@ async function toAll(payload: SocketMsg) {
   })
 }
 
-async function toUser(userId: string | string[], payload: SocketMsg) {
+type UserId = string | Array<string | undefined>
+
+async function toUser(userId: UserId, payload: SocketMsg) {
   if (Array.isArray(userId)) {
     for (const target of userId) {
+      if (!target) continue
       await toUser(target, payload)
     }
     return

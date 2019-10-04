@@ -7,6 +7,7 @@ import { navigate } from '../router'
 import { ClientLock, getDrawSecs } from '../store/lock'
 import { Dropdown } from '../elements'
 import { AuthState } from '../store/auth'
+import ListCard from './ListCard.vue'
 
 type Data = {
   interval?: NodeJS.Timer
@@ -21,7 +22,7 @@ type Data = {
 }
 
 export default Vue.extend({
-  components: { Create, Dropdown },
+  components: { Create, Dropdown, ListCard },
   data(): Data {
     return {
       joinLockId: '',
@@ -35,6 +36,10 @@ export default Vue.extend({
     }
   },
   methods: {
+    async joinLock() {
+      await locksApi.joinLock(this.joinLockId)
+      this.joinLockId = ''
+    },
     toggleFilter(filter: string) {
       switch (filter) {
         case 'unlocked':
@@ -59,41 +64,13 @@ export default Vue.extend({
           return 'player'
       }
     },
-    getLockFor(lock: ClientLock) {
-      if (lock.config.owner === 'self') return 'you'
-
-      if (lock.ownerId !== authApi.state.userId && !lock.playerId) return '...'
-      return lock.playerId === authApi.state.userId ? 'you' : lock.playerId
-    },
-    getStatus(lock: ClientLock) {
-      if (lock.isOpen) return 'Open'
-      if (lock.config.owner === 'self') return 'In Play'
-      if (lock.ownerId && lock.playerId) return 'In Play'
-      return 'Pending'
-    },
     openCreate() {
       navigate('/locks/create')
     },
-    nextDraw(lock: ClientLock) {
-      return common.toDuration(lock.drawSeconds, true)
-    },
-    clickLock(lock: ClientLock) {
-      navigate(`/locks/${lock.id}`)
-    },
     toDuration: common.toDuration,
-    format(lock: ClientLock) {
-      if (lock.unlockDate) {
-        const diff =
-          new Date(lock.unlockDate).valueOf() - new Date(lock.created).valueOf()
-        return common.toDuration(diff / 1000)
-      }
-      return common.elapsedSince(lock.created)
-    },
-    async joinLock() {
-      await locksApi.joinLock(this.joinLockId)
-      this.joinLockId = ''
-    },
     updateLocks() {
+      this.locks = this.locks.filter(isVisible)
+
       for (const [id, lock] of Object.entries(locksApi.state.locks))
         if (!this.knownLocks.has(id)) {
           this.knownLocks.add(id)
@@ -102,6 +79,7 @@ export default Vue.extend({
 
       for (const lock of this.locks) {
         lock.draw = locksApi.state.locks[lock.id].draw
+        lock.name = locksApi.state.locks[lock.id].name
         lock.drawSeconds = getDrawSecs(lock.draw)
       }
     },
@@ -109,6 +87,7 @@ export default Vue.extend({
   computed: {
     filteredLocks(): ClientLock[] {
       return this.locks.filter(lock => {
+        if (lock.deleted) return false
         if (this.filter.unlocked && lock.isOpen) return false
         if (this.filter.drawable) {
           if (lock.isOpen) return false
@@ -121,7 +100,7 @@ export default Vue.extend({
   mounted() {
     this.updateLocks()
     if (!locksApi.state.locks.length) locksApi.getLocks()
-    this.interval = setInterval(this.updateLocks, 990)
+    this.interval = setInterval(this.updateLocks, 1000)
 
     const persisted = common.hydrate<Partial<Data['filter']>>('lock-filters')
     this.filter = { ...this.filter, ...persisted }
@@ -130,6 +109,10 @@ export default Vue.extend({
     clearInterval(this.interval!)
   },
 })
+
+function isVisible(lock: ClientLock) {
+  return !locksApi.state.locks[lock.id].deleted && !lock.deleted
+}
 </script>
 
 <template>
@@ -172,52 +155,12 @@ export default Vue.extend({
     </div>
 
     <div class="grid-4-8">
-      <div class="card" v-for="lock in filteredLocks" :key="lock.id">
-        <div class="title" :class="{ locked: !lock.isOpen, unlocked: lock.isOpen }">
-          <div class="card-row">
-            <div>#{{lock.id}}</div>
-            <div class="lock-id"></div>
-          </div>
-        </div>
-
-        <div class="content">
-          <div class="card-row">
-            <div>Lock for</div>
-            <div>{{getLockFor(lock)}}</div>
-          </div>
-          <div class="card-row">
-            <div>Locked</div>
-            <div>{{format(lock)}}</div>
-          </div>
-
-          <div class="card-row">
-            <div>Cards</div>
-            <div>{{lock.totalActions}}</div>
-          </div>
-
-          <div class="card-row">
-            <div>Status</div>
-            <div>{{getStatus(lock)}}</div>
-          </div>
-
-          <div class="card-row">
-            <div>Interval</div>
-            <div>{{toDuration(lock.config.intervalMins * 60, true)}}</div>
-          </div>
-
-          <div class="draw-button">
-            <button v-if="!lock.isOpen" @click="clickLock(lock)">
-              <template v-if="viewMode(lock) === 'owner' && lock.playerId">View</template>
-              <template v-if="viewMode(lock) === 'owner' && !lock.playerId">Pending</template>
-              <template v-if="viewMode(lock) === 'player'">
-                <span v-if="lock.drawSeconds === 0">Draw</span>
-                <span v-if="lock.drawSeconds > 0">{{nextDraw(lock)}}</span>
-              </template>
-            </button>
-            <button @click="clickLock(lock)" v-if="lock.isOpen">Unlocked!</button>
-          </div>
-        </div>
-      </div>
+      <ListCard
+        v-for="lock in filteredLocks"
+        :key="lock.id"
+        :lock="lock"
+        :viewMode="viewMode(lock)"
+      />
     </div>
   </div>
 </template>
@@ -258,13 +201,5 @@ export default Vue.extend({
 .page {
   display: flex;
   flex-direction: column;
-}
-
-.locked {
-  background-color: $color-locked;
-}
-
-.unlocked {
-  background-color: $color-unlocked;
 }
 </style>

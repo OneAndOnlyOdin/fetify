@@ -105,6 +105,17 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
 
       return { type: 'LockCancelled', aggregateId: cmd.aggregateId }
     },
+    RenameLock: async cmd => {
+      return {
+        type: 'LockRenamed',
+        aggregateId: cmd.aggregateId,
+        name: cmd.name,
+      }
+    },
+    DeleteLock: async (cmd, agg) => {
+      if (agg.state === 'deleted') return
+      return { type: 'LockDeleted', aggregateId: cmd.aggregateId }
+    },
   },
   lockRepo,
   writer

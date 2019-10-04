@@ -1,7 +1,7 @@
 import { LockDTO } from '../domain/game/lock/store'
 import { LockAction } from '../domain/game/lock/types'
 
-export type SocketMsg = LockMsg | LockDrawMsg
+export type SocketMsg = LockMsg | LockDrawMsg | LockUpdate
 
 export type LockMsg = {
   type: 'lock'
@@ -18,4 +18,12 @@ export type LockDraw = {
 export type LockDrawMsg = {
   type: 'lock-draw'
   payload: LockDraw
+}
+
+export type LockUpdate = {
+  type: 'lock-update'
+  payload: {
+    id: string
+    update: Partial<LockDTO>
+  }
 }

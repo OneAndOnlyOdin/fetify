@@ -4,6 +4,8 @@ import { secondsTilDraw } from './util'
 
 export type LockSchema = {
   id: string
+  name?: string
+  deleted?: boolean
   created: Date
   ownerId: string
   playerId?: string
@@ -17,6 +19,8 @@ export type LockCounts = { [type in ActionType]?: number }
 
 export type LockDTO = {
   id: string
+  name?: string
+  deleted?: boolean
   created: Date
   ownerId: string
   playerId?: string
@@ -32,15 +36,22 @@ export type LockDTO = {
 const coll = database.then(db => db.collection<LockSchema>('gameLock'))
 
 export async function getLocks(userId: string) {
+  const query = {
+    $and: [
+      { deleted: { $ne: true } },
+      {
+        $or: [{ ownerId: { $eq: userId } }, { playerId: { $eq: userId } }],
+      },
+    ],
+  }
+  const count = await coll.then(coll => coll.find(query).count())
   const locks = await coll.then(coll =>
     coll
-      .find({
-        $or: [{ ownerId: { $eq: userId } }, { playerId: { $eq: userId } }],
-      })
+      .find(query)
       .sort({ created: -1 })
       .toArray()
   )
-  return locks
+  return { locks, count }
 }
 
 export async function upsertLock(lock: LockSchema) {
@@ -50,7 +61,9 @@ export async function upsertLock(lock: LockSchema) {
 }
 
 export function getLock(lockId: string) {
-  return coll.then(coll => coll.findOne({ id: lockId }))
+  return coll.then(coll =>
+    coll.findOne({ id: lockId, deleted: { $ne: false } })
+  )
 }
 
 export function updateLock(id: string, lock: Partial<LockSchema>) {
@@ -75,6 +88,8 @@ export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
 
   return {
     id: lock.id,
+    name: lock.name,
+    deleted: lock.deleted,
     created: lock.created,
     isOpen: lock.isOpen,
     config: lock.config,

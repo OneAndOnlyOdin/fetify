@@ -99,6 +99,36 @@ pop.handle('LockOpened', async ({ aggregateId }) => {
   send(lock)
 })
 
+pop.handle('LockRenamed', async ({ aggregateId, event }) => {
+  await updateLock(aggregateId, { name: event.name })
+  const lock = await getLock(aggregateId)!
+
+  svcSockets.toUser([lock!.ownerId, lock!.playerId], {
+    type: 'lock-update',
+    payload: {
+      id: aggregateId,
+      update: {
+        name: event.name,
+      },
+    },
+  })
+})
+
+pop.handle('LockDeleted', async ({ aggregateId }) => {
+  await updateLock(aggregateId, { deleted: true })
+  const lock = await getLock(aggregateId)!
+
+  svcSockets.toUser([lock!.ownerId, lock!.playerId], {
+    type: 'lock-update',
+    payload: {
+      id: aggregateId,
+      update: {
+        deleted: true,
+      },
+    },
+  })
+})
+
 function send(lock: LockSchema) {
   svcSockets.toUser(lock.ownerId, {
     type: 'lock',

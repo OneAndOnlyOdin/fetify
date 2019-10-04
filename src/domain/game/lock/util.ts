@@ -58,6 +58,14 @@ export function fold(
       next.created = timestamp
       break
 
+    case 'LockRenamed':
+      next.name = event.name
+      break
+
+    case 'LockDeleted':
+      next.state = 'deleted'
+      break
+
     case 'LockCancelled':
     case 'LockOpened':
       next.state = 'opened'

@@ -24,6 +24,13 @@ button {
       background-color: lighten($color-unlocked, 10%);
     }
   }
+
+  &.danger {
+    background-color: $color-locked;
+    &:hover {
+      background-color: lighten($color-locked, 10%);
+    }
+  }
 }
 
 a {

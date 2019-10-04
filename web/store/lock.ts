@@ -6,16 +6,26 @@ import { webSockets } from './socket'
 
 export type LockState = {
   locks: { [lockId: string]: ClientLock }
+  total: number
 }
 
 export type ClientLock = LockDTO & { drawSeconds: number }
 
 export const state: LockState = {
   locks: {},
+  total: 0,
 }
 
 webSockets.on(msg => {
   switch (msg.type) {
+    case 'lock-update': {
+      if (!state.locks[msg.payload.id]) return
+      for (const key in msg.payload.update) {
+        state.locks[msg.payload.id][key] = msg.payload.update[key]
+      }
+      return
+    }
+
     case 'lock':
       const lock = msg.payload
       const existing = state.locks[lock.id]
@@ -39,7 +49,11 @@ export async function getLocks() {
   if (Date.now() - debounce < 5000) return
   debounce = Date.now()
 
-  const locks = await api.get<LockDTO[]>('/api/lock')
+  const { locks, count } = await api.get<{ locks: LockDTO[]; count: number }>(
+    '/api/lock'
+  )
+  state.total = count
+
   for (const lock of locks) {
     state.locks[lock.id] = {
       ...lock,
@@ -47,6 +61,14 @@ export async function getLocks() {
       created: new Date(lock.created),
     }
   }
+}
+
+export async function deleteLock(lockId: string) {
+  await api.post(`/api/lock/${lockId}/delete`)
+}
+
+export async function renameLock(lockId: string, name: string) {
+  await api.post(`/api/lock/${lockId}/rename`, { name })
 }
 
 export async function drawLockCard(lockId: string, card: number) {

@@ -40,15 +40,11 @@ export default Vue.extend({
 
     <div class="container hide-desktop">
       <Dropdown text="Menu">
-        <a>
-          <router-link to="/">Home</router-link>
-        </a>
-        <a>
-          <router-link to="/locks">Locks</router-link>
-        </a>
-        <a>
-          <router-link to="/locks">{{auth.userId}} {{auth.connected ? '✓' : '✗'}}</router-link>
-        </a>
+        <router-link to="/">Home</router-link>
+        <router-link to="/locks">Locks</router-link>
+        <router-link
+          to="/locks"
+        >{{auth.userId}} {{auth.connected ? '✓' : '✗'}} {{auth.wsAuthed ? '✓' : '✗'}}</router-link>
         <a>
           <button v-if="auth.loggedIn" style="width: 100%" @click="logout">Logout</button>
         </a>
@@ -101,18 +97,22 @@ header {
   h3 {
     margin: 0;
   }
+}
 
-  a {
-    padding: 12px;
-    text-decoration: none;
-    color: $color-text;
-    font-weight: 600;
-    cursor: pointer;
-    min-width: 60px;
+a {
+  padding: 16px;
+  text-decoration: none;
+  color: $color-text;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 60px;
 
-    &:hover {
-      background-color: $color-accent;
-    }
+  &:hover {
+    background-color: $color-accent;
+  }
+
+  @include mobile {
+    height: 32px;
   }
 }
 </style>

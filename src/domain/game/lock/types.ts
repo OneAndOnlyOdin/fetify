@@ -17,6 +17,8 @@ export type LockEvent =
     >
   | DomainEvent<'LockOpened'>
   | DomainEvent<'LockCancelled'>
+  | DomainEvent<'LockRenamed', { name: string }>
+  | DomainEvent<'LockDeleted'>
 
 export type LockCommand =
   | DomainCmd<'CreateLock', { userId: string; config: LockConfig }>
@@ -24,6 +26,8 @@ export type LockCommand =
   | DomainCmd<'DrawCard', { card: number }>
   | DomainCmd<'CancelLock'>
   | DomainCmd<'CompleteLock'>
+  | DomainCmd<'RenameLock', { name: string }>
+  | DomainCmd<'DeleteLock'>
 
 export type ActionAmount = { type: LockAction['type']; amount: number }
 
@@ -56,7 +60,8 @@ export type LockTime =
   | { type: 'variable' }
 
 export type LockAgg = {
-  state: 'new' | 'created' | 'opened'
+  state: 'new' | 'created' | 'opened' | 'deleted'
+  name?: string
   created: Date
   aggregateId: string
   ownerId: string
