@@ -11,7 +11,6 @@ import { SocketMsg, LockDraw } from '../../src/sockets/types'
 import { webSockets } from '../store/socket'
 import { mapHistory, toCountsArray, ActionCount } from './util'
 import { LockDTO } from '../../src/domain/game/lock/store'
-import { navigate } from '../router'
 
 type Data = {
   timer?: NodeJS.Timeout
