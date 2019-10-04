@@ -25,7 +25,6 @@ export default Vue.extend({
 
 <template>
   <Modal v-model="open" :onHide="onHide">
-    <template v-slot:header>Lock Card</template>
     <div class="page">
       <div>You drew</div>
       <div :class="'card--back ' + card">

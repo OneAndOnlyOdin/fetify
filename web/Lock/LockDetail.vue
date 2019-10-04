@@ -167,9 +167,11 @@ export default Vue.extend({
     <div v-if="!lock && !loading">Lock not found</div>
     <div v-if="!lock && loading">Loading...</div>
     <div v-if="lock" class="lockdetail">
-      <div class="card__count" v-if="counts">
-        <div :class="card.type" v-for="card in counts" :key="card.type">
-          <div>{{card.type}}</div>
+      <div class="card__grid" v-if="counts">
+        <div class="card__count" :class="card.type" v-for="card in counts" :key="card.type">
+          <div>
+            <b>{{card.type}}</b>
+          </div>
           <div>{{card.count}}</div>
           <div>{{card.chance}}%</div>
         </div>
@@ -177,6 +179,10 @@ export default Vue.extend({
       <div v-if="!lock.isOpen">
         <b>Next card available:</b>
         {{toDuration(drawSeconds, true) || 'now'}}
+      </div>
+      <div>
+        <b>Total cards:</b>
+        {{lock.totalActions}}
       </div>
       <div class="cards" v-if="!lock.isOpen">
         <div class="action-grid">
@@ -218,22 +224,28 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
-.card__count {
+.card__grid {
   width: 100%;
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  column-gap: 16px;
+  row-gap: 16px;
+  grid-template-columns: repeat(auto-fit, 72px);
   justify-content: center;
 
-  > div {
-    display: flex;
-    flex-direction: column;
-    border-radius: 5px;
-    justify-content: center;
-    align-items: center;
-    margin: 0 8px;
-    width: 42px;
-    padding: 12px;
+  @include mobile {
+    column-gap: 8px;
+    row-gap: 8px;
   }
+}
+
+.card__count {
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  width: 100%;
 }
 
 .lockdetail {

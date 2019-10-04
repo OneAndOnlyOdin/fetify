@@ -15,8 +15,10 @@ export default Vue.extend({
     <div class="overlay hide-mobile" v-on:click="onHide"></div>
     <div class="container">
       <div class="header">
-        <slot name="header"></slot>
-        <button v-on:click="onHide" class="close">✕</button>
+        <div>
+          <slot name="header"></slot>
+        </div>
+        <div @click="onHide" class="close">✕</div>
       </div>
 
       <div class="content">
@@ -53,6 +55,8 @@ export default Vue.extend({
 }
 
 .header {
+  display: flex;
+  justify-content: space-between;
   font-weight: 600;
   font-size: 16px;
   min-height: 16px;
@@ -79,28 +83,27 @@ export default Vue.extend({
     max-height: unset;
     margin: unset;
     width: 100%;
-    height: 100%;
+    // height: 100%;
   }
 }
 
 .close {
-  float: right;
   cursor: pointer;
   border: 0;
   outline: 0;
   background: transparent;
-  font-size: 16px;
+  font-size: 22px;
   margin-right: 16px;
 }
 
 .content {
   overflow-y: scroll;
-  height: calc(100vh - 200px - 140px);
+  max-height: calc(100vh - 200px - 140px);
   width: calc(100% - 32px);
   padding: 0 16px;
 
   @include mobile {
-    height: calc(100% - 140px);
+    max-height: calc(100% - 140px);
   }
 }
 
