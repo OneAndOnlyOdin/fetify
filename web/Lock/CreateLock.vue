@@ -2,7 +2,7 @@
 import Vue from 'vue'
 import { Modal, Select } from '../elements'
 import { CreateData, create, toLockConfig, estimate } from './util'
-import { webSockets } from '../store/socket'
+import { webSockets, toastApi } from '../store'
 import { navigate } from '../router'
 import { common } from '../common'
 import { ActionType } from '../../src/domain/game/lock/types'
@@ -53,8 +53,9 @@ export default Vue.extend({
       const id = await create(this.$data as any)
       await webSockets.subscribe({ type: 'lock', id })
       navigate('/locks')
+      toastApi.raise({ type: 'success', message: `Created lock ${id}` })
     },
-    options() {
+    options(): Array<{ type: ActionType, max: number, desc: string }> {
       return Object.entries(actionOptions).map(([type, { desc, max }]) => ({
         max,
         type,

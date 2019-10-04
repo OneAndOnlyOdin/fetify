@@ -2,10 +2,11 @@
 import Vue from 'vue'
 import Header from './Header.vue'
 import Guest from './Home/Guest.vue'
+import Toast from './Toast.vue'
 import { authApi } from './store'
 
 export default Vue.extend({
-  components: { Header, Guest },
+  components: { Header, Guest, Toast },
   data() {
     return { auth: authApi.state }
   },
@@ -20,6 +21,8 @@ export default Vue.extend({
       <router-view v-if="auth.loggedIn"></router-view>
       <Guest v-if="!auth.loggedIn" />
     </div>
+
+    <Toast />
   </div>
 </template>
 

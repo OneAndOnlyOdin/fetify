@@ -69,4 +69,10 @@ label {
   &:hover {
     background-color: lighten($color-accent, 10%);
   }
+
+  &.disabled {
+    cursor: not-allowed;
+    background-color: darken($color-accent, 20%);
+    color: darken($color-text, 50%);
+  }
 }

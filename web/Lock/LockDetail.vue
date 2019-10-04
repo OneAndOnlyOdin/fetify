@@ -3,7 +3,7 @@ import Vue from 'vue'
 import { Modal } from '../elements'
 import LockCard from './LockCard.vue'
 import DeleteLock from './DeleteLock.vue'
-import { locksApi, authApi } from '../store'
+import { locksApi, authApi, toastApi } from '../store'
 import { ClientLock } from '../store/lock'
 import { LockHistory } from '../../src/domain/game/lock/types'
 import { common } from '../common'
@@ -32,6 +32,7 @@ type Data = {
     open: boolean
   }
   newName: string
+  nameLoading: boolean
   isDeleteOpen: boolean
 }
 
@@ -48,6 +49,7 @@ export default Vue.extend({
       history: [],
       showCard: { open: false },
       newName: '',
+      nameLoading: false,
       isDeleteOpen: false,
     }
   },
@@ -58,7 +60,13 @@ export default Vue.extend({
     async renameLock() {
       if (!this.lock) return
       if (this.newName === this.lock.name) return
-      await locksApi.renameLock(this.lock.id, this.newName)
+      try {
+        this.nameLoading = true
+        await locksApi.renameLock(this.lock.id, this.newName)
+        toastApi.raise({ type: 'success', message: 'Lock has been renamed' })
+      } finally {
+        this.nameLoading = false
+      }
     },
     async deleteLock() {
       if (!this.lock) return
@@ -214,8 +222,17 @@ export default Vue.extend({
 
         <div style="display: flex;">
           <div class="input__group">
-            <div @click="renameLock" class="input__prefix--btn">Rename</div>
-            <input type="text" v-model="newName" />
+            <div
+              @click="renameLock"
+              class="input__prefix--btn"
+              :class="{ disabled: nameLoading }"
+            >Rename</div>
+            <input
+              type="text"
+              v-model="newName"
+              v-on:keyup.enter="renameLock"
+              :disabled="nameLoading"
+            />
           </div>
           <button @click="openDelete" style="margin-left: 16px">Delete Lock</button>
         </div>
