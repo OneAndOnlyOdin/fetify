@@ -163,7 +163,7 @@ function applyAction(action: LockAction, actions: LockAction[]) {
 
     case 'decrease': {
       const amount = getRand(1, 3)
-      return removeBlanks(amount, actions)
+      return removeActions(actions, amount, 'blank')
     }
 
     case 'increase': {
@@ -181,10 +181,13 @@ function applyAction(action: LockAction, actions: LockAction[]) {
     }
 
     case 'half': {
-      const amount = actions.reduce(countHalves, 0) / 2
-      if (amount === 0) break
-      if (amount === 1) return removeBlanks(1, actions)
-      return removeBlanks(Math.floor(amount / 2), actions)
+      const blanks = Math.floor(actions.reduce(countBlanks, 0) / 2)
+      const increases = Math.floor(actions.reduce(countIncreases, 0) / 2)
+
+      if (blanks > 0) removeActions(actions, blanks, 'blank')
+      if (increases > 0) removeActions(actions, increases, 'increase')
+
+      return actions
     }
   }
 
@@ -195,8 +198,6 @@ const countBlanks = (count: number, action: LockAction) =>
   action.type === 'blank' ? count + 1 : count
 const countIncreases = (count: number, action: LockAction) =>
   action.type === 'increase' ? count + 1 : count
-const countHalves = (count: number, action: LockAction) =>
-  action.type === 'half' ? count + 1 : count
 
 export function removeAction(actions: LockAction[], index: number) {
   const action = actions.splice(index, 1)[0]
@@ -210,12 +211,16 @@ export function getRand(min: number, max: number) {
   return rand + min
 }
 
-function removeBlanks(amount: number, actions: LockAction[]) {
+function removeActions(
+  actions: LockAction[],
+  amount: number,
+  type: ActionType
+) {
   let removed = 0
 
   for (let i = 0; i < actions.length; i++) {
     if (removed === amount) break
-    if (actions[i].type === 'blank') {
+    if (actions[i].type === type) {
       removed++
       actions.splice(i, 1)
       i--
