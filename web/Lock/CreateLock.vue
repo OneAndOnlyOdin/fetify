@@ -179,13 +179,19 @@ export default Vue.extend({
         <div v-for="(task, i) in tasks" :key="i">
           <div style="height: 42px; display: flex;">
             <button @click="removeTask(i)" style="width: 42px">-</button>
-            <input type="text" v-model="tasks[i]" style="width: 300px" maxlength="255" />
+            <input
+              type="text"
+              v-model="tasks[i]"
+              style="width: 300px"
+              maxlength="255"
+              v-on:keyup.enter="addTask"
+            />
           </div>
         </div>
       </div>
     </content>
 
-    <div style="display: flex; justify-content: center;">
+    <div class="lock__create">
       <button style="width: 120px;" @click="create" :disabled="loading">Create</button>
     </div>
   </div>
@@ -194,6 +200,12 @@ export default Vue.extend({
 <style lang="scss" scoped>
 .page {
   max-width: 800px;
+}
+
+.lock__create {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
 }
 
 content {

@@ -8,7 +8,7 @@ import { LockHistory } from '../../src/domain/game/lock/types'
 import { common } from '../common'
 import { SocketMsg, LockDraw } from '../../src/sockets/types'
 import { webSockets } from '../store/socket'
-import { mapHistory } from './util'
+import { mapHistory, toCountsArray, ActionCount } from './util'
 import { LockDTO } from '../../src/domain/game/lock/store'
 
 type Data = {
@@ -24,6 +24,7 @@ type Data = {
     task?: string
   }
   cards: number[]
+  counts?: ActionCount[]
   history: Array<LockHistory & { since: string }>
   showCard: {
     open: boolean
@@ -81,15 +82,19 @@ export default Vue.extend({
     unsetDrawn() {
       this.draw.card = -1
     },
+    updateLock() {
+      if (!this.lock) return
+      this.history = mapHistory(this.lock.history)
+      this.counts = toCountsArray(this.lock.counts)
+      this.setCards()
+    },
     recvLock(dto: LockDTO) {
       if (!this.lock || this.lock.id !== dto.id) return
       this.lock = { ...dto, drawSeconds: locksApi.getDrawSecs(dto.draw) }
-      this.history = mapHistory(dto.history)
-      this.setCards()
+      this.updateLock()
     },
     recvDraw(draw: LockDraw) {
       if (this.id !== draw.lockId) return
-      console.log(draw)
       this.draw.drawn = draw.action.type
       this.draw.task = draw.task
 
@@ -121,11 +126,8 @@ export default Vue.extend({
       await locksApi.getLocks()
       this.lock = this.getLock()
     }
-    this.setCards()
     this.loading = false
-    if (this.lock) {
-      this.history = mapHistory(this.lock.history)
-    }
+    this.updateLock()
 
     this.timer = setInterval(() => {
       if (!this.lock) return
@@ -133,7 +135,7 @@ export default Vue.extend({
       for (const hist of this.history) {
         hist.since = common.elapsedSince(hist.date)
       }
-    }, 750)
+    }, 1000)
   },
   beforeDestroy() {
     clearInterval(this.timer!)
@@ -165,6 +167,13 @@ export default Vue.extend({
     <div v-if="!lock && !loading">Lock not found</div>
     <div v-if="!lock && loading">Loading...</div>
     <div v-if="lock" class="lockdetail">
+      <div class="card__count" v-if="counts">
+        <div :class="card.type" v-for="card in counts" :key="card.type">
+          <div>{{card.type}}</div>
+          <div>{{card.count}}</div>
+          <div>{{card.chance}}%</div>
+        </div>
+      </div>
       <div v-if="!lock.isOpen">
         <b>Next card available:</b>
         {{toDuration(drawSeconds, true) || 'now'}}
@@ -209,6 +218,24 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
+.card__count {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    justify-content: center;
+    align-items: center;
+    margin: 0 8px;
+    width: 42px;
+    padding: 12px;
+  }
+}
+
 .lockdetail {
   > div {
     margin: 16px 0;

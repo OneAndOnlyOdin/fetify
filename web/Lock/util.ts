@@ -68,6 +68,30 @@ export async function create(data: CreateData) {
   return createLock(cfg)
 }
 
+export type ActionCount = {
+  type: string
+  count: number
+  chance: number
+}
+
+export function toCountsArray(counts?: ClientLock['counts']): ActionCount[] {
+  if (!counts) {
+    return []
+  }
+
+  const entries = Object.entries(counts)
+
+  const total = entries.reduce((prev, curr) => prev + curr[1]!, 0)
+
+  return entries
+    .map(val => ({
+      type: val[0],
+      count: Number(val[1]),
+      chance: round((val[1]! / total) * 100),
+    }))
+    .sort(sortByType)
+}
+
 export function estimate(cfg: LockConfig) {
   const actions = cfg.actions
   const secs = cfg.intervalMins * 60
@@ -106,4 +130,12 @@ export function mapHistory(history: LockHistory[]) {
 
 function sortHistory(l: LockHistory, r: LockHistory) {
   return l.date > r.date ? -1 : l.date === r.date ? 0 : 1
+}
+
+function sortByType(left: any, right: any) {
+  return left.type > right.type ? 1 : left.type === right.type ? 0 : -1
+}
+
+function round(val: number) {
+  return Math.floor(val * 100) / 100
 }
