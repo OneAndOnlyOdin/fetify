@@ -8,7 +8,7 @@ import { authApi } from '../store'
 export default Vue.extend({
   props: {
     lock: { type: Object as PropType<ClientLock> },
-    viewMode: String,
+    viewMode: { type: String as PropType<'player' | 'owner'> },
   },
   methods: {
     ...common,
@@ -52,7 +52,11 @@ export default Vue.extend({
     </div>
 
     <div class="content">
-      <div class="card-row">
+      <div v-if="viewMode === 'player'" class="card-row">
+        <div>Locked by</div>
+        <div>{{lock.config.owner === 'self' ? 'you' : lock.ownerId}}</div>
+      </div>
+      <div v-if="viewMode === 'owner'" class="card-row">
         <div>Lock for</div>
         <div>{{getLockFor(lock)}}</div>
       </div>
