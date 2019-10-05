@@ -86,7 +86,13 @@ export default Vue.extend({
         await locksApi.getLocks()
       }
 
-      this.lock = locksApi.state.locks[this.id]
+      const lock = locksApi.state.locks[this.id]
+      if (lock) {
+        this.lock = { ...lock }
+        this.updateLock()
+        this.$forceUpdate()
+      }
+
       if (!this.lock && !refresh) {
         this.getLock(true)
       }
@@ -259,7 +265,13 @@ export default Vue.extend({
       </div>
     </div>
     <LockCard :open="showCard.open" :onHide="closeCard" :card="draw.drawn" :task="draw.task" />
-    <LockOptions :lock="lock" :onHide="closeOptions" :onOpen="openOptions" :isOpen="isOptionsOpen" />
+    <LockOptions
+      v-if="lock"
+      :lock="lock"
+      :onHide="closeOptions"
+      :onOpen="openOptions"
+      :isOpen="isOptionsOpen"
+    />
   </div>
 </template>
 
