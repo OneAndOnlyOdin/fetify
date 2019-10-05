@@ -19,6 +19,7 @@ export type LockEvent =
   | DomainEvent<'LockCancelled'>
   | DomainEvent<'LockRenamed', { name: string }>
   | DomainEvent<'LockDeleted'>
+  | DomainEvent<'ActionsAdded', { actions: LockAction[] }>
 
 export type LockCommand =
   | DomainCmd<'CreateLock', { userId: string; config: LockConfig }>
@@ -28,7 +29,7 @@ export type LockCommand =
   | DomainCmd<'CompleteLock'>
   | DomainCmd<'RenameLock', { name: string }>
   | DomainCmd<'DeleteLock'>
-// | DomainCmd<'AddActions', { amounts: ActionAmount[] }>
+  | DomainCmd<'AddActions', { actions: ActionAmount[] }>
 
 export type ActionAmount = { type: LockAction['type']; amount: number }
 

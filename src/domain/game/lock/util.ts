@@ -155,8 +155,13 @@ export function play(
 ) {
   const { action, actions } = removeAction(playActions, card)
   const nextActions = applyAction(action, actions)
+
+  if (shuffleCards && shuffleActions.includes(action.type)) {
+    shuffle(nextActions)
+  }
+
   return {
-    actions: shuffleCards ? shuffle(nextActions, action.type) : nextActions,
+    actions: nextActions,
     action,
   }
 }
@@ -183,7 +188,7 @@ function applyAction(action: LockAction, actions: LockAction[]) {
       const increases = actions.reduce(countIncreases, 0)
 
       return actions.concat(
-        ...createActions(blanks),
+        ...createActions(blanks, 'unlock'),
         ...createActions(increases, 'increase')
       )
     }
@@ -238,7 +243,26 @@ function removeActions(
   return actions
 }
 
-function createActions(
+export function isValidType(type: ActionType): boolean {
+  switch (type) {
+    case 'blank':
+    case 'decrease':
+    case 'double':
+    case 'freeze':
+    case 'half':
+    case 'increase':
+    case 'task':
+    case 'unlock':
+      return true
+  }
+
+  throwNever(type)
+  return false
+}
+
+function throwNever(_nv: never) {}
+
+export function createActions(
   amount: number,
   type: LockAction['type'] = 'blank'
 ): LockAction[] {
@@ -254,7 +278,7 @@ export function createConfigActions(cfgActions: LockConfig['actions']) {
     actions.push(...newActions)
   }
 
-  return shuffle(actions, 'increase')
+  return shuffle(actions)
 }
 
 const shuffleActions: LockAction['type'][] = [
@@ -264,11 +288,7 @@ const shuffleActions: LockAction['type'][] = [
   'half',
 ]
 
-function shuffle(actions: LockAction[], type: LockAction['type']) {
-  if (!shuffleActions.includes(type)) {
-    return actions
-  }
-
+export function shuffle(actions: LockAction[]) {
   const seeded = actions.map(addSeed)
   const sorted = seeded.sort(bySeed).map(removeSeed)
   return sorted

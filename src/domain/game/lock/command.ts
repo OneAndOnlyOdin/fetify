@@ -7,8 +7,10 @@ import {
   getDrawCount,
   getRand,
   defaultTask,
+  shuffle,
 } from './util'
 import { CommandError } from '../../../es/errors'
+import { createActions } from './util'
 
 const writer = store.createMongoWriter('gameLock')
 
@@ -115,6 +117,22 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
     DeleteLock: async (cmd, agg) => {
       if (agg.state === 'deleted') return
       return { type: 'LockDeleted', aggregateId: cmd.aggregateId }
+    },
+    AddActions: async (cmd, agg) => {
+      if (agg.state !== 'created')
+        throw new CommandError('Lock not active', 'NOT_ACTIVE')
+
+      const nextActions = agg.actions
+      for (const action of cmd.actions) {
+        if (action.amount > 0 === false) continue
+        nextActions.push(...createActions(action.amount, action.type))
+      }
+
+      return {
+        type: 'ActionsAdded',
+        aggregateId: cmd.aggregateId,
+        actions: shuffle(nextActions),
+      }
     },
   },
   lockRepo,

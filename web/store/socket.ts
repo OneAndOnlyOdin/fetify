@@ -12,6 +12,10 @@ onAuth('login', () => {
 })
 onAuth('logout', () => logout())
 
+const BASE_RETRY = 100
+const MAX_RETRY = 3000
+let RETRY_TIME = 0
+
 function createSocket() {
   const base = config.apiUrl
     .replace('http://', 'ws://')
@@ -20,6 +24,7 @@ function createSocket() {
 
   ws.onopen = () => {
     state.connected = true
+    RETRY_TIME = 0
     login(state.token || '')
   }
 
@@ -43,9 +48,14 @@ function createSocket() {
   ws.onclose = () => {
     state.connected = false
     state.wsAuthed = false
+
+    RETRY_TIME = RETRY_TIME === 0 ? BASE_RETRY : RETRY_TIME * 2
+
+    if (RETRY_TIME > MAX_RETRY) RETRY_TIME = MAX_RETRY
+
     setTimeout(() => {
       socket = createSocket()
-    }, 5000)
+    }, RETRY_TIME)
   }
 
   ws.onerror = (_error: any) => {
