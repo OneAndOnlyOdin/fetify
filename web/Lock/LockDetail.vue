@@ -149,6 +149,13 @@ export default Vue.extend({
           return
       }
     },
+    updateTime() {
+      if (!this.lock) return
+      this.drawSeconds = locksApi.getDrawSecs(this.lock.draw)
+      for (const hist of this.history) {
+        hist.since = common.elapsedSince(hist.date)
+      }
+    },
   },
   async mounted() {
     this.listener = webSockets.on(this.onMessage)
@@ -156,14 +163,8 @@ export default Vue.extend({
     this.loading = false
     this.newName = this.lock ? this.lock.name || '' : ''
     this.updateLock()
-
-    this.timer = setInterval(() => {
-      if (!this.lock) return
-      this.drawSeconds = locksApi.getDrawSecs(this.lock.draw)
-      for (const hist of this.history) {
-        hist.since = common.elapsedSince(hist.date)
-      }
-    }, 1000)
+    this.updateTime()
+    this.timer = setInterval(this.updateTime, 1000)
   },
   beforeDestroy() {
     clearInterval(this.timer!)
