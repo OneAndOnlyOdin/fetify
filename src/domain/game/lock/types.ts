@@ -28,7 +28,7 @@ export type LockCommand =
   | DomainCmd<'CompleteLock'>
   | DomainCmd<'RenameLock', { name: string }>
   | DomainCmd<'DeleteLock'>
-  | DomainCmd<'AddActions', { amounts: ActionAmount[] }>
+// | DomainCmd<'AddActions', { amounts: ActionAmount[] }>
 
 export type ActionAmount = { type: LockAction['type']; amount: number }
 
