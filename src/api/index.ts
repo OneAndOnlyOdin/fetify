@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import user from './user'
-import lock from './game-lock'
+import lock from './lock'
 import admin from './admin'
 
 export { router as default }
