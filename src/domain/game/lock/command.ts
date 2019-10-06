@@ -1,16 +1,16 @@
 import { store, repo, command } from '../../../es'
 import { LockEvent, LockAgg, LockCommand, LockConfig } from './types'
 import {
-  fold,
   createConfigActions,
   play,
   getDrawCount,
   getRand,
   defaultTask,
   shuffle,
+  toActionConfig,
 } from './util'
 import { CommandError } from '../../../es/errors'
-import { createActions } from './util'
+import { fold } from './fold'
 
 const writer = store.createMongoWriter('gameLock')
 
@@ -27,6 +27,7 @@ const lockRepo = repo.createMongoRepo<LockEvent, LockAgg>({
     lastDrawn: new Date(Date.now()),
     ownerId: '',
     accumulate: false,
+    unlocksFound: 0,
   }),
   fold,
 })
@@ -35,12 +36,13 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
   {
     CreateLock: async cmd => {
       validateConfig(cmd.config)
+      const actions = toActionConfig(cmd.config.actions)
 
       return {
         type: 'LockCreated',
         aggregateId: cmd.aggregateId,
         ownerId: cmd.userId,
-        actions: createConfigActions(cmd.config.actions),
+        actions: shuffle(createConfigActions(actions)),
         config: cmd.config,
       }
     },
@@ -74,7 +76,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
         throw new CommandError('Card out of bounds')
       }
 
-      const { action, actions } = play(agg.actions, cmd.card)
+      const { action, actions } = play(agg.actions, cmd.card, agg.config)
 
       let task: string | undefined
 
@@ -94,11 +96,7 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
     },
     CompleteLock: async (cmd, agg) => {
       if (agg.state === 'opened') return
-
-      const unlocks = agg.config.actions.unlock || 0
-      const seen = agg.drawHistory.filter(hist => hist.type === 'unlock').length
-
-      if (unlocks > seen) return
+      if (agg.config.actions.unlock !== agg.unlocksFound) return
 
       return { type: 'LockOpened', aggregateId: cmd.aggregateId }
     },
@@ -122,11 +120,9 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
       if (agg.state !== 'created')
         throw new CommandError('Lock not active', 'NOT_ACTIVE')
 
-      const nextActions = agg.actions
-      for (const action of cmd.actions) {
-        if (action.amount > 0 === false) continue
-        nextActions.push(...createActions(action.amount, action.type))
-      }
+      const cfg = toActionConfig(cmd.actions)
+      const actions = createConfigActions(cfg)
+      const nextActions = agg.actions.concat(actions)
 
       return {
         type: 'ActionsAdded',
@@ -163,6 +159,7 @@ function canDraw(agg: LockAgg): boolean {
     case 'double':
     case 'half':
     case 'unlock':
+    case 'reset':
       return true
 
     case 'blank':

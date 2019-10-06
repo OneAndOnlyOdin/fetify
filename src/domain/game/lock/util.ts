@@ -1,12 +1,4 @@
-import { StoredEvent } from '../../../es'
-import {
-  LockEvent,
-  LockAgg,
-  LockAction,
-  LockConfig,
-  LockHistory,
-  ActionType,
-} from './types'
+import { LockAction, LockConfig, LockHistory, ActionType } from './types'
 
 export const defaultTask = 'Perform a task for the key holder!'
 
@@ -34,6 +26,11 @@ export const actionOptions: {
     desc: 'halve the number of BLANK and increase cards',
     max: 20,
   },
+  reset: {
+    value: 0,
+    desc: 'reset the lock to the starting state (excluding the reset drawn)',
+    max: 20,
+  },
   freeze: { value: 2, desc: 'freezes the lock for 2x the interval', max: 100 },
   task: {
     value: 0,
@@ -41,50 +38,6 @@ export const actionOptions: {
     max: 100,
   },
   unlock: { value: 1, desc: 'collect all of these to unlock', max: 20 },
-}
-
-export function fold(
-  { event, timestamp }: StoredEvent<LockEvent>,
-  agg: LockAgg
-): LockAgg {
-  const next = { ...agg }
-
-  switch (event.type) {
-    case 'LockCreated':
-      next.actions = event.actions
-      next.ownerId = event.ownerId
-      next.config = event.config
-      next.state = 'created'
-      next.created = timestamp
-      break
-
-    case 'LockRenamed':
-      next.name = event.name
-      break
-
-    case 'LockDeleted':
-      next.state = 'deleted'
-      break
-
-    case 'LockCancelled':
-    case 'LockOpened':
-      next.state = 'opened'
-      break
-
-    case 'CardDrawn':
-      next.actions = event.actions
-      next.drawHistory = agg.drawHistory.concat({
-        type: event.cardType,
-        date: timestamp,
-      })
-      break
-
-    case 'LockJoined':
-      next.ownerId = event.userId
-      break
-  }
-
-  return next
 }
 
 type Opts = {
@@ -115,6 +68,7 @@ export function secondsTilDraw(opts: Opts): number {
     case 'double':
     case 'half':
     case 'unlock':
+    case 'reset':
       return 0
   }
 }
@@ -151,12 +105,13 @@ export function getDrawCount(opts: DrawCountOpts) {
 export function play(
   playActions: LockAction[],
   card: number,
+  config: LockConfig,
   shuffleCards = true
 ) {
   const { action, actions } = removeAction(playActions, card)
-  const nextActions = applyAction(action, actions)
+  const nextActions = applyAction(action, actions, config)
 
-  if (shuffleCards && shuffleActions.includes(action.type)) {
+  if (shuffleCards && shuffleActions[action.type]) {
     shuffle(nextActions)
   }
 
@@ -166,13 +121,17 @@ export function play(
   }
 }
 
-function applyAction(action: LockAction, actions: LockAction[]) {
+function applyAction(
+  action: LockAction,
+  actions: LockAction[],
+  cfg: LockConfig
+): LockAction[] {
   switch (action.type) {
     case 'blank':
     case 'freeze':
     case 'task':
     case 'unlock':
-      break
+      return actions
 
     case 'decrease': {
       const amount = getRand(1, 3)
@@ -202,9 +161,18 @@ function applyAction(action: LockAction, actions: LockAction[]) {
 
       return actions
     }
-  }
 
-  return actions
+    case 'reset': {
+      const resetsLeft = actions.filter(act => act.type === 'reset').length
+      const resets = createActions(resetsLeft, 'reset')
+      const nextActions = createConfigActions({
+        ...cfg.actions,
+        reset: 0,
+      }).concat(resets)
+
+      return nextActions
+    }
+  }
 }
 
 const countBlanks = (count: number, action: LockAction) =>
@@ -243,6 +211,22 @@ function removeActions(
   return actions
 }
 
+export function toActionConfig(cfg: {
+  [key: string]: number
+}): LockConfig['actions'] {
+  return {
+    blank: min(cfg.blank),
+    decrease: min(cfg.decrease),
+    increase: min(cfg.increase),
+    double: min(cfg.double),
+    freeze: min(cfg.freeze),
+    half: min(cfg.half),
+    task: min(cfg.task),
+    reset: min(cfg.reset),
+    unlock: min(cfg.unlock, 1),
+  }
+}
+
 export function isValidType(type: ActionType): boolean {
   switch (type) {
     case 'blank':
@@ -253,6 +237,7 @@ export function isValidType(type: ActionType): boolean {
     case 'increase':
     case 'task':
     case 'unlock':
+    case 'reset':
       return true
   }
 
@@ -264,7 +249,7 @@ function throwNever(_nv: never) {}
 
 export function createActions(
   amount: number,
-  type: LockAction['type'] = 'blank'
+  type: ActionType = 'blank'
 ): LockAction[] {
   return Array.from({ length: amount }, () => ({ type }))
 }
@@ -278,17 +263,23 @@ export function createConfigActions(cfgActions: LockConfig['actions']) {
     actions.push(...newActions)
   }
 
-  return shuffle(actions)
+  return actions
 }
 
-const shuffleActions: LockAction['type'][] = [
-  'increase',
-  'decrease',
-  'double',
-  'half',
-]
+const shuffleActions: { [type in ActionType]: boolean } = {
+  blank: false,
+  task: false,
+  unlock: false,
+  freeze: false,
 
-export function shuffle(actions: LockAction[]) {
+  decrease: true,
+  double: true,
+  half: true,
+  increase: true,
+  reset: true,
+}
+
+export function shuffle(actions: LockAction[]): LockAction[] {
   const seeded = actions.map(addSeed)
   const sorted = seeded.sort(bySeed).map(removeSeed)
   return sorted
@@ -304,4 +295,9 @@ function removeSeed(action: LockAction) {
 
 function bySeed(left: any, right: any) {
   return left.seed > right.seed ? 1 : left.seed === right.seed ? 0 : -1
+}
+
+function min(value: any, min = 0) {
+  const num = Number(value)
+  return num >= min ? num : min
 }

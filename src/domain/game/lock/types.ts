@@ -29,9 +29,11 @@ export type LockCommand =
   | DomainCmd<'CompleteLock'>
   | DomainCmd<'RenameLock', { name: string }>
   | DomainCmd<'DeleteLock'>
-  | DomainCmd<'AddActions', { actions: ActionAmount[] }>
+  | DomainCmd<'AddActions', { actions: ActionConfig }>
 
 export type ActionAmount = { type: LockAction['type']; amount: number }
+
+export type ActionConfig = { [type in ActionType]: number }
 
 export type LockConfig = {
   type: 'lock'
@@ -40,7 +42,7 @@ export type LockConfig = {
   intervalMins: number
   owner: 'other' | 'self'
   maxUsers?: number
-  actions: { [type in ActionType]: number }
+  actions: ActionConfig
   showActions: boolean
   tasks: string[]
 }
@@ -56,6 +58,7 @@ export type LockAction =
   | { type: 'half' }
   | { type: 'unlock' }
   | { type: 'task' }
+  | { type: 'reset' }
 
 export type LockTime =
   | { type: 'fixed'; durationHrs: number }
@@ -73,6 +76,7 @@ export type LockAgg = {
   actions: LockAction[]
   lastDrawn: Date
   drawHistory: LockHistory[]
+  unlocksFound: number
 }
 
 export type LockHistory = {

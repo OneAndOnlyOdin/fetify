@@ -12,6 +12,7 @@ $color-unlocked: #1d8921;
 $color-change: #988400;
 $color-multiply: #0b7def;
 $color-task: #8f00af;
+$color-reset: #5d5d5d;
 
 .blank {
   background-color: $color-locked;
@@ -34,4 +35,8 @@ $color-task: #8f00af;
 
 .unlock {
   background-color: $color-unlocked;
+}
+
+.reset {
+  background-color: $color-reset;
 }

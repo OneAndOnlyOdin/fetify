@@ -40,6 +40,7 @@ export function toLockConfig(data: CreateData) {
     half: zero(data.actions.half.value),
     freeze: zero(data.actions.freeze.value),
     task: zero(data.actions.task.value),
+    reset: zero(data.actions.reset.value),
     unlock: zero(data.actions.unlock.value),
   }
 
