@@ -266,7 +266,7 @@ export default Vue.extend({
     </div>
     <LockCard :open="showCard.open" :onHide="closeCard" :card="draw.drawn" :task="draw.task" />
     <LockOptions
-      v-if="lock"
+      v-if="lock && isOptionsOpen"
       :lock="lock"
       :onHide="closeOptions"
       :onOpen="openOptions"

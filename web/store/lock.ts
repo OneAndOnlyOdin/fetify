@@ -3,6 +3,7 @@ import { api } from './api'
 import { LockDTO } from '../../src/domain/game/lock/store'
 import { getNow } from './time'
 import { webSockets } from './socket'
+import { ActionConfig } from '../../src/domain/game/lock/types'
 
 export type LockState = {
   locks: { [lockId: string]: ClientLock }
@@ -76,6 +77,10 @@ export async function drawLockCard(lockId: string, card: number) {
     card,
   })
   return result
+}
+
+export async function addCards(lockId: string, cards: ActionConfig) {
+  await api.post(`/api/lock/${lockId}/add`, { cards })
 }
 
 export async function createLock(config: LockDomain.LockConfig) {

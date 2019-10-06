@@ -10,7 +10,8 @@ $color-accept: #a7efaa;
 $color-locked: #c31414;
 $color-unlocked: #1d8921;
 $color-change: #988400;
-$color-multiply: #0b7def;
+$color-freeze: #0267cb;
+$color-multiply: #016d8b;
 $color-task: #8f00af;
 $color-reset: #5d5d5d;
 
@@ -22,7 +23,10 @@ $color-reset: #5d5d5d;
   background-color: $color-task;
 }
 
-.freeze,
+.freeze {
+  background-color: $color-freeze;
+}
+
 .half,
 .double {
   background-color: $color-multiply;

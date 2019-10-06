@@ -19,7 +19,7 @@ export type LockEvent =
   | DomainEvent<'LockCancelled'>
   | DomainEvent<'LockRenamed', { name: string }>
   | DomainEvent<'LockDeleted'>
-  | DomainEvent<'ActionsAdded', { actions: LockAction[] }>
+  | DomainEvent<'ActionsAdded', { actions: LockAction[]; config: ActionConfig }>
 
 export type LockCommand =
   | DomainCmd<'CreateLock', { userId: string; config: LockConfig }>
@@ -75,12 +75,15 @@ export type LockAgg = {
   config: LockConfig
   actions: LockAction[]
   lastDrawn: Date
-  drawHistory: LockHistory[]
+  drawHistory: DrawHistory[]
   unlocksFound: number
 }
 
-export type LockHistory = {
-  type: LockAction['type']
-  date: Date
-  extra?: any
+type BaseHistory = { date: Date; extra?: any }
+type HistoryType = ActionType | 'actions added'
+
+export type LockHistory = BaseHistory & {
+  type: HistoryType
 }
+
+export type DrawHistory = BaseHistory & { type: ActionType }

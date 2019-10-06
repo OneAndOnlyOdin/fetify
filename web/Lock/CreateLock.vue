@@ -55,10 +55,10 @@ export default Vue.extend({
       navigate('/locks')
       toastApi.raise({ type: 'success', message: `Created lock ${id}` })
     },
-    options(): Array<{ type: ActionType, max: number, desc: string }> {
+    options(): Array<{ type: ActionType; max: number; desc: string }> {
       return Object.entries(actionOptions).map(([type, { desc, max }]) => ({
-        max,
-        type,
+        max: max!,
+        type: type as ActionType,
         desc,
       }))
     },

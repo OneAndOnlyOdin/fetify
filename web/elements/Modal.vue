@@ -12,20 +12,20 @@ export default Vue.extend({
 
 <template>
   <div v-bind:class="{ active: value }" v-if="value" class="modal">
-    <div class="overlay hide-mobile" v-on:click="onHide"></div>
-    <div class="container">
-      <div class="header">
+    <div class="modal__overlay hide-mobile" v-on:click="onHide"></div>
+    <div class="modal__container">
+      <div class="modal__header">
         <div>
           <slot name="header"></slot>
         </div>
-        <div @click="onHide" class="close">✕</div>
+        <div @click="onHide" class="modal__close">✕</div>
       </div>
 
-      <div class="content">
+      <div class="modal__content">
         <slot></slot>
       </div>
 
-      <div class="footer" v-if="!!$slots.footer">
+      <div class="modal__footer" v-if="!!$slots.footer">
         <slot name="footer"></slot>
       </div>
     </div>
@@ -44,7 +44,7 @@ export default Vue.extend({
   right: 0;
 }
 
-.overlay {
+.modal__overlay {
   width: 100%;
   height: 100%;
   opacity: 0.46;
@@ -54,7 +54,7 @@ export default Vue.extend({
   right: 0;
 }
 
-.header {
+.modal__header {
   display: flex;
   justify-content: space-between;
   font-weight: 600;
@@ -67,7 +67,7 @@ export default Vue.extend({
   }
 }
 
-.container {
+.modal__container {
   z-index: 1;
   width: 416px;
   background-color: $color-primary;
@@ -87,7 +87,7 @@ export default Vue.extend({
   }
 }
 
-.close {
+.modal__close {
   cursor: pointer;
   border: 0;
   outline: 0;
@@ -96,7 +96,7 @@ export default Vue.extend({
   margin-right: 16px;
 }
 
-.content {
+.modal__content {
   overflow-y: scroll;
   max-height: calc(100vh - 200px - 140px);
   width: calc(100% - 32px);
@@ -107,7 +107,7 @@ export default Vue.extend({
   }
 }
 
-.footer {
+.modal__footer {
   padding: 16px 16px 24px 16px;
 }
 </style>

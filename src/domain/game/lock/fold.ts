@@ -14,20 +14,20 @@ export function fold(
       next.config = event.config
       next.state = 'created'
       next.created = timestamp
-      break
+      return next
 
     case 'LockRenamed':
       next.name = event.name
-      break
+      return next
 
     case 'LockDeleted':
       next.state = 'deleted'
-      break
+      return next
 
     case 'LockCancelled':
     case 'LockOpened':
       next.state = 'opened'
-      break
+      return next
 
     case 'CardDrawn':
       if (event.cardType === 'unlock') next.unlocksFound++
@@ -38,12 +38,14 @@ export function fold(
         type: event.cardType,
         date: timestamp,
       })
-      break
+      return next
 
     case 'LockJoined':
       next.ownerId = event.userId
-      break
-  }
+      return next
 
-  return next
+    case 'ActionsAdded':
+      next.actions = event.actions
+      return next
+  }
 }

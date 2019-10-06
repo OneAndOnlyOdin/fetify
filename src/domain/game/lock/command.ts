@@ -8,6 +8,7 @@ import {
   defaultTask,
   shuffle,
   toActionConfig,
+  filterLockActions,
 } from './util'
 import { CommandError } from '../../../es/errors'
 import { fold } from './fold'
@@ -121,13 +122,14 @@ export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
         throw new CommandError('Lock not active', 'NOT_ACTIVE')
 
       const cfg = toActionConfig(cmd.actions)
-      const actions = createConfigActions(cfg)
-      const nextActions = agg.actions.concat(actions)
+      const newActions = createConfigActions(cfg)
+      const actions = newActions.concat(agg.actions)
 
       return {
         type: 'ActionsAdded',
         aggregateId: cmd.aggregateId,
-        actions: shuffle(nextActions),
+        actions: shuffle(actions),
+        config: cfg,
       }
     },
   },
@@ -146,7 +148,8 @@ function canDraw(agg: LockAgg): boolean {
     return chances > 0
   }
 
-  const last = agg.drawHistory.slice(-1)[0]
+  const history = filterLockActions(agg.drawHistory)
+  const last = history.slice(-1)[0]
   if (!last) return true
 
   const time = last.date

@@ -1,4 +1,10 @@
-import { LockAction, LockConfig, LockHistory, ActionType } from './types'
+import {
+  LockAction,
+  LockConfig,
+  LockHistory,
+  ActionType,
+  DrawHistory,
+} from './types'
 
 export const defaultTask = 'Perform a task for the key holder!'
 
@@ -47,7 +53,8 @@ type Opts = {
 }
 
 export function secondsTilDraw(opts: Opts): number {
-  const action = opts.history.slice(-1)[0]
+  const history = filterLockActions(opts.history)
+  const action = history.slice(-1)[0]
   if (!action) return 0
 
   const factor = action.type === 'freeze' ? 2 : 1
@@ -71,6 +78,12 @@ export function secondsTilDraw(opts: Opts): number {
     case 'reset':
       return 0
   }
+}
+
+export function filterLockActions(history: LockHistory[]): DrawHistory[] {
+  return history.filter(history =>
+    isValidType(history.type as any)
+  ) as DrawHistory[]
 }
 
 type DrawCountOpts = {
@@ -223,7 +236,7 @@ export function toActionConfig(cfg: {
     half: min(cfg.half),
     task: min(cfg.task),
     reset: min(cfg.reset),
-    unlock: min(cfg.unlock, 1),
+    unlock: min(cfg.unlock),
   }
 }
 

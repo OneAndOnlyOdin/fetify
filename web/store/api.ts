@@ -1,6 +1,6 @@
 import { state, logout } from './auth'
 import { config } from '../env'
-import { authApi } from '.'
+import { authApi, toastApi } from '.'
 
 const baseUrl = config.apiUrl
 
@@ -18,6 +18,9 @@ async function get<T = void>(path: string, query: Query = {}) {
 
   const { result } = await callApi<T>(`${path}?${params}`, {
     method: 'get',
+  }).catch(ex => {
+    toastApi.error(`Request failed: ${ex.message}`)
+    throw ex
   })
   return result
 }
@@ -26,6 +29,9 @@ async function post<T = void>(path: string, body = {}) {
   const { result } = await callApi<T>(path, {
     method: 'post',
     body: JSON.stringify(body),
+  }).catch(ex => {
+    toastApi.error(`Request failed: ${ex.message}`)
+    throw ex
   })
   return result
 }

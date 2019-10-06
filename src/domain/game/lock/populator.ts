@@ -129,6 +129,30 @@ pop.handle('LockDeleted', async ({ aggregateId }) => {
   })
 })
 
+pop.handle('ActionsAdded', async ({ aggregateId, event, timestamp }) => {
+  const lock = await getLock(aggregateId)
+  if (!lock) {
+    throw new Error(`Unable to find lock "${aggregateId}" during ActionsAdded`)
+  }
+
+  lock.actions = event.actions
+  const extra = Object.keys(event.config)
+    .filter(key => event.config[key] > 0)
+    .map(key => `${event.config[key]} ${key}s`)
+    .join(', ')
+
+  lock.history = lock.history.concat({
+    type: 'actions added',
+    date: timestamp,
+    extra,
+  })
+  await updateLock(aggregateId, {
+    actions: event.actions,
+    history: lock.history,
+  })
+  send(lock)
+})
+
 function send(lock: LockSchema) {
   svcSockets.toUser(lock.ownerId, {
     type: 'lock',
