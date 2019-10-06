@@ -1,15 +1,14 @@
-import { LockDomain } from '../../src/domain/game/lock'
 import { createLock, ClientLock } from '../store/lock'
-import { LockConfig, LockHistory } from '../../src/domain/game/lock/types'
-import { getDrawCount, actionOptions } from '../../src/domain/game/lock/util'
+import { LockConfig, LockHistory, LockAction } from '../../src/domain/lock'
+import { getDrawCount, actionOptions } from '../../src/domain/lock/util'
 import { common } from '../common'
 
-export type Action = LockDomain.LockAction & { value: string; desc: string }
+export type Action = LockAction & { value: string; desc: string }
 
 export interface CreateData {
   owner: 'self' | 'other'
   time: {
-    type: LockDomain.LockConfig['time']['type']
+    type: LockConfig['time']['type']
     amount: string
     multiplier: 'hours' | 'days'
   }

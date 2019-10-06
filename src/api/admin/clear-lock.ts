@@ -1,6 +1,6 @@
 import { wrap } from '../util'
 import { database, bookmarks, events } from '../../db/event'
-import { lockDomain } from '../../domain/game'
+import { lockDomain } from '../../domain/lock'
 
 export const clearLock = wrap(async (req, res) => {
   lockDomain.pop.stop()

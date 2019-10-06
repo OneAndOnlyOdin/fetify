@@ -1,6 +1,6 @@
 import { wrap } from '../util'
-import { LockConfig } from '../../domain/game/lock/types'
-import { lockCmd } from '../../domain/game/lock/command'
+import { LockConfig } from '../../domain/lock/types'
+import { lockCmd } from '../../domain/lock/command'
 import * as uuid from 'uuid'
 
 type Body = LockConfig

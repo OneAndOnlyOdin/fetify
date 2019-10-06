@@ -5,8 +5,8 @@ import { CreateData, create, toLockConfig, estimate } from './util'
 import { webSockets, toastApi } from '../store'
 import { navigate } from '../router'
 import { common } from '../common'
-import { ActionType } from '../../src/domain/game/lock/types'
-import { actionOptions } from '../../src/domain/game/lock/util'
+import { ActionType } from '../../src/domain/lock/types'
+import { actionOptions } from '../../src/domain/lock/util'
 
 type Data = CreateData & {
   loading: boolean
@@ -50,10 +50,15 @@ export default Vue.extend({
       this.showActions = !this.showActions
     },
     async create() {
-      const id = await create(this.$data as any)
-      await webSockets.subscribe({ type: 'lock', id })
-      navigate('/locks')
-      toastApi.raise({ type: 'success', message: `Created lock ${id}` })
+      try {
+        this.loading = true
+        const id = await create(this.$data as any)
+        await webSockets.subscribe({ type: 'lock', id })
+        navigate('/locks')
+        toastApi.raise({ type: 'success', message: `Created lock ${id}` })
+      } finally {
+        this.loading = false
+      }
     },
     options(): Array<{ type: ActionType; max: number; desc: string }> {
       return Object.entries(actionOptions).map(([type, { desc, max }]) => ({
@@ -193,7 +198,7 @@ export default Vue.extend({
     </content>
 
     <div class="lock__create">
-      <button style="width: 120px;" @click="create" :disabled="loading">Create</button>
+      <button style="width: 120px; margin-bottom: 24px" @click="create" :disabled="loading">Create</button>
     </div>
   </div>
 </template>

@@ -1,6 +1,6 @@
 import { wrap, StatusError } from '../util'
-import { toActionConfig } from '../../domain/game/lock/util'
-import { lockDomain } from '../../domain/game'
+import { toActionConfig } from '../../domain/lock/util'
+import { lockDomain } from '../../domain/lock'
 
 export const addCards = wrap(async (req, res) => {
   if (!req.body.cards)

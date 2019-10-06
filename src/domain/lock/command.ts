@@ -1,4 +1,4 @@
-import { store, repo, command } from '../../../es'
+import { store, repo, command } from '../../es'
 import { LockEvent, LockAgg, LockCommand, LockConfig } from './types'
 import {
   createConfigActions,
@@ -10,7 +10,7 @@ import {
   toActionConfig,
   filterLockActions,
 } from './util'
-import { CommandError } from '../../../es/errors'
+import { CommandError } from '../../es/errors'
 import { fold } from './fold'
 
 const writer = store.createMongoWriter('gameLock')

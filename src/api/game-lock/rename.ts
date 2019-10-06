@@ -1,6 +1,6 @@
 import { wrap, StatusError } from '../util'
-import { getLock } from '../../domain/game/lock/store'
-import { lockDomain } from '../../domain/game'
+import { getLock } from '../../domain/lock/store'
+import { lockDomain } from '../../domain/lock'
 
 export const renameLock = wrap(async (req, res) => {
   const user = req.user!

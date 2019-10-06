@@ -1,4 +1,4 @@
-import { DomainEvent, DomainCmd } from '../../../es'
+import { DomainEvent, DomainCmd } from '../../es'
 
 export type LockEvent =
   | DomainEvent<

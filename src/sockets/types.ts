@@ -1,5 +1,5 @@
-import { LockDTO } from '../domain/game/lock/store'
-import { LockAction } from '../domain/game/lock/types'
+import { LockDTO } from '../domain/lock/store'
+import { LockAction } from '../domain/lock/types'
 
 export type SocketMsg = LockMsg | LockDrawMsg | LockUpdate
 

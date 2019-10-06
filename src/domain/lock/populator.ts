@@ -1,7 +1,7 @@
-import { eventHandler } from '../../../es'
+import { eventHandler } from '../../es'
 import { LockEvent } from './types'
 import { upsertLock, toLockDto, LockSchema, getLock, updateLock } from './store'
-import { svcSockets } from '../../../sockets/publish'
+import { svcSockets } from '../../sockets/publish'
 
 export { pop as lockPopulator }
 

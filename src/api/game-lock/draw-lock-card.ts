@@ -1,6 +1,6 @@
 import { wrap, StatusError } from '../util'
-import { lockDomain } from '../../domain/game'
-import { LockSchema } from '../../domain/game/lock/store'
+import { lockDomain } from '../../domain/lock'
+import { LockSchema } from '../../domain/lock/store'
 
 type Body = { card: number }
 

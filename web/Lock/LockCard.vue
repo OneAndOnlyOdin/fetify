@@ -1,7 +1,7 @@
 <script lang="ts">
 import Vue, { PropType } from 'vue'
 import { Modal } from '../elements'
-import { actionOptions } from '../../src/domain/game/lock/util'
+import { actionOptions } from '../../src/domain/lock/util'
 
 export default Vue.extend({
   components: { Modal },

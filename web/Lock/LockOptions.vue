@@ -5,8 +5,8 @@ import { ClientLock } from '../store/lock'
 import DeleteLock from './DeleteLock.vue'
 import { locksApi, toastApi } from '../store'
 import { navigate } from '../router'
-import { ActionType } from '../../src/domain/game/lock/types'
-import { actionOptions } from '../../src/domain/game/lock/util'
+import { ActionType } from '../../src/domain/lock/types'
+import { actionOptions } from '../../src/domain/lock/util'
 
 const cardConfig: { [type in ActionType]: number } = {
   blank: 0,

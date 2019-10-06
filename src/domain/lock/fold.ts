@@ -1,4 +1,4 @@
-import { StoredEvent } from '../../../es'
+import { StoredEvent } from '../../es'
 import { LockEvent, LockAgg } from './types'
 
 export function fold(

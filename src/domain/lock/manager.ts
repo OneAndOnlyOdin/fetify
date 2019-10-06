@@ -1,4 +1,4 @@
-import { eventHandler } from '../../../es'
+import { eventHandler } from '../../es'
 import { LockEvent } from './types'
 import { lockCmd } from './command'
 

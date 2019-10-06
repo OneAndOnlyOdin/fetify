@@ -1,4 +1,4 @@
-import { database } from '../../../db/event'
+import { database } from '../../db/event'
 import { LockConfig, LockAction, LockHistory, ActionType } from './types'
 import { secondsTilDraw } from './util'
 

@@ -1,5 +1,5 @@
 import { wrap, StatusError } from '../util'
-import { lockDomain } from '../../domain/game'
+import { lockDomain } from '../../domain/lock'
 
 export const joinLock = wrap(async (req, res) => {
   const userId = req.user!.userId

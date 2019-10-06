@@ -5,12 +5,12 @@ import LockCard from './LockCard.vue'
 import LockOptions from './LockOptions.vue'
 import { locksApi, authApi, toastApi } from '../store'
 import { ClientLock } from '../store/lock'
-import { LockHistory } from '../../src/domain/game/lock/types'
+import { LockHistory } from '../../src/domain/lock/types'
 import { common } from '../common'
 import { SocketMsg, LockDraw } from '../../src/sockets/types'
 import { webSockets } from '../store/socket'
 import { mapHistory, toCountsArray, ActionCount } from './util'
-import { LockDTO } from '../../src/domain/game/lock/store'
+import { LockDTO } from '../../src/domain/lock/store'
 
 type Data = {
   timer?: NodeJS.Timeout

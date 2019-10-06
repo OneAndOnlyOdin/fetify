@@ -1,5 +1,5 @@
 import { wrap } from '../util'
-import { lockDomain } from '../../domain/game/lock'
+import { lockDomain } from '../../domain/lock'
 
 export const getLocks = wrap(async (req, res) => {
   const user = req.user!

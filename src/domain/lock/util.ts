@@ -34,7 +34,7 @@ export const actionOptions: {
   },
   reset: {
     value: 0,
-    desc: 'reset the lock to the starting state (excluding the reset drawn)',
+    desc: 'reset the lock to the starting state (does not reset "reset" cards)',
     max: 20,
   },
   freeze: { value: 2, desc: 'freezes the lock for 2x the interval', max: 100 },
