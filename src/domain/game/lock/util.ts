@@ -160,7 +160,7 @@ function applyAction(
       const increases = actions.reduce(countIncreases, 0)
 
       return actions.concat(
-        ...createActions(blanks, 'unlock'),
+        ...createActions(blanks, 'blank'),
         ...createActions(increases, 'increase')
       )
     }
