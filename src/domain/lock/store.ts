@@ -33,7 +33,21 @@ export type LockDTO = {
   draw?: Date
 }
 
+export type LockState = {
+  aggregateId: string
+  state: 'created' | 'resolved'
+  joinable: boolean
+}
+
 const coll = database.then(db => db.collection<LockSchema>('gameLock'))
+
+export function getLockState(id: string) {
+  return lockState.then(tbl => tbl.findOne({ aggregateId: id }))
+}
+
+export const lockState = database.then(db =>
+  db.collection<LockState>('lockState')
+)
 
 export async function getLocks(userId: string) {
   const query = {

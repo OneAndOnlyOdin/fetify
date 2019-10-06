@@ -64,7 +64,7 @@ export function createMongoReader<TEvent extends ESEvent>(stream: EventStream) {
   })
 }
 
-export function createMongoWriter<TEvent extends ESEvent>(stream: string) {
+export function createMongoWriter<TEvent extends ESEvent>(stream: EventStream) {
   const collection = events()
   const append = async (version: number, ...events: NewEvent<TEvent>[]) => {
     if (!events.length) {

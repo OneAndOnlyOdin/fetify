@@ -13,7 +13,7 @@ import {
 import { CommandError } from '../../es/errors'
 import { fold } from './fold'
 
-const writer = store.createMongoWriter('gameLock')
+const writer = store.createMongoWriter<LockEvent>('gameLock')
 
 const lockRepo = repo.createMongoRepo<LockEvent, LockAgg>({
   eventStream: 'gameLock',

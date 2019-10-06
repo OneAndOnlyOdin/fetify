@@ -3,7 +3,7 @@ export type ExtractType<
   U extends { type: string }
 > = U extends { type: T } ? U : never
 
-export type EventStream = 'users' | 'gameLock'
+export type EventStream = 'users' | 'gameLock' | 'invite'
 
 export type ESWriter<TEvent extends ESEvent> = {
   append: AppendEvents<TEvent>

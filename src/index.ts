@@ -3,12 +3,14 @@ import { userDomain } from './domain/user'
 import { lockDomain } from './domain/lock'
 import { initiate } from './db/message'
 import { migrate } from './db/migrate'
+import { inviteDomain } from './domain/invite'
 
 async function start() {
   await migrate()
   userDomain.mgr.start()
   lockDomain.mgr.start()
   lockDomain.pop.start()
+  inviteDomain.pop.start()
   createServer(1)
   initiate()
 }
