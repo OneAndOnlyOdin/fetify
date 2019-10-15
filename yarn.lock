@@ -1774,10 +1774,10 @@ evp_bytestokey@^1.0.0, evp_bytestokey@^1.0.3:
     md5.js "^1.3.4"
     safe-buffer "^5.1.1"
 
-evtstore@^0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/evtstore/-/evtstore-0.3.2.tgz#7b923be9faee48e7aa8ba7fe88f464b3ebfd6fc4"
-  integrity sha512-c+O3LNthcU2N46L5CvcoEIy+ukz6vuXX55iKiWBHd0sC0/vLWfmUXbzo04xBpYn16SERgi192+Rty16DvREUVg==
+evtstore@^0.3.4:
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/evtstore/-/evtstore-0.3.4.tgz#7535a29133333d02383fd0b1bf7a6a7b4719b587"
+  integrity sha512-k5SB02oC3KRPtrsUNou23cTdU8T6Y22ydoaUvuq89sKzDZRr3A19ZBuh0k4PbUMcj/JaRqvFxiOU1Osj7V6uEg==
   dependencies:
     "@types/mongodb" "^3.3.6"
 

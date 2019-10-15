@@ -47,7 +47,7 @@ export default Vue.extend({
           confirm: this.confirm,
         }
         const token = await api.post<string>('/api/user/register', body)
-        authApi.handleToken(token)
+        authApi.handleToken(token, true)
       } catch (ex) {
         this.error = ex.message
       }
