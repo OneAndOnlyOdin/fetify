@@ -1,50 +1,38 @@
-import { store, repo, StoredEvent, command } from '../../es'
+import { createDomain, CommandError } from 'evtstore'
 import { InviteEvent, InviteAgg, InviteCmd } from './types'
-import { CommandError } from '../../es/errors'
+import { getProvider } from '../util'
+import { getUser } from '../user/store'
 import { lockDomain } from '../lock'
 import { getLockState } from '../lock/store'
-import { getUser } from '../user/store'
 
-const writer = store.createMongoWriter('invite')
+export const domain = createDomain<InviteEvent, InviteAgg, InviteCmd>(
+  {
+    stream: 'invite-event',
+    aggregate: () => ({
+      creatorId: '',
+      gameId: '',
+      gameType: 'lock',
+      state: 'new',
+      userId: '',
+    }),
+    fold: ev => {
+      switch (ev.type) {
+        case 'InviteCreated':
+          return {
+            state: 'created',
+            gameId: ev.gameId,
+            userId: ev.userId,
+            gameType: ev.gameType,
+          }
 
-const inviteRepo = repo.createMongoRepo<InviteEvent, InviteAgg>({
-  eventStream: 'invite',
-  factory: () => ({
-    state: 'new',
-    version: 0,
-    aggregateId: '',
-    gameId: '',
-    gameType: 'lock',
-    userId: '',
-    creatorId: '',
-  }),
-  fold,
-})
-
-function fold({ event }: StoredEvent<InviteEvent>, agg: InviteAgg): InviteAgg {
-  const next = { ...agg }
-
-  switch (event.type) {
-    case 'InviteCreated':
-      next.state = 'created'
-      next.gameId = event.gameId
-      next.userId = event.userId
-      next.gameType = event.gameType
-      return next
-
-    case 'InviteAccepted':
-    case 'InviteCancelled':
-    case 'InviteDeclined':
-      next.state = 'resolved'
-      return next
-  }
-}
-
-export const inviteCmd = command.createHandler<
-  InviteEvent,
-  InviteCmd,
-  InviteAgg
->(
+        case 'InviteAccepted':
+        case 'InviteCancelled':
+        case 'InviteDeclined':
+          return { state: 'resolved' }
+      }
+    },
+    provider: getProvider<InviteEvent>(),
+  },
   {
     CreateInvite: async (cmd, agg) => {
       if (agg.state !== 'new') return
@@ -72,20 +60,12 @@ export const inviteCmd = command.createHandler<
       const lock = await getLockState(agg.gameId)
       if (!lock || !lock.joinable) return
 
-      await lockDomain.cmd.JoinLock({
-        aggregateId: agg.gameId,
+      await lockDomain.cmd.JoinLock(agg.gameId, {
         userId: agg.userId,
       })
 
       return {
         type: 'InviteAccepted',
-        aggregateId: cmd.aggregateId,
-      }
-    },
-    DeclineInvite: async (cmd, agg) => {
-      if (agg.state !== 'created') return
-      return {
-        type: 'InviteDeclined',
         aggregateId: cmd.aggregateId,
       }
     },
@@ -96,7 +76,12 @@ export const inviteCmd = command.createHandler<
         aggregateId: cmd.aggregateId,
       }
     },
-  },
-  inviteRepo,
-  writer
+    DeclineInvite: async (cmd, agg) => {
+      if (agg.state !== 'created') return
+      return {
+        type: 'InviteDeclined',
+        aggregateId: cmd.aggregateId,
+      }
+    },
+  }
 )

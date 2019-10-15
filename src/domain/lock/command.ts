@@ -1,4 +1,3 @@
-import { store, repo, command } from '../../es'
 import { LockEvent, LockAgg, LockCommand, LockConfig } from './types'
 import {
   createConfigActions,
@@ -10,132 +9,107 @@ import {
   toActionConfig,
   filterLockActions,
 } from './util'
-import { CommandError } from '../../es/errors'
-import { fold } from './fold'
+import { CommandHandler, CommandError } from 'evtstore'
 
-const writer = store.createMongoWriter<LockEvent>('gameLock')
+export const command: CommandHandler<LockEvent, LockAgg, LockCommand> = {
+  CreateLock: async cmd => {
+    validateConfig(cmd.config)
+    const actions = toActionConfig(cmd.config.actions)
 
-const lockRepo = repo.createMongoRepo<LockEvent, LockAgg>({
-  eventStream: 'gameLock',
-  factory: () => ({
-    state: 'new',
-    created: new Date(0),
-    aggregateId: '',
-    version: 0,
-    config: {} as any,
-    actions: [],
-    drawHistory: [],
-    lastDrawn: new Date(Date.now()),
-    ownerId: '',
-    accumulate: false,
-    unlocksFound: 0,
-  }),
-  fold,
-})
-
-export const lockCmd = command.createHandler<LockEvent, LockCommand, LockAgg>(
-  {
-    CreateLock: async cmd => {
-      validateConfig(cmd.config)
-      const actions = toActionConfig(cmd.config.actions)
-
-      return {
-        type: 'LockCreated',
-        aggregateId: cmd.aggregateId,
-        ownerId: cmd.userId,
-        actions: shuffle(createConfigActions(actions)),
-        config: cmd.config,
-      }
-    },
-    JoinLock: async (cmd, agg) => {
-      if (agg.config.owner === 'self') {
-        throw new CommandError('Lock is not joinable')
-      }
-
-      if (agg.playerId) {
-        throw new CommandError('Lock already has a player')
-      }
-
-      if (cmd.userId === agg.ownerId) {
-        throw new CommandError('Cannot join a lock you own')
-      }
-
-      return {
-        type: 'LockJoined',
-        aggregateId: cmd.aggregateId,
-        userId: cmd.userId,
-      }
-    },
-    DrawCard: async (cmd, agg) => {
-      if (agg.state === 'opened') return
-      if (!canDraw(agg)) {
-        throw new CommandError('Cannot draw yet', 'CANNOT_DRAW')
-      }
-
-      const exists = agg.actions[cmd.card] !== undefined
-      if (!exists) {
-        throw new CommandError('Card out of bounds')
-      }
-
-      const { action, actions } = play(agg.actions, cmd.card, agg.config)
-
-      let task: string | undefined
-
-      if (action.type === 'task') {
-        const rand = getRand(0, agg.config.tasks.length - 1)
-        task = agg.config.tasks[rand] || defaultTask
-      }
-
-      return {
-        type: 'CardDrawn',
-        aggregateId: cmd.aggregateId,
-        card: cmd.card,
-        cardType: action.type,
-        actions,
-        task,
-      }
-    },
-    CompleteLock: async (cmd, agg) => {
-      if (agg.state === 'opened') return
-      if (agg.config.actions.unlock !== agg.unlocksFound) return
-
-      return { type: 'LockOpened', aggregateId: cmd.aggregateId }
-    },
-    CancelLock: async (cmd, agg) => {
-      if (agg.state === 'opened') return
-
-      return { type: 'LockCancelled', aggregateId: cmd.aggregateId }
-    },
-    RenameLock: async cmd => {
-      return {
-        type: 'LockRenamed',
-        aggregateId: cmd.aggregateId,
-        name: cmd.name,
-      }
-    },
-    DeleteLock: async (cmd, agg) => {
-      if (agg.state === 'deleted') return
-      return { type: 'LockDeleted', aggregateId: cmd.aggregateId }
-    },
-    AddActions: async (cmd, agg) => {
-      if (agg.state !== 'created')
-        throw new CommandError('Lock not active', 'NOT_ACTIVE')
-
-      const cfg = toActionConfig(cmd.actions)
-      const newActions = createConfigActions(cfg)
-      const actions = newActions.concat(agg.actions)
-
-      return {
-        type: 'ActionsAdded',
-        aggregateId: cmd.aggregateId,
-        actions: shuffle(actions),
-        config: cfg,
-      }
-    },
+    return {
+      type: 'LockCreated',
+      aggregateId: cmd.aggregateId,
+      ownerId: cmd.userId,
+      actions: shuffle(createConfigActions(actions)),
+      config: cmd.config,
+    }
   },
-  lockRepo,
-  writer
-)
+  JoinLock: async (cmd, agg) => {
+    if (agg.config.owner === 'self') {
+      throw new CommandError('Lock is not joinable')
+    }
+
+    if (agg.playerId) {
+      throw new CommandError('Lock already has a player')
+    }
+
+    if (cmd.userId === agg.ownerId) {
+      throw new CommandError('Cannot join a lock you own')
+    }
+
+    return {
+      type: 'LockJoined',
+      aggregateId: cmd.aggregateId,
+      userId: cmd.userId,
+    }
+  },
+  DrawCard: async (cmd, agg) => {
+    if (agg.state === 'opened') return
+    if (!canDraw(agg)) {
+      throw new CommandError('Cannot draw yet', 'CANNOT_DRAW')
+    }
+
+    const exists = agg.actions[cmd.card] !== undefined
+    if (!exists) {
+      throw new CommandError('Card out of bounds')
+    }
+
+    const { action, actions } = play(agg.actions, cmd.card, agg.config)
+
+    let task: string | undefined
+
+    if (action.type === 'task') {
+      const rand = getRand(0, agg.config.tasks.length - 1)
+      task = agg.config.tasks[rand] || defaultTask
+    }
+
+    return {
+      type: 'CardDrawn',
+      aggregateId: cmd.aggregateId,
+      card: cmd.card,
+      cardType: action.type,
+      actions,
+      task,
+    }
+  },
+  CompleteLock: async (cmd, agg) => {
+    if (agg.state === 'opened') return
+    if (agg.config.actions.unlock !== agg.unlocksFound) return
+
+    return { type: 'LockOpened', aggregateId: cmd.aggregateId }
+  },
+  CancelLock: async (cmd, agg) => {
+    if (agg.state === 'opened') return
+
+    return { type: 'LockCancelled', aggregateId: cmd.aggregateId }
+  },
+  RenameLock: async cmd => {
+    return {
+      type: 'LockRenamed',
+      aggregateId: cmd.aggregateId,
+      name: cmd.name,
+    }
+  },
+  DeleteLock: async (cmd, agg) => {
+    if (agg.state === 'deleted') return
+    return { type: 'LockDeleted', aggregateId: cmd.aggregateId }
+  },
+  AddActions: async (cmd, agg) => {
+    if (agg.state !== 'created')
+      throw new CommandError('Lock not active', 'NOT_ACTIVE')
+
+    const cfg = toActionConfig(cmd.actions)
+    const newActions = createConfigActions(cfg)
+    const actions = newActions.concat(agg.actions)
+
+    return {
+      type: 'ActionsAdded',
+      aggregateId: cmd.aggregateId,
+      actions: shuffle(actions),
+      config: cfg,
+    }
+  },
+}
 
 function canDraw(agg: LockAgg): boolean {
   if (agg.config.accumulate) {

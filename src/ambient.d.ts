@@ -9,3 +9,10 @@ declare type BaseToken = {
   email?: string
   alias?: string
 }
+
+declare type Msg<T extends string, P extends {}> = {
+  type: T
+  payload: P
+}
+
+declare type Maybe<T> = T | undefined

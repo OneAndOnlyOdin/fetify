@@ -1,4 +1,4 @@
-import { DomainEvent, DomainCmd } from '../../es'
+import { DomainEvent, DomainCmd } from '../util'
 
 export type LockEvent =
   | DomainEvent<
@@ -30,6 +30,24 @@ export type LockCommand =
   | DomainCmd<'RenameLock', { name: string }>
   | DomainCmd<'DeleteLock'>
   | DomainCmd<'AddActions', { actions: ActionConfig }>
+
+export type LockCounts = { [type in ActionType]?: number }
+
+export type LockDTO = {
+  id: string
+  name?: string
+  deleted?: boolean
+  created: Date
+  ownerId: string
+  playerId?: string
+  config: LockConfig
+  history: LockHistory[]
+  counts?: LockCounts
+  totalActions: number
+  isOpen: boolean
+  unlockDate?: Date
+  draw?: Date
+}
 
 export type ActionAmount = { type: LockAction['type']; amount: number }
 
@@ -87,3 +105,11 @@ export type LockHistory = BaseHistory & {
 }
 
 export type DrawHistory = BaseHistory & { type: ActionType }
+
+export type LockMessages =
+  | Msg<'lock', LockDTO>
+  | Msg<
+      'lock-draw',
+      { lockId: string; card: number; action: LockAction; task?: string }
+    >
+  | Msg<'lock-update', { id: string; update: Partial<LockDTO> }>

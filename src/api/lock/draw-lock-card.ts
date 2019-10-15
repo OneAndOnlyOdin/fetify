@@ -27,10 +27,7 @@ export const drawLockCard = wrap(async (req, res) => {
     throw new StatusError('Not allowed to draw on this lock', 403)
   }
 
-  await lockDomain.cmd.DrawCard({
-    aggregateId: id,
-    card,
-  })
+  await lockDomain.cmd.DrawCard(id, { card })
 
   res.json({ message: 'OK' })
 })

@@ -1,13 +1,5 @@
-import { connect, Timestamp, Collection } from 'mongodb'
+import { connect } from 'mongodb'
 import { config } from '../env'
-import { StoredEvent } from '../es'
-
-export type Callback<T, U> = (collection: Collection<T>) => U
-
-export enum Table {
-  Bookmark = 'bookmarks',
-  Events = 'events'
-}
 
 export const database = connect(
   config.dbUri,
@@ -18,24 +10,11 @@ export const database = connect(
     reconnectTries: Infinity,
     ignoreUndefined: true,
     w: 'majority',
-    j: true
+    j: true,
   }
-).then(client => client.db(config.dbName))
+).then(client => client.db())
 
-export interface BookmarkDocument {
-  key: string
-  bookmark: Timestamp
-}
-
-export const bookmarks = <T>(cb: Callback<BookmarkDocument, T>) =>
-  getCollection<any>(Table.Bookmark).then(cb)
-
-export function events<T>() {
-  return database.then(client =>
-    client.collection<StoredEvent<T>>(Table.Events)
-  )
-}
-
-function getCollection<T>(name: string) {
-  return database.then(coll => coll.collection<T>(name))
+export const collections = {
+  events: database.then(db => db.collection('eventLog')),
+  bookmarks: database.then(db => db.collection('bookmarks')),
 }

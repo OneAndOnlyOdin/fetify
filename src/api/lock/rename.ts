@@ -14,6 +14,6 @@ export const renameLock = wrap(async (req, res) => {
     lock.ownerId === user.userId || lock.playerId === user.userId
   if (!canRename) throw new StatusError('Unauthorized', 403)
 
-  await lockDomain.cmd.RenameLock({ aggregateId: lock.id, name })
+  await lockDomain.cmd.RenameLock(lock.id, { name })
   res.json({ message: 'OK' })
 })

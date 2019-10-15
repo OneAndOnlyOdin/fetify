@@ -1,15 +1,9 @@
-import { eventHandler } from '../../es'
-import { LockEvent } from './types'
-import { lockCmd } from './command'
+import { domain } from './domain'
 import { lockState } from './store'
 
-export const lockMgr = eventHandler.createMongoHandler<LockEvent>({
-  bookmark: 'lock-bookmark',
-  eventStream: 'gameLock',
-  name: 'lock-manager',
-})
+export const lockMgr = domain.handler('lock-bookmark')
 
-lockMgr.handle('LockCreated', async ({ aggregateId, event }) => {
+lockMgr.handle('LockCreated', async (aggregateId, event) => {
   const joinable = event.config.owner === 'other'
   await lockState.then(tbl =>
     tbl.updateOne(
@@ -20,13 +14,13 @@ lockMgr.handle('LockCreated', async ({ aggregateId, event }) => {
   )
 })
 
-lockMgr.handle('LockJoined', async ({ aggregateId }) => {
+lockMgr.handle('LockJoined', async aggregateId => {
   await lockState.then(tbl =>
     tbl.updateOne({ aggregateId }, { $set: { joinable: false } })
   )
 })
 
-lockMgr.handle('LockCancelled', async ({ aggregateId }) => {
+lockMgr.handle('LockCancelled', async aggregateId => {
   await lockState.then(tbl =>
     tbl.updateOne(
       { aggregateId },
@@ -35,7 +29,7 @@ lockMgr.handle('LockCancelled', async ({ aggregateId }) => {
   )
 })
 
-lockMgr.handle('LockOpened', async ({ aggregateId }) => {
+lockMgr.handle('LockOpened', async aggregateId => {
   await lockState.then(tbl =>
     tbl.updateOne(
       { aggregateId },
@@ -44,7 +38,7 @@ lockMgr.handle('LockOpened', async ({ aggregateId }) => {
   )
 })
 
-lockMgr.handle('LockDeleted', async ({ aggregateId }) => {
+lockMgr.handle('LockDeleted', async aggregateId => {
   await lockState.then(tbl =>
     tbl.updateOne(
       { aggregateId },
@@ -53,8 +47,8 @@ lockMgr.handle('LockDeleted', async ({ aggregateId }) => {
   )
 })
 
-lockMgr.handle('CardDrawn', async ({ event }) => {
+lockMgr.handle('CardDrawn', async (aggregateId, event) => {
   if (event.cardType !== 'unlock') return
 
-  await lockCmd.CompleteLock({ aggregateId: event.aggregateId })
+  await domain.command.CompleteLock(aggregateId, {})
 })

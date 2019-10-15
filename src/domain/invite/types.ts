@@ -1,4 +1,4 @@
-import { DomainEvent, DomainCmd } from '../../es'
+import { DomainEvent, DomainCmd } from '../util'
 
 export type InviteType = 'lock'
 
@@ -32,8 +32,6 @@ export type InviteCmd =
 
 export type InviteAgg = {
   state: 'new' | 'created' | 'resolved'
-  version: number
-  aggregateId: string
   creatorId: string
   userId: string
   gameType: InviteType
@@ -51,5 +49,29 @@ export type InviteSchema = {
   id: string
   userId: string
   creatorId: string
-  state: 'pending' | 'cancelled' | 'accepted' | 'declined'
+  gameId: string
+  gameType: InviteType
+  state: InviteState
 }
+
+export type InviteDTO = {
+  id: string
+  userId: string
+  creatorId: string
+  gameId: string
+  gameType: InviteType
+  state: InviteState
+}
+
+export type InviteMessages =
+  | Msg<
+      'invite',
+      {
+        id: string
+        gameType: InviteType
+        gameId: string
+        creatorId: string
+        userId: string
+      }
+    >
+  | Msg<'invite-update', { id: string; state: InviteState }>

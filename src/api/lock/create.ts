@@ -1,7 +1,7 @@
 import { wrap } from '../util'
 import { LockConfig } from '../../domain/lock/types'
-import { lockCmd } from '../../domain/lock/command'
 import * as uuid from 'uuid'
+import { lockDomain } from '../../domain/lock'
 
 type Body = LockConfig
 
@@ -12,8 +12,7 @@ export const createLock = wrap(async (req, res) => {
   const id = uuid.v4().slice(0, 7)
   res.json(id)
 
-  lockCmd.CreateLock({
-    aggregateId: id,
+  lockDomain.cmd.CreateLock(id, {
     config: body,
     userId: user.userId,
   })

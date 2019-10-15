@@ -98,10 +98,10 @@
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
   integrity sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
 
-"@types/mongodb@^3.3.2":
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-3.3.2.tgz#2d8bf021cf252a97357049d385af28c56b43625c"
-  integrity sha512-YTTzii2ECx+4R8kzKchydG905z3gb+lzrizeC4s8SAGan7/22bDDJ6nN6r9mueJGRGrCnFo1QBAI/Wz45lETZQ==
+"@types/mongodb@^3.3.6":
+  version "3.3.6"
+  resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-3.3.6.tgz#ed8a2ff4a27170f8da284d817235c46019bdaa24"
+  integrity sha512-bPv0lGnkL/iOoA+GSAcS5ad9QyPc/rW547vrF5j+AKX4spaMZgpaCWQ4D6ipVSN6OKuks3ueCFEPinyJJSk2zA==
   dependencies:
     "@types/bson" "*"
     "@types/node" "*"
@@ -1773,6 +1773,13 @@ evp_bytestokey@^1.0.0, evp_bytestokey@^1.0.3:
   dependencies:
     md5.js "^1.3.4"
     safe-buffer "^5.1.1"
+
+evtstore@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/evtstore/-/evtstore-0.3.2.tgz#7b923be9faee48e7aa8ba7fe88f464b3ebfd6fc4"
+  integrity sha512-c+O3LNthcU2N46L5CvcoEIy+ukz6vuXX55iKiWBHd0sC0/vLWfmUXbzo04xBpYn16SERgi192+Rty16DvREUVg==
+  dependencies:
+    "@types/mongodb" "^3.3.6"
 
 execa@^1.0.0:
   version "1.0.0"

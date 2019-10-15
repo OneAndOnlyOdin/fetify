@@ -1,5 +1,5 @@
 import { wrap, StatusError } from '../util'
-import { userCmd } from '../../domain/user/command'
+import { userDomain } from '../../domain/user'
 import { auth } from '../../db/auth'
 
 type Body = {
@@ -23,7 +23,7 @@ export const register = wrap(async (req, res) => {
 
   try {
     await auth.createUser(lowered, password)
-    await userCmd.CreateUser({ aggregateId: lowered })
+    await userDomain.cmd.CreateUser(lowered, {})
   } catch (ex) {
     throw new StatusError(ex.message, 400)
   }

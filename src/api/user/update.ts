@@ -14,11 +14,11 @@ export const update = wrap(async (req, res) => {
 
   const aggregateId = req.user!.userId
   if (alias) {
-    await userDomain.cmd.UpdateAlias({ aggregateId, alias })
+    await userDomain.cmd.UpdateAlias(aggregateId, { alias })
   }
 
   if (email) {
-    await userDomain.cmd.UpdateEmail({ aggregateId, email })
+    await userDomain.cmd.UpdateEmail(aggregateId, { email })
   }
 
   res.json({ message: 'OK' })

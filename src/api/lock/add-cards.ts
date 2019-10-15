@@ -8,7 +8,7 @@ export const addCards = wrap(async (req, res) => {
 
   const cfg = toActionConfig(req.body.cards)
 
-  await lockDomain.cmd.AddActions({ aggregateId: req.params.id, actions: cfg })
+  await lockDomain.cmd.AddActions(req.params.id, { actions: cfg })
 
   res.json({ message: 'OK' })
 })

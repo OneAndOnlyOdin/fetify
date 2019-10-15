@@ -1,19 +1,14 @@
-import { eventHandler } from '../../es'
-import { LockEvent } from './types'
+import { domain } from './domain'
 import { upsertLock, toLockDto, LockSchema, getLock, updateLock } from './store'
 import { svcSockets } from '../../sockets/publish'
 
 export { pop as lockPopulator }
 
-const pop = eventHandler.createMongoHandler<LockEvent>({
-  bookmark: 'lock-populator',
-  eventStream: 'gameLock',
-  name: 'lock-populator',
-})
+const pop = domain.handler('lock-populator')
 
-pop.handle('LockCreated', async ({ event, timestamp }) => {
+pop.handle('LockCreated', async (id, event, { timestamp }) => {
   const lock: LockSchema = {
-    id: event.aggregateId,
+    id,
     created: timestamp,
     isOpen: false,
     actions: event.actions,
@@ -26,8 +21,8 @@ pop.handle('LockCreated', async ({ event, timestamp }) => {
   send(lock)
 })
 
-pop.handle('CardDrawn', async ({ event, timestamp }) => {
-  const lock = await getLock(event.aggregateId)
+pop.handle('CardDrawn', async (id, event, { timestamp }) => {
+  const lock = await getLock(id)
   if (!lock) {
     throw new Error('Lock state not found')
   }
@@ -47,7 +42,7 @@ pop.handle('CardDrawn', async ({ event, timestamp }) => {
     history: lock.history.concat(item),
   }
 
-  await updateLock(event.aggregateId, {
+  await updateLock(id, {
     actions: nextLock.actions,
     history: nextLock.history,
   })
@@ -58,7 +53,7 @@ pop.handle('CardDrawn', async ({ event, timestamp }) => {
     payload: {
       card: event.card,
       action: { type: event.cardType },
-      lockId: event.aggregateId,
+      lockId: id,
       task: event.task,
     },
   })
@@ -66,73 +61,61 @@ pop.handle('CardDrawn', async ({ event, timestamp }) => {
   send(nextLock)
 })
 
-pop.handle('LockJoined', async ({ event }) => {
-  const lock = await getLock(event.aggregateId)
+pop.handle('LockJoined', async (id, event) => {
+  const lock = await getLock(id)
   if (!lock) {
     throw new Error('Lock state not found')
   }
 
-  await updateLock(event.aggregateId, {
-    playerId: event.userId,
-  })
+  await updateLock(id, { playerId: event.userId })
 
   lock.playerId = event.userId
   send(lock)
 })
 
-pop.handle('LockCancelled', async ({ aggregateId }) => {
-  await updateLock(aggregateId, { isOpen: true })
-  const lock = await getLock(aggregateId)
+pop.handle('LockCancelled', async id => {
+  await updateLock(id, { isOpen: true })
+  const lock = await getLock(id)
   if (!lock) return
 
   lock.isOpen = true
   send(lock)
 })
 
-pop.handle('LockOpened', async ({ aggregateId }) => {
-  await updateLock(aggregateId, { isOpen: true })
+pop.handle('LockOpened', async id => {
+  await updateLock(id, { isOpen: true })
 
-  const lock = await getLock(aggregateId)
+  const lock = await getLock(id)
   if (!lock) return
 
   lock.isOpen = true
   send(lock)
 })
 
-pop.handle('LockRenamed', async ({ aggregateId, event }) => {
-  await updateLock(aggregateId, { name: event.name })
-  const lock = await getLock(aggregateId)!
+pop.handle('LockRenamed', async (id, event) => {
+  await updateLock(id, { name: event.name })
+  const lock = await getLock(id)!
 
   svcSockets.toUser([lock!.ownerId, lock!.playerId], {
     type: 'lock-update',
-    payload: {
-      id: aggregateId,
-      update: {
-        name: event.name,
-      },
-    },
+    payload: { id, update: { name: event.name } },
   })
 })
 
-pop.handle('LockDeleted', async ({ aggregateId }) => {
-  await updateLock(aggregateId, { deleted: true })
-  const lock = await getLock(aggregateId)!
+pop.handle('LockDeleted', async id => {
+  await updateLock(id, { deleted: true })
+  const lock = await getLock(id)!
 
   svcSockets.toUser([lock!.ownerId, lock!.playerId], {
     type: 'lock-update',
-    payload: {
-      id: aggregateId,
-      update: {
-        deleted: true,
-      },
-    },
+    payload: { id, update: { deleted: true } },
   })
 })
 
-pop.handle('ActionsAdded', async ({ aggregateId, event, timestamp }) => {
-  const lock = await getLock(aggregateId)
+pop.handle('ActionsAdded', async (id, event, { timestamp }) => {
+  const lock = await getLock(id)
   if (!lock) {
-    throw new Error(`Unable to find lock "${aggregateId}" during ActionsAdded`)
+    throw new Error(`Unable to find lock "${id}" during ActionsAdded`)
   }
 
   lock.actions = event.actions
@@ -146,7 +129,7 @@ pop.handle('ActionsAdded', async ({ aggregateId, event, timestamp }) => {
     date: timestamp,
     extra,
   })
-  await updateLock(aggregateId, {
+  await updateLock(id, {
     actions: event.actions,
     history: lock.history,
   })

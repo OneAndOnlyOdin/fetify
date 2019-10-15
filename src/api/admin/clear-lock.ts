@@ -1,14 +1,16 @@
 import { wrap } from '../util'
-import { database, bookmarks, events } from '../../db/event'
+import { database, collections } from '../../db/event'
 import { lockDomain } from '../../domain/lock'
 
 export const clearLock = wrap(async (req, res) => {
   lockDomain.pop.stop()
   await database.then(db => db.collection('gameLock').deleteMany({}))
-  await bookmarks(cb => cb.deleteOne({ key: 'lock-populator' }))
+  await collections.bookmarks.then(cb =>
+    cb.deleteOne({ key: 'lock-populator' })
+  )
 
   if (req.body.events) {
-    await events().then(cb => cb.deleteMany({ stream: 'gameLock' }))
+    await collections.events.then(cb => cb.deleteMany({ stream: 'gameLock' }))
   }
 
   lockDomain.pop.reset()

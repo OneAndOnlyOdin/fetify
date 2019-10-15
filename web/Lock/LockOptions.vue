@@ -3,6 +3,7 @@ import Vue, { PropType } from 'vue'
 import { Modal } from '../elements'
 import { ClientLock } from '../store/lock'
 import DeleteLock from './DeleteLock.vue'
+import LockInvite from './LockInvite.vue'
 import { locksApi, toastApi } from '../store'
 import { navigate } from '../router'
 import { ActionType } from '../../src/domain/lock/types'
@@ -21,7 +22,7 @@ const cardConfig: { [type in ActionType]: number } = {
 }
 
 export default Vue.extend({
-  components: { Modal, DeleteLock },
+  components: { Modal, DeleteLock, LockInvite },
   props: {
     lock: { type: Object as PropType<ClientLock> },
     isOpen: Boolean,
@@ -37,9 +38,18 @@ export default Vue.extend({
         loading: false,
         config: { ...cardConfig },
       },
+      invite: {
+        open: false,
+      },
     }
   },
   methods: {
+    openInvite() {
+      this.invite.open = true
+    },
+    closeInvite() {
+      this.invite.open = false
+    },
     openDelete() {
       this.isDeleteOpen = true
     },
@@ -97,6 +107,9 @@ export default Vue.extend({
       }
       return sum > 0
     },
+    canInvite(): boolean {
+      return this.lock.config.owner === 'other' && !this.lock.playerId
+    },
   },
 })
 </script>
@@ -108,6 +121,10 @@ export default Vue.extend({
     <div class="input__group">
       <div @click="renameLock" class="input__prefix--btn" :class="{ disabled: nameLoading }">Rename</div>
       <input type="text" v-model="newName" v-on:keyup.enter="renameLock" :disabled="nameLoading" />
+    </div>
+
+    <div v-if="canInvite" class="option__btn">
+      <button @click="openInvite" style="margin-top: 16px">Invite to Lock</button>
     </div>
 
     <div class="option__btn">
@@ -146,6 +163,8 @@ export default Vue.extend({
       :confirm="confirmDelete"
       :onHide="closeDelete"
     />
+
+    <LockInvite v-if="invite.open" :lock="lock" :isOpen="invite.open" :onHide="closeInvite" />
   </Modal>
 </template>
 

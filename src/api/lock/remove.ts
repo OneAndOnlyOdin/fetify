@@ -12,6 +12,6 @@ export const removeLock = wrap(async (req, res) => {
     lock.ownerId === user.userId || lock.playerId === user.userId
   if (!canDelete) throw new StatusError('Unauthorized', 403)
 
-  await lockDomain.cmd.DeleteLock({ aggregateId: lock.id })
+  await lockDomain.cmd.DeleteLock(lock.id, {})
   res.json({ message: 'OK' })
 })

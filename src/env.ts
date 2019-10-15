@@ -7,7 +7,6 @@ export interface Env {
   logLevel: string
   port: number
   dbUri: string
-  dbName: string
   jwtSecret: string
   jwtExpiry: number
 }
@@ -16,10 +15,9 @@ const defaults: Env = {
   appEnv: 'dev',
   logLevel: 'info',
   port: 3000,
-  dbUri: 'mongodb://localhost:27017',
-  dbName: 'fetify',
+  dbUri: 'mongodb://localhost:27017/fetify',
   jwtSecret: '',
-  jwtExpiry: 24
+  jwtExpiry: 24,
 }
 
 export const config: Env = {
@@ -27,9 +25,8 @@ export const config: Env = {
   logLevel: getEnv('LOG_LEVEL') || defaults.logLevel,
   port: Number(getEnv('PORT') || defaults.port),
   dbUri: getEnv('DB_URI') || defaults.dbUri,
-  dbName: getEnv('DB_NAME') || defaults.dbName,
   jwtSecret: getEnv('JWT_SECRET') || defaults.jwtSecret,
-  jwtExpiry: Number(getEnv('JWT_EXPIRY') || defaults.jwtExpiry)
+  jwtExpiry: Number(getEnv('JWT_EXPIRY') || defaults.jwtExpiry),
 }
 
 if (!config.jwtSecret) throw new Error('JWT_SECRET not set')

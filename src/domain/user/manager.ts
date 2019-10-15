@@ -1,25 +1,20 @@
-import { eventHandler } from '../../es'
-import { UserEvent } from './types'
+import { domain } from './domain'
 import { createUser, setUser } from './store'
 
-export const userManager = eventHandler.createMongoHandler<UserEvent>({
-  bookmark: 'user-bookmark',
-  eventStream: 'users',
-  name: 'user-manager'
-})
+export const userManager = domain.handler('user-mgr-bookmark')
 
-userManager.handle('UserCreated', async ev => {
+userManager.handle('UserCreated', async id => {
   await createUser({
-    userId: ev.aggregateId,
+    userId: id,
     alias: '',
-    email: ''
+    email: '',
   })
 })
 
-userManager.handle('AliasUpdated', async ({ event }) => {
-  await setUser(event.aggregateId, { alias: event.alias })
+userManager.handle('AliasUpdated', async (id, { alias }) => {
+  await setUser(id, { alias })
 })
 
-userManager.handle('EmailUpdated', async ({ event }) => {
-  await setUser(event.aggregateId, { email: event.email })
+userManager.handle('EmailUpdated', async (id, { email }) => {
+  await setUser(id, { email })
 })

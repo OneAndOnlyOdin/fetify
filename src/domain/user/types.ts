@@ -1,4 +1,4 @@
-import { DomainEvent, DomainCmd, DomainAgg } from '../../es'
+import { DomainEvent, DomainCmd } from '../util'
 
 export type UserEvent =
   | DomainEvent<'UserCreated'>
@@ -17,11 +17,11 @@ export type User = {
   email?: string
 }
 
-export type UserAggregate = DomainAgg<{
+export type UserAggregate = {
   state: 'new' | 'created'
   alias: string
   email: string
-}>
+}
 
 export type UserProfile = {
   userId: string

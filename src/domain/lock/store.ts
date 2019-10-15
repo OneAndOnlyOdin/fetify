@@ -1,5 +1,5 @@
 import { database } from '../../db/event'
-import { LockConfig, LockAction, LockHistory, ActionType } from './types'
+import { LockConfig, LockAction, LockHistory, LockDTO } from './types'
 import { secondsTilDraw } from './util'
 
 export type LockSchema = {
@@ -13,24 +13,6 @@ export type LockSchema = {
   actions: LockAction[]
   history: LockHistory[]
   isOpen: boolean
-}
-
-export type LockCounts = { [type in ActionType]?: number }
-
-export type LockDTO = {
-  id: string
-  name?: string
-  deleted?: boolean
-  created: Date
-  ownerId: string
-  playerId?: string
-  config: LockConfig
-  history: LockHistory[]
-  counts?: LockCounts
-  totalActions: number
-  isOpen: boolean
-  unlockDate?: Date
-  draw?: Date
 }
 
 export type LockState = {
@@ -62,6 +44,7 @@ export async function getLocks(userId: string) {
   const locks = await coll.then(coll =>
     coll
       .find(query)
+      .project({ _id: 0 })
       .sort({ created: -1 })
       .toArray()
   )

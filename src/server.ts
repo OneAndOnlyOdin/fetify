@@ -6,7 +6,7 @@ import { logMiddleware, createLogger } from './logger'
 import api from './api'
 import front from './api/front'
 import { setupWebsocketServer } from './sockets'
-import { CommandError } from './es/errors'
+import { CommandError } from 'evtstore'
 
 export function createServer(id: number): void {
   const { app, log } = createApp(id)

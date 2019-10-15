@@ -9,7 +9,7 @@ export const joinLock = wrap(async (req, res) => {
     throw new StatusError('Missing lock or user id', 400)
   }
 
-  await lockDomain.cmd.JoinLock({ aggregateId: lockId, userId })
+  await lockDomain.cmd.JoinLock(lockId, { userId })
 
   res.json({ message: 'OK' })
 })

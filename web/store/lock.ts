@@ -1,8 +1,7 @@
 import { api } from './api'
-import { LockDTO } from '../../src/domain/lock/store'
 import { getNow } from './time'
 import { webSockets } from './socket'
-import { ActionConfig, LockConfig } from '../../src/domain/lock/types'
+import { ActionConfig, LockConfig, LockDTO } from '../../src/domain/lock/types'
 
 export type LockState = {
   locks: { [lockId: string]: ClientLock }
