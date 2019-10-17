@@ -35,6 +35,7 @@ export type LockCounts = { [type in ActionType]?: number }
 
 export type LockDTO = {
   id: string
+  version: number
   name?: string
   deleted?: boolean
   created: Date

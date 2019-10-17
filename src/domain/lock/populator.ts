@@ -6,9 +6,10 @@ export { pop as lockPopulator }
 
 const pop = domain.handler('lock-populator')
 
-pop.handle('LockCreated', async (id, event, { timestamp }) => {
+pop.handle('LockCreated', async (id, event, { timestamp, version }) => {
   const lock: LockSchema = {
     id,
+    version,
     created: timestamp,
     isOpen: false,
     actions: event.actions,
@@ -21,7 +22,7 @@ pop.handle('LockCreated', async (id, event, { timestamp }) => {
   send(lock)
 })
 
-pop.handle('CardDrawn', async (id, event, { timestamp }) => {
+pop.handle('CardDrawn', async (id, event, { timestamp, version }) => {
   const lock = await getLock(id)
   if (!lock) {
     throw new Error('Lock state not found')
@@ -38,11 +39,13 @@ pop.handle('CardDrawn', async (id, event, { timestamp }) => {
   const item = { type: event.cardType, date: timestamp, extra }
   const nextLock = {
     ...lock,
+    version,
     actions: event.actions,
     history: lock.history.concat(item),
   }
 
   await updateLock(id, {
+    version,
     actions: nextLock.actions,
     history: nextLock.history,
   })
@@ -61,20 +64,20 @@ pop.handle('CardDrawn', async (id, event, { timestamp }) => {
   send(nextLock)
 })
 
-pop.handle('LockJoined', async (id, event) => {
+pop.handle('LockJoined', async (id, event, { version }) => {
   const lock = await getLock(id)
   if (!lock) {
     throw new Error('Lock state not found')
   }
 
-  await updateLock(id, { playerId: event.userId })
+  await updateLock(id, { playerId: event.userId, version })
 
   lock.playerId = event.userId
   send(lock)
 })
 
-pop.handle('LockCancelled', async id => {
-  await updateLock(id, { isOpen: true })
+pop.handle('LockCancelled', async (id, _, { version }) => {
+  await updateLock(id, { isOpen: true, version })
   const lock = await getLock(id)
   if (!lock) return
 
@@ -82,8 +85,8 @@ pop.handle('LockCancelled', async id => {
   send(lock)
 })
 
-pop.handle('LockOpened', async id => {
-  await updateLock(id, { isOpen: true })
+pop.handle('LockOpened', async (id, _, { version }) => {
+  await updateLock(id, { isOpen: true, version })
 
   const lock = await getLock(id)
   if (!lock) return
@@ -112,7 +115,7 @@ pop.handle('LockDeleted', async id => {
   })
 })
 
-pop.handle('ActionsAdded', async (id, event, { timestamp }) => {
+pop.handle('ActionsAdded', async (id, event, { timestamp, version }) => {
   const lock = await getLock(id)
   if (!lock) {
     throw new Error(`Unable to find lock "${id}" during ActionsAdded`)
@@ -130,6 +133,7 @@ pop.handle('ActionsAdded', async (id, event, { timestamp }) => {
     extra,
   })
   await updateLock(id, {
+    version,
     actions: event.actions,
     history: lock.history,
   })

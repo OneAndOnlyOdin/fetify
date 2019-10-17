@@ -62,6 +62,10 @@ export async function getLocks() {
   }
 }
 
+export async function getLatestLock(id: string, version: number) {
+  return api.get<LockDTO | void>(`/api/lock/${id}/${version}`)
+}
+
 export async function deleteLock(lockId: string) {
   await api.post(`/api/lock/${lockId}/delete`)
 }

@@ -13,6 +13,7 @@ export type LockSchema = {
   actions: LockAction[]
   history: LockHistory[]
   isOpen: boolean
+  version: number
 }
 
 export type LockState = {
@@ -57,9 +58,15 @@ export async function upsertLock(lock: LockSchema) {
   )
 }
 
-export function getLock(lockId: string) {
+export function getLock(lockId: string, version?: number) {
+  if (!version) {
+    return coll.then(coll =>
+      coll.findOne({ id: lockId, deleted: { $ne: false } })
+    )
+  }
+
   return coll.then(coll =>
-    coll.findOne({ id: lockId, deleted: { $ne: false } })
+    coll.findOne({ id: lockId, version, deleted: { $ne: false } })
   )
 }
 
@@ -85,6 +92,7 @@ export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
 
   return {
     id: lock.id,
+    version: lock.version,
     name: lock.name,
     deleted: lock.deleted,
     created: lock.created,

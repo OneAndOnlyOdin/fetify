@@ -1,11 +1,39 @@
 import { wrap } from '../util'
 import { lockDomain } from '../../domain/lock'
+import { LockSchema } from '../../domain/lock/store'
 
 export const getLocks = wrap(async (req, res) => {
   const user = req.user!
+  const id: string = req.params.id
+  const version = Number(req.params.version)
 
-  const { locks, count } = await lockDomain.store.getLocks(user.userId)
-  const dtos = locks.map(lock => lockDomain.store.toLockDto(lock, user.userId))
+  if (!id) {
+    const { locks, count } = await lockDomain.store.getLocks(user.userId)
+    const dtos = locks.map(lock => toDto(lock, user.userId))
 
-  res.json({ locks: dtos, count })
+    res.json({ locks: dtos, count })
+    return
+  }
+
+  if (!version) {
+    const lock = await lockDomain.store.getLock(id)
+    if (!lock) {
+      return res.status(404).send()
+    }
+
+    res.json(toDto(lock, user.userId))
+    return
+  }
+
+  const lock = await lockDomain.store.getLock(id, version)
+  if (lock) {
+    res.json(toDto(lock, user.userId))
+    return
+  }
+
+  return res.status(304).send()
 })
+
+function toDto(lock: LockSchema, userId: string) {
+  return lockDomain.store.toLockDto(lock, userId)
+}

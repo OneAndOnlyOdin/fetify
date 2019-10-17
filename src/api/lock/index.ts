@@ -14,6 +14,7 @@ const router = Router()
 
 router.use(authMiddleware)
 router.get('/', getLocks)
+router.get('/:id/:version?', getLocks)
 router.post('/', createLock)
 router.post('/:id/rename', renameLock)
 router.post('/:id/delete', removeLock)
