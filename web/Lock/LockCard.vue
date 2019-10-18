@@ -10,6 +10,7 @@ export default Vue.extend({
     onHide: { type: Function as PropType<() => void> },
     task: { type: String },
     card: { type: String },
+    cardNo: Number,
   },
   computed: {
     cardType(): string {
@@ -25,6 +26,7 @@ export default Vue.extend({
 
 <template>
   <Modal v-model="open" :onHide="onHide">
+    <template slot="header">Card #{{cardNo}}</template>
     <div class="page">
       <div>You drew</div>
       <div :class="'card--back ' + card">

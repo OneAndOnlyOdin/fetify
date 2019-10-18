@@ -1,6 +1,6 @@
 <script lang="ts">
 import Vue from 'vue'
-import { Modal, Dropdown } from '../elements'
+import { Dropdown } from '../elements'
 import LockCard from './LockCard.vue'
 import LockOptions from './LockOptions.vue'
 import { locksApi, authApi, toastApi } from '../store'
@@ -11,6 +11,7 @@ import { SocketMsg, LockDraw } from '../../src/sockets/types'
 import { webSockets } from '../store/socket'
 import { mapHistory, toCountsArray, ActionCount } from './util'
 import { LockDTO } from '../../src/domain/lock/store'
+import { getRand } from '../../src/domain/lock/util'
 
 type Data = {
   timer?: NodeJS.Timeout
@@ -18,13 +19,14 @@ type Data = {
   loading: boolean
   lock?: ClientLock
   drawSeconds: number
+  manualCard: number
   draw: {
     loading: boolean
+    lastCard: number
     card: number
     drawn?: string
     task?: string
   }
-  cards: number[]
   counts?: ActionCount[]
   history: Array<LockHistory & { since: string }>
   showCard: {
@@ -36,15 +38,15 @@ type Data = {
 }
 
 export default Vue.extend({
-  components: { Modal, LockCard, LockOptions, Dropdown },
+  components: { LockCard, LockOptions, Dropdown },
   props: { id: String },
   data(): Data {
     return {
+      manualCard: 1,
       listener: -1,
       drawSeconds: -1,
       loading: true,
-      draw: { loading: false, card: -1 },
-      cards: [],
+      draw: { loading: false, card: -1, lastCard: -1 },
       history: [],
       showCard: { open: false },
       newName: '',
@@ -76,11 +78,6 @@ export default Vue.extend({
       if (this.lock.config.owner === 'self') return false
       return authApi.state.userId === this.lock.ownerId
     },
-    setCards() {
-      if (!this.lock) return
-      const length = this.lock.totalActions
-      this.cards = Array.from({ length }, (_, i) => i)
-    },
     async getLock(refresh?: boolean) {
       if (refresh) {
         await locksApi.getLocks()
@@ -97,11 +94,22 @@ export default Vue.extend({
         this.getLock(true)
       }
     },
+    validateManual(num: number) {
+      const total = this.lock ? this.lock.totalActions : 0
+      if (num > total) this.manualCard = total
+      if (num < 1) this.manualCard = 1
+    },
+    drawRandomCard() {
+      if (!this.canDraw || !this.lock) return
+      const randomCard = getRand(0, this.lock.totalActions)
+      return this.drawCard(randomCard)
+    },
     async drawCard(card: number) {
       if (!this.canDraw) return
       this.draw.loading = true
       try {
         await locksApi.drawLockCard(this.lock!.id, card)
+        this.draw.lastCard = card
         this.draw.drawn = '???'
         this.draw.card = card
       } catch (ex) {
@@ -123,7 +131,6 @@ export default Vue.extend({
       if (!this.lock) return
       this.history = mapHistory(this.lock.history)
       this.counts = toCountsArray(this.lock.counts)
-      this.setCards()
     },
     recvLock(dto: LockDTO) {
       if (!this.lock || this.lock.id !== dto.id) return
@@ -229,11 +236,41 @@ export default Vue.extend({
         </div>
       </div>
 
+      <div v-if="!lock.isOpen" class="excess">
+        <div
+          v-if="lock.totalActions > 500"
+          style="margin-bottom: 12px"
+        >You have too many cards to display all of them!</div>
+        <div class="excess__opts">
+          <button
+            style="margin-right: 12px"
+            @click="drawRandomCard"
+            :disabled="!canDraw"
+          >Draw Random Card</button>
+
+          <div class="input__group">
+            <div
+              @click="drawCard(manualCard)"
+              class="input__prefix--btn"
+              :class="{ disabled: !canDraw }"
+            >Draw</div>
+            <input
+              type="number"
+              v-model.number="manualCard"
+              v-on:inpu="validateManual"
+              v-on:keyup.enter="drawCard(manualCard - 1)"
+              style="width: 90px"
+              :disabled="!canDraw"
+            />
+          </div>
+        </div>
+      </div>
+
       <div class="cards" v-if="!lock.isOpen">
-        <div class="action-grid">
-          <div v-for="(card, i) in cards" :key="card">
-            <div class="card" :class="{ locked: !canDraw }" @click="drawCard(i)">
-              <div class="card__inner" :class="{ 'card--flipped': draw.card === i }">
+        <div v-if="lock.totalActions <= 500" class="action-grid">
+          <div v-for="card in lock.totalActions" :key="card">
+            <div class="card" :class="{ locked: !canDraw }" @click="drawCard(card)">
+              <div class="card__inner" :class="{ 'card--flipped': draw.card === card }">
                 <div class="card__front">{{cardText}}</div>
                 <div :class="'card__back ' + draw.drawn">
                   <div>{{draw.drawn}}</div>
@@ -264,7 +301,13 @@ export default Vue.extend({
         </table>
       </div>
     </div>
-    <LockCard :open="showCard.open" :onHide="closeCard" :card="draw.drawn" :task="draw.task" />
+    <LockCard
+      :open="showCard.open"
+      :onHide="closeCard"
+      :card="draw.drawn"
+      :task="draw.task"
+      :cardNo="draw.lastCard"
+    />
     <LockOptions
       v-if="lock && isOptionsOpen"
       :lock="lock"
@@ -276,6 +319,18 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
+.excess {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+
+  .excess__opts {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
 .card__grid {
   width: 100%;
   display: grid;
