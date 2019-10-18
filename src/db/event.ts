@@ -15,6 +15,6 @@ export const database = connect(
 ).then(client => client.db())
 
 export const collections = {
-  events: database.then(db => db.collection('eventLog')),
+  events: database.then(db => db.collection('events')),
   bookmarks: database.then(db => db.collection('bookmarks')),
 }

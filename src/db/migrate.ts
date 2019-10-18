@@ -1,17 +1,14 @@
-import * as provider from 'evtstore/provider/mongo'
 import { createLogger } from '../logger'
 import { ensureIndexes } from './indexes'
 import { Db } from 'mongodb'
 import * as path from 'path'
-import { collections } from './event'
+import { createIndexes } from '../domain/util'
 
 type EnsureFunc = (db: Db) => Promise<void>
 
 export async function migrate() {
   await run(path.resolve(__dirname, 'settings.js'), ensureIndexes)
-  const events = await collections.events
-  const bookmarks = await collections.bookmarks
-  await provider.migrate(events, bookmarks)
+  await createIndexes()
 }
 
 async function run(configFile: string, ensure: EnsureFunc) {

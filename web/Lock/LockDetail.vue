@@ -100,7 +100,7 @@ export default Vue.extend({
     },
     drawRandomCard() {
       if (!this.canDraw || !this.lock) return
-      const randomCard = getRand(0, this.lock.totalActions)
+      const randomCard = getRand(0, this.lock.totalActions - 1)
       return this.drawCard(randomCard)
     },
     async drawCard(card: number) {
@@ -268,8 +268,8 @@ export default Vue.extend({
       <div class="cards" v-if="!lock.isOpen">
         <div v-if="lock.totalActions <= 500" class="action-grid">
           <div v-for="card in lock.totalActions" :key="card">
-            <div class="card" :class="{ locked: !canDraw }" @click="drawCard(card)">
-              <div class="card__inner" :class="{ 'card--flipped': draw.card === card }">
+            <div class="card" :class="{ locked: !canDraw }" @click="drawCard(card - 1)">
+              <div class="card__inner" :class="{ 'card--flipped': draw.card === card - 1 }">
                 <div class="card__front">{{cardText}}</div>
                 <div :class="'card__back ' + draw.drawn">
                   <div>{{draw.drawn}}</div>
