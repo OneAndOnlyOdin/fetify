@@ -7,10 +7,9 @@ import { locksApi, authApi, toastApi } from '../store'
 import { ClientLock } from '../store/lock'
 import { LockHistory } from '../../src/domain/lock/types'
 import { common } from '../common'
-import { SocketMsg, LockDraw } from '../../src/sockets/types'
+import { SocketMsg, Payload } from '../../src/sockets/types'
 import { webSockets } from '../store/socket'
 import { mapHistory, toCountsArray, ActionCount } from './util'
-import { LockDTO } from '../../src/domain/lock/store'
 import { getRand } from '../../src/domain/lock/util'
 
 type Data = {
@@ -132,12 +131,12 @@ export default Vue.extend({
       this.history = mapHistory(this.lock.history)
       this.counts = toCountsArray(this.lock.counts)
     },
-    recvLock(dto: LockDTO) {
+    recvLock(dto: Payload<'lock'>) {
       if (!this.lock || this.lock.id !== dto.id) return
       this.lock = { ...dto, drawSeconds: locksApi.getDrawSecs(dto.draw) }
       this.updateLock()
     },
-    recvDraw(draw: LockDraw) {
+    recvDraw(draw: Payload<'lock-draw'>) {
       if (this.id !== draw.lockId) return
       this.draw.drawn = draw.action.type
       this.draw.task = draw.task
