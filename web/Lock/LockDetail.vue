@@ -193,7 +193,7 @@ export default Vue.extend({
     canDraw(): boolean {
       const lock = this.lock
 
-      if (!lock) return false
+      if (!lock || this.loading) return false
       if (this.draw.card > -1) return false
       if (this.drawSeconds !== 0) return false
       if (lock.config.owner === 'self') return true

@@ -6,16 +6,24 @@ export interface Env {
   appEnv: string
   logLevel: string
   port: number
-  dbUri: string
   jwtSecret: string
   jwtExpiry: number
+  db: {
+    uri: string
+    events: string
+    bookmarks: string
+  }
 }
 
 const defaults: Env = {
   appEnv: 'dev',
   logLevel: 'info',
   port: 3000,
-  dbUri: 'mongodb://localhost:27017/fetify',
+  db: {
+    uri: 'mongodb://localhost:27017/fetify',
+    events: 'events',
+    bookmarks: 'bookmarks',
+  },
   jwtSecret: '',
   jwtExpiry: 24,
 }
@@ -24,7 +32,11 @@ export const config: Env = {
   appEnv: getEnv('APP_ENV') || defaults.appEnv,
   logLevel: getEnv('LOG_LEVEL') || defaults.logLevel,
   port: Number(getEnv('PORT') || defaults.port),
-  dbUri: getEnv('DB_URI') || defaults.dbUri,
+  db: {
+    uri: getEnv('DB_URI') || defaults.db.uri,
+    events: getEnv('DB_EVENTS') || defaults.db.events,
+    bookmarks: getEnv('DB_BOOKMARKS') || defaults.db.bookmarks,
+  },
   jwtSecret: getEnv('JWT_SECRET') || defaults.jwtSecret,
   jwtExpiry: Number(getEnv('JWT_EXPIRY') || defaults.jwtExpiry),
 }

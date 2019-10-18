@@ -2,7 +2,7 @@ import { connect } from 'mongodb'
 import { config } from '../env'
 
 export const database = connect(
-  config.dbUri,
+  config.db.uri,
   {
     useUnifiedTopology: true,
     useNewUrlParser: true,
@@ -15,6 +15,6 @@ export const database = connect(
 ).then(client => client.db())
 
 export const collections = {
-  events: database.then(db => db.collection('events')),
-  bookmarks: database.then(db => db.collection('bookmarks')),
+  events: database.then(db => db.collection(config.db.events)),
+  bookmarks: database.then(db => db.collection(config.db.bookmarks)),
 }

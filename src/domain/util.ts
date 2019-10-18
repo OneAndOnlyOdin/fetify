@@ -15,7 +15,7 @@ export async function getProvider<T extends Event>(): Promise<Provider<T>> {
     setPosition: async (key, bookmark) => {
       await bookmarks.updateOne(
         { key },
-        { $set: { key, bookmark } },
+        { $set: { bookmark } },
         { upsert: true }
       )
     },
