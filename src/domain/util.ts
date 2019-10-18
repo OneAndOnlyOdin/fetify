@@ -21,7 +21,7 @@ export async function getProvider<T extends Event>(): Promise<Provider<T>> {
     },
     getEventsFor: async (stream, id) => {
       return events
-        .find({ 'event.aggregateId': id, stream })
+        .find({ aggregateId: id, stream })
         .sort({ version: 1 })
         .toArray()
         .then(rows => rows.map(toEvtStore))

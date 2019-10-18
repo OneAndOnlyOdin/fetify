@@ -4,7 +4,7 @@ import { getProvider } from '../util'
 
 export const domain = createDomain<UserEvent, UserAggregate, UserCmd>(
   {
-    stream: 'user-event',
+    stream: 'users',
     provider: getProvider<UserEvent>(),
     aggregate: () => ({
       state: 'new',

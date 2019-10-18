@@ -5,7 +5,7 @@ import { command } from './command'
 
 export const domain = createDomain<LockEvent, LockAgg, LockCommand>(
   {
-    stream: 'lock-event',
+    stream: 'gameLock',
     provider: getProvider<LockEvent>(),
     aggregate: () => ({
       state: 'new',
