@@ -120,7 +120,14 @@ function applyAction(action: LockAction, actions: LockAction[], cfg: LockConfig)
     }
 
     case 'reset': {
-      return createConfigActions(cfg.actions)
+      const resetsLeft = actions.filter(act => act.type === 'reset').length
+      const resets = createActions(resetsLeft, 'reset')
+      const nextActions = createConfigActions({
+        ...cfg.actions,
+        reset: 0,
+      }).concat(resets)
+
+      return nextActions
     }
   }
 }
