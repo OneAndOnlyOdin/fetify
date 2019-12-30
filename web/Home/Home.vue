@@ -15,8 +15,14 @@ export default Vue.extend({
 </script>
 
 <template>
-  <div>
+  <div class="content">
     <Guest v-if="!auth.loggedIn" />
     <User v-if="auth.loggedIn" />
   </div>
 </template>
+
+<style lang="scss" scoped>
+.content {
+  width: 100%;
+}
+</style>

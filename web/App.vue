@@ -17,21 +17,31 @@ export default Vue.extend({
   <div class="page">
     <Header />
 
-    <div class="content">
-      <router-view v-if="auth.loggedIn"></router-view>
-      <Guest v-if="!auth.loggedIn" />
+    <div class="app">
+      <div class="app__container">
+        <router-view v-if="auth.loggedIn"></router-view>
+        <Guest v-if="!auth.loggedIn" />
+      </div>
     </div>
 
     <Toast />
   </div>
 </template>
 
-
 <style lang="scss" scoped>
-.content {
+.app {
+  display: flex;
+  justify-content: center;
   height: calc(100vh - 98px);
   width: calc(100% - 32px);
   padding: 16px;
+
+  &__container {
+    display: flex;
+    justify-content: center;
+    max-width: 1440px;
+    width: 100%;
+  }
 
   @include mobile {
     // width: 100%;

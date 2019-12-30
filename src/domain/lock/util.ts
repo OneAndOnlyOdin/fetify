@@ -97,10 +97,8 @@ export function play(actions: LockAction[], card: number, config: LockConfig) {
   const action = actions[card]
   const nextActions = applyAction(action, actions, config)
 
-  shuffle(nextActions)
-
   return {
-    actions: nextActions,
+    actions: shuffle(nextActions),
     action,
   }
 }

@@ -17,7 +17,7 @@ export default Vue.extend({
   <content>
     <section class="card">
       <div class="title">Locks</div>
-      <div class="content">
+      <div>
         <LockList />
       </div>
     </section>
@@ -29,6 +29,7 @@ content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100%, 100%));
   grid-gap: 16px;
+  width: 100%;
 }
 
 section {

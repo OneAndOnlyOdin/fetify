@@ -211,10 +211,10 @@ export default Vue.extend({
       <div class="card__grid" v-if="counts">
         <div class="card__count" :class="card.type" v-for="card in counts" :key="card.type">
           <div>
-            <b>{{card.type}}</b>
+            <b>{{ card.type }}</b>
           </div>
-          <div>{{card.count}}</div>
-          <div>{{card.chance}}%</div>
+          <div>{{ card.count }}</div>
+          <div>{{ card.chance }}%</div>
         </div>
       </div>
 
@@ -222,11 +222,11 @@ export default Vue.extend({
         <div>
           <div v-if="!lock.isOpen">
             <b>Next card available:</b>
-            {{toDuration(drawSeconds, true) || 'now'}}
+            {{ toDuration(drawSeconds, true) || 'now' }}
           </div>
           <div>
             <b>Total cards:</b>
-            {{lock.totalActions}}
+            {{ lock.totalActions }}
           </div>
         </div>
 
@@ -236,23 +236,14 @@ export default Vue.extend({
       </div>
 
       <div v-if="!lock.isOpen" class="excess">
-        <div
-          v-if="lock.totalActions > 500"
-          style="margin-bottom: 12px"
-        >You have too many cards to display all of them!</div>
+        <div v-if="lock.totalActions > 500" style="margin-bottom: 12px">
+          You have too many cards to display all of them!
+        </div>
         <div class="excess__opts">
-          <button
-            style="margin-right: 12px"
-            @click="drawRandomCard"
-            :disabled="!canDraw"
-          >Draw Random Card</button>
+          <button style="margin-right: 12px" @click="drawRandomCard" :disabled="!canDraw">Draw Random Card</button>
 
           <div class="input__group">
-            <div
-              @click="drawCard(manualCard)"
-              class="input__prefix--btn"
-              :class="{ disabled: !canDraw }"
-            >Draw</div>
+            <div @click="drawCard(manualCard)" class="input__prefix--btn" :class="{ disabled: !canDraw }">Draw</div>
             <input
               type="number"
               v-model.number="manualCard"
@@ -270,9 +261,9 @@ export default Vue.extend({
           <div v-for="card in lock.totalActions" :key="card">
             <div class="card" :class="{ locked: !canDraw }" @click="drawCard(card - 1)">
               <div class="card__inner" :class="{ 'card--flipped': draw.card === card - 1 }">
-                <div class="card__front">{{cardText}}</div>
+                <div class="card__front">{{ cardText }}</div>
                 <div :class="'card__back ' + draw.drawn">
-                  <div>{{draw.drawn}}</div>
+                  <div>{{ draw.drawn }}</div>
                 </div>
               </div>
             </div>
@@ -292,21 +283,15 @@ export default Vue.extend({
           </thead>
           <tbody>
             <tr v-for="(history, i) in history" :key="i">
-              <td>{{history.since}} ago ({{format(history.date)}})</td>
-              <td>{{history.type}}</td>
-              <td>{{history.extra}}</td>
+              <td>{{ history.since }} ago ({{ format(history.date) }})</td>
+              <td>{{ history.type }}</td>
+              <td>{{ history.extra }}</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-    <LockCard
-      :open="showCard.open"
-      :onHide="closeCard"
-      :card="draw.drawn"
-      :task="draw.task"
-      :cardNo="draw.lastCard"
-    />
+    <LockCard :open="showCard.open" :onHide="closeCard" :card="draw.drawn" :task="draw.task" :cardNo="draw.lastCard" />
     <LockOptions
       v-if="lock && isOptionsOpen"
       :lock="lock"
@@ -318,6 +303,10 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
+.page {
+  width: 100%;
+}
+
 .excess {
   display: flex;
   align-items: center;

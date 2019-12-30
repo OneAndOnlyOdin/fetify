@@ -116,7 +116,7 @@ function isVisible(lock: ClientLock) {
 </script>
 
 <template>
-  <div class="page">
+  <div class="locks">
     <div style="margin-bottom: 8px">
       <div style="display: flex">
         <div>
@@ -124,12 +124,7 @@ function isVisible(lock: ClientLock) {
             <a>
               <div class="input__group">
                 <div class="input__prefix--btn" @click="joinLock">Join</div>
-                <input
-                  type="text"
-                  style="width: 92px"
-                  placeholder="Enter Lock ID"
-                  v-model="joinLockId"
-                />
+                <input type="text" style="width: 92px" placeholder="Enter Lock ID" v-model="joinLockId" />
               </div>
             </a>
             <a @click="openCreate">
@@ -154,13 +149,8 @@ function isVisible(lock: ClientLock) {
       </div>
     </div>
 
-    <div class="grid-4-8">
-      <ListCard
-        v-for="lock in filteredLocks"
-        :key="lock.id"
-        :lock="lock"
-        :viewMode="viewMode(lock)"
-      />
+    <div class="grid-4">
+      <ListCard v-for="lock in filteredLocks" :key="lock.id" :lock="lock" :viewMode="viewMode(lock)" />
     </div>
   </div>
 </template>
@@ -170,12 +160,21 @@ function isVisible(lock: ClientLock) {
   color: $color-subtext;
   font-size: 10px;
 }
-.page {
+
+.locks {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+
+  @include mobile {
+    padding: 8px;
+  }
 }
 
 .card {
   background-color: $color-primary;
+  width: 100%;
 }
 
 .card-row {
@@ -196,10 +195,5 @@ function isVisible(lock: ClientLock) {
   button {
     width: 100%;
   }
-}
-
-.page {
-  display: flex;
-  flex-direction: column;
 }
 </style>
