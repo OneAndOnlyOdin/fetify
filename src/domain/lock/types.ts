@@ -1,10 +1,7 @@
 import { DomainEvent, DomainCmd } from '../util'
 
 export type LockEvent =
-  | DomainEvent<
-      'LockCreated',
-      { ownerId: string; config: LockConfig; actions: LockAction[] }
-    >
+  | DomainEvent<'LockCreated', { ownerId: string; config: LockConfig; actions: LockAction[] }>
   | DomainEvent<'LockJoined', { userId: string }>
   | DomainEvent<
       'CardDrawn',
@@ -20,6 +17,7 @@ export type LockEvent =
   | DomainEvent<'LockRenamed', { name: string }>
   | DomainEvent<'LockDeleted'>
   | DomainEvent<'ActionsAdded', { actions: LockAction[]; config: ActionConfig }>
+  | DomainEvent<'IntervalUpdated', { intervalMins: number }>
 
 export type LockCommand =
   | DomainCmd<'CreateLock', { userId: string; config: LockConfig }>
@@ -30,6 +28,7 @@ export type LockCommand =
   | DomainCmd<'RenameLock', { name: string }>
   | DomainCmd<'DeleteLock'>
   | DomainCmd<'AddActions', { actions: ActionConfig }>
+  | DomainCmd<'ChangeInterval', { intervalMins: number }>
 
 export type LockCounts = { [type in ActionType]?: number }
 
@@ -73,15 +72,11 @@ export type LockAction =
   | { type: 'freeze' }
   | { type: 'increase' }
   | { type: 'decrease' }
-  | { type: 'double' }
-  | { type: 'half' }
   | { type: 'unlock' }
   | { type: 'task' }
   | { type: 'reset' }
 
-export type LockTime =
-  | { type: 'fixed'; durationHrs: number }
-  | { type: 'variable' }
+export type LockTime = { type: 'fixed'; durationHrs: number } | { type: 'variable' }
 
 export type LockAgg = {
   state: 'new' | 'created' | 'opened' | 'deleted'
@@ -109,8 +104,5 @@ export type DrawHistory = BaseHistory & { type: ActionType }
 
 export type LockMessages =
   | Msg<'lock', LockDTO>
-  | Msg<
-      'lock-draw',
-      { lockId: string; card: number; action: LockAction; task?: string }
-    >
+  | Msg<'lock-draw', { lockId: string; card: number; action: LockAction; task?: string }>
   | Msg<'lock-update', { id: string; update: Partial<LockDTO> }>

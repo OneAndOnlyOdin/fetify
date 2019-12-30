@@ -22,15 +22,15 @@ export default Vue.extend({
     }
   },
   computed: {
-    canSignin() {
-      return this.$data.username && this.$data.password
+    canSignin(): boolean {
+      return !!this.username && !!this.password
     },
-    canSignup() {
+    canSignup(): boolean {
       return (
-        this.$data.username &&
-        this.$data.password &&
-        this.$data.confirm &&
-        this.$data.password === this.$data.confirm
+        !!this.username &&
+        !!this.password &&
+        !!this.confirm &&
+        this.password === this.confirm
       )
     },
   },

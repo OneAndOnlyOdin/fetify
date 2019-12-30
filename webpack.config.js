@@ -29,6 +29,7 @@ const plugins = [
   new HtmlWebpackPlugin({
     inject: true,
     template: path.resolve(root, 'index.html'),
+    excludeChunks: ['npm'],
   }),
   new webpack.DefinePlugin({
     'process.env': envs,
@@ -52,7 +53,8 @@ module.exports = {
   entry: './web/index.ts',
   output: {
     path: outputFolder,
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
+    chunkFilename: isProd ? `[name].[contenthash:8].chunk.js` : `[name].chunk.js`,
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
@@ -127,6 +129,9 @@ module.exports = {
         },
       }),
     ],
+    splitChunks: {
+      chunks: 'all',
+    },
   },
   plugins,
 }

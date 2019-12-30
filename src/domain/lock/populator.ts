@@ -76,6 +76,16 @@ pop.handle('LockJoined', async (id, event, { version }) => {
   send(lock)
 })
 
+pop.handle('IntervalUpdated', async (id, { intervalMins }, { version }) => {
+  await updateLock(id, { isOpen: true, version })
+  const lock = await getLock(id)
+  if (!lock) return
+
+  await updateLock(id, { config: { ...lock.config, intervalMins } })
+  lock.config.intervalMins = intervalMins
+  send(lock)
+})
+
 pop.handle('LockCancelled', async (id, _, { version }) => {
   await updateLock(id, { isOpen: true, version })
   const lock = await getLock(id)

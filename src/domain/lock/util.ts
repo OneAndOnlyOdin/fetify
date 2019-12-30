@@ -1,10 +1,4 @@
-import {
-  LockAction,
-  LockConfig,
-  LockHistory,
-  ActionType,
-  DrawHistory,
-} from './types'
+import { LockAction, LockConfig, LockHistory, ActionType, DrawHistory } from './types'
 
 export const defaultTask = 'Perform a task for the key holder!'
 
@@ -21,16 +15,6 @@ export const actionOptions: {
     value: 10,
     desc: 'increase the number of BLANK cards by 1-3',
     max: 100,
-  },
-  double: {
-    value: 2,
-    desc: 'double the number of BLANK and INCREASE cards',
-    max: 20,
-  },
-  half: {
-    value: 1,
-    desc: 'halve the number of BLANK and increase cards',
-    max: 20,
   },
   reset: {
     value: 0,
@@ -59,9 +43,7 @@ export function secondsTilDraw(opts: Opts): number {
 
   const factor = action.type === 'freeze' ? 2 : 1
   const interval = opts.config.intervalMins * 60 * factor
-  const elapsed = Math.floor(
-    (Date.now() - new Date(action.date).valueOf()) * 0.001
-  )
+  const elapsed = Math.floor((Date.now() - new Date(action.date).valueOf()) * 0.001)
   const diff = interval - elapsed
 
   switch (action.type) {
@@ -72,8 +54,6 @@ export function secondsTilDraw(opts: Opts): number {
 
     case 'decrease':
     case 'increase':
-    case 'double':
-    case 'half':
     case 'unlock':
     case 'reset':
       return 0
@@ -81,9 +61,7 @@ export function secondsTilDraw(opts: Opts): number {
 }
 
 export function filterLockActions(history: LockHistory[]): DrawHistory[] {
-  return history.filter(history =>
-    isValidType(history.type as any)
-  ) as DrawHistory[]
+  return history.filter(history => isValidType(history.type as any)) as DrawHistory[]
 }
 
 type DrawCountOpts = {
@@ -115,18 +93,11 @@ export function getDrawCount(opts: DrawCountOpts) {
   return chances
 }
 
-export function play(
-  playActions: LockAction[],
-  card: number,
-  config: LockConfig,
-  shuffleCards = true
-) {
-  const { action, actions } = removeAction(playActions, card)
+export function play(actions: LockAction[], card: number, config: LockConfig) {
+  const action = actions[card]
   const nextActions = applyAction(action, actions, config)
 
-  if (shuffleCards && shuffleActions[action.type]) {
-    shuffle(nextActions)
-  }
+  shuffle(nextActions)
 
   return {
     actions: nextActions,
@@ -134,11 +105,7 @@ export function play(
   }
 }
 
-function applyAction(
-  action: LockAction,
-  actions: LockAction[],
-  cfg: LockConfig
-): LockAction[] {
+function applyAction(action: LockAction, actions: LockAction[], cfg: LockConfig): LockAction[] {
   switch (action.type) {
     case 'blank':
     case 'freeze':
@@ -147,55 +114,17 @@ function applyAction(
       return actions
 
     case 'decrease': {
-      const amount = getRand(1, 3)
-      return removeActions(actions, amount, 'blank')
+      return removeActions(actions, 1, 'blank')
     }
 
     case 'increase': {
       return actions.concat(createActions(getRand(1, 3)))
     }
 
-    case 'double': {
-      const blanks = actions.reduce(countBlanks, 0)
-      const increases = actions.reduce(countIncreases, 0)
-
-      return actions.concat(
-        ...createActions(blanks, 'blank'),
-        ...createActions(increases, 'increase')
-      )
-    }
-
-    case 'half': {
-      const blanks = Math.floor(actions.reduce(countBlanks, 0) / 2)
-      const increases = Math.floor(actions.reduce(countIncreases, 0) / 2)
-
-      if (blanks > 0) removeActions(actions, blanks, 'blank')
-      if (increases > 0) removeActions(actions, increases, 'increase')
-
-      return actions
-    }
-
     case 'reset': {
-      const resetsLeft = actions.filter(act => act.type === 'reset').length
-      const resets = createActions(resetsLeft, 'reset')
-      const nextActions = createConfigActions({
-        ...cfg.actions,
-        reset: 0,
-      }).concat(resets)
-
-      return nextActions
+      return createConfigActions(cfg.actions)
     }
   }
-}
-
-const countBlanks = (count: number, action: LockAction) =>
-  action.type === 'blank' ? count + 1 : count
-const countIncreases = (count: number, action: LockAction) =>
-  action.type === 'increase' ? count + 1 : count
-
-export function removeAction(actions: LockAction[], index: number) {
-  const action = actions.splice(index, 1)[0]
-  return { action, actions }
 }
 
 export function getRand(min: number, max: number) {
@@ -205,11 +134,7 @@ export function getRand(min: number, max: number) {
   return rand + min
 }
 
-function removeActions(
-  actions: LockAction[],
-  amount: number,
-  type: ActionType
-) {
+function removeActions(actions: LockAction[], amount: number, type: ActionType) {
   let removed = 0
 
   for (let i = 0; i < actions.length; i++) {
@@ -224,16 +149,12 @@ function removeActions(
   return actions
 }
 
-export function toActionConfig(cfg: {
-  [key: string]: number
-}): LockConfig['actions'] {
+export function toActionConfig(cfg: { [key: string]: number }): LockConfig['actions'] {
   return {
     blank: min(cfg.blank),
     decrease: min(cfg.decrease),
     increase: min(cfg.increase),
-    double: min(cfg.double),
     freeze: min(cfg.freeze),
-    half: min(cfg.half),
     task: min(cfg.task),
     reset: min(cfg.reset),
     unlock: min(cfg.unlock),
@@ -244,9 +165,7 @@ export function isValidType(type: ActionType): boolean {
   switch (type) {
     case 'blank':
     case 'decrease':
-    case 'double':
     case 'freeze':
-    case 'half':
     case 'increase':
     case 'task':
     case 'unlock':
@@ -255,15 +174,17 @@ export function isValidType(type: ActionType): boolean {
   }
 
   throwNever(type)
-  return false
 }
 
-function throwNever(_nv: never) {}
+function throwNever(nv: never) {
+  throw new Error(`Unexpected type: ${nv}`)
+}
 
-export function createActions(
-  amount: number,
-  type: ActionType = 'blank'
-): LockAction[] {
+export function createActions(amount: number, type: ActionType = 'blank'): LockAction[] {
+  if (type === 'unlock') {
+    return [{ type }]
+  }
+
   return Array.from({ length: amount }, () => ({ type }))
 }
 
@@ -277,19 +198,6 @@ export function createConfigActions(cfgActions: LockConfig['actions']) {
   }
 
   return actions
-}
-
-const shuffleActions: { [type in ActionType]: boolean } = {
-  blank: false,
-  task: false,
-  unlock: false,
-  freeze: false,
-
-  decrease: true,
-  double: true,
-  half: true,
-  increase: true,
-  reset: true,
 }
 
 export function shuffle(actions: LockAction[]): LockAction[] {

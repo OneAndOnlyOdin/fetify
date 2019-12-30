@@ -35,6 +35,9 @@ function fold(ev: LockEvent, agg: LockAgg, meta: EventMeta): Partial<LockAgg> {
         config: ev.config,
       }
 
+    case 'IntervalUpdated':
+      return { config: { ...agg.config, intervalMins: ev.intervalMins } }
+
     case 'LockRenamed':
       return { name: ev.name }
 

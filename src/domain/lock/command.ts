@@ -95,8 +95,7 @@ export const command: CommandHandler<LockEvent, LockAgg, LockCommand> = {
     return { type: 'LockDeleted', aggregateId: cmd.aggregateId }
   },
   AddActions: async (cmd, agg) => {
-    if (agg.state !== 'created')
-      throw new CommandError('Lock not active', 'NOT_ACTIVE')
+    if (agg.state !== 'created') throw new CommandError('Lock not active', 'NOT_ACTIVE')
 
     const cfg = toActionConfig(cmd.actions)
     const newActions = createConfigActions(cfg)
@@ -107,6 +106,18 @@ export const command: CommandHandler<LockEvent, LockAgg, LockCommand> = {
       aggregateId: cmd.aggregateId,
       actions: shuffle(actions),
       config: cfg,
+    }
+  },
+  ChangeInterval: async (cmd, agg) => {
+    if (agg.state !== 'created') throw new CommandError('Lock not active', 'NOT_ACTIVE')
+    const intervalMins = Number(cmd.intervalMins)
+
+    if (isNaN(intervalMins)) throw new CommandError('Interval is not a valid number')
+    if (intervalMins < 0) throw new CommandError('Interval cannot be negative', 'INVALID_INTERVAL')
+
+    return {
+      type: 'IntervalUpdated',
+      intervalMins,
     }
   },
 }
@@ -133,8 +144,6 @@ function canDraw(agg: LockAgg): boolean {
   switch (last.type) {
     case 'decrease':
     case 'increase':
-    case 'double':
-    case 'half':
     case 'unlock':
     case 'reset':
       return true
@@ -171,11 +180,7 @@ function validateConfig(config: LockConfig) {
     throw new CommandError('Must have at least 1 unlock')
   }
 
-  if (
-    config.actions.double > 20 ||
-    config.actions.half > 20 ||
-    config.actions.unlock > 20
-  ) {
+  if (config.actions.unlock > 20) {
     throw new CommandError('Can only have up to 20 of: double, half, unlock')
   }
 

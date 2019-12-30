@@ -35,8 +35,6 @@ export function toLockConfig(data: CreateData) {
     blank: zero(data.actions.blank.value),
     decrease: zero(data.actions.decrease.value),
     increase: zero(data.actions.increase.value),
-    double: zero(data.actions.double.value),
-    half: zero(data.actions.half.value),
     freeze: zero(data.actions.freeze.value),
     task: zero(data.actions.task.value),
     reset: zero(data.actions.reset.value),
@@ -103,14 +101,7 @@ export function estimate(cfg: LockConfig) {
   draws += actions.freeze * 2
 
   let blanks = actions.blank
-  let doubles = actions.double
   let increases = actions.increase
-
-  while (doubles > 0) {
-    blanks *= 2
-    increases *= 2
-    doubles--
-  }
 
   draws += blanks - actions.blank + (increases - actions.increase) * 3
   return { avg: draws * secs * 0.5, worst: draws * secs }

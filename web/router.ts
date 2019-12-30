@@ -1,25 +1,21 @@
 import VueRouter from 'vue-router'
-import Home from './Home'
-import LockList from './Lock/LockList.vue'
-import LockDetail from './Lock/LockDetail.vue'
-import LockCreate from './Lock/CreateLock.vue'
 
 export { router }
 
 const router = new VueRouter({
   mode: 'history',
   routes: [
-    { path: '/locks/create', component: LockCreate },
+    { path: '/locks/create', component: () => import('./Lock/CreateLock.vue') },
     {
       path: '/locks/:id',
-      component: LockDetail,
+      component: () => import('./Lock/LockDetail.vue'),
       props: true,
     },
     {
       path: '/locks',
-      component: LockList,
+      component: () => import('./Lock/LockList.vue'),
     },
-    { path: '/', component: Home },
+    { path: '/', component: () => import('./Home') },
   ],
 })
 

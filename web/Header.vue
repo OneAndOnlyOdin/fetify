@@ -28,9 +28,9 @@ export default Vue.extend({
       <div class="mid">
         <router-link to="/">Home</router-link>
         <router-link to="/locks">Locks</router-link>
-        <router-link
-          to="/locks"
-        >{{auth.userId}} {{auth.connected ? '✓' : '✗'}} {{auth.wsAuthed ? '✓' : '✗'}}</router-link>
+        <router-link to="/locks"
+          >{{ auth.userId }} {{ auth.connected ? '✓' : '✗' }} {{ auth.wsAuthed ? '✓' : '✗' }}</router-link
+        >
       </div>
 
       <div class="right">
@@ -42,9 +42,9 @@ export default Vue.extend({
       <Dropdown text="Menu">
         <router-link to="/">Home</router-link>
         <router-link to="/locks">Locks</router-link>
-        <router-link
-          to="/locks"
-        >{{auth.userId}} {{auth.connected ? '✓' : '✗'}} {{auth.wsAuthed ? '✓' : '✗'}}</router-link>
+        <router-link to="/locks"
+          >{{ auth.userId }} {{ auth.connected ? '✓' : '✗' }} {{ auth.wsAuthed ? '✓' : '✗' }}</router-link
+        >
         <a>
           <button v-if="auth.loggedIn" style="width: 100%" @click="logout">Logout</button>
         </a>
