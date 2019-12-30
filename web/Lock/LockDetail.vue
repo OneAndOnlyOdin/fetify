@@ -242,8 +242,8 @@ export default Vue.extend({
         <div class="excess__opts">
           <button style="margin-right: 12px" @click="drawRandomCard" :disabled="!canDraw">Draw Random Card</button>
 
-          <div class="input__group">
-            <div @click="drawCard(manualCard)" class="input__prefix--btn" :class="{ disabled: !canDraw }">Draw</div>
+          <div class="group">
+            <div @click="drawCard(manualCard)" class="group__button" :class="{ disabled: !canDraw }">Draw</div>
             <input
               type="number"
               v-model.number="manualCard"

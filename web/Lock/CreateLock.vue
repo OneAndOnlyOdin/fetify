@@ -84,47 +84,25 @@ export default Vue.extend({
     estimate() {
       const cfg = toLockConfig(this.$data as any)
       const { avg, worst } = estimate(cfg)
-      return `avg: ${common.toDuration(avg, true)}, worst: ${common.toDuration(
-        worst,
-        true
-      )}`
+      return `avg: ${common.toDuration(avg, true)}, worst: ${common.toDuration(worst, true)}`
     },
   },
 })
 </script>
 
 <template>
-  <div class="page">
+  <div class="createlock">
     <div style="display: flex; justify-content: center;">
       <h1>Create Lock</h1>
     </div>
 
-    <content>
+    <div class="createlock__content">
       <div>
-        <label>Lock For</label>
+        <label>Lock is for</label>
         <Select v-model="owner">
           <option value="self">Self</option>
           <option value="other">Other</option>
         </Select>
-      </div>
-
-      <div>
-        <label>Lock Type</label>
-
-        <Select v-model="time.type">
-          <option value="variable">Game</option>
-          <option value="fixed">Fixed</option>
-        </Select>
-      </div>
-
-      <div>
-        <span v-if="time.type === 'fixed'">
-          <b>Fixed</b>: The lock runs for a fixed length of time
-        </span>
-
-        <span v-if="time.type === 'variable'">
-          <b>Game</b>: A card game determines when the lock opens
-        </span>
       </div>
 
       <div v-if="time.type === 'fixed'">
@@ -136,17 +114,17 @@ export default Vue.extend({
         </Select>
       </div>
 
-      <div class="variable" v-if="time.type === 'variable'">
+      <div class="createlock__variable" v-if="time.type === 'variable'">
         <div>
           <label>Estimate</label>
-          <div style="padding: 12px 0">{{estimate}}</div>
+          <div style="padding: 12px 0">{{ estimate }}</div>
         </div>
         <div>
           <label>Cards</label>
         </div>
 
         <div>
-          <label>Draw Card Interval</label>
+          <label>Interval</label>
           <div style="height: 42px;">
             <input style="width: 50px" type="number" v-model="interval.amount" />
             <Select v-model="interval.type">
@@ -164,7 +142,7 @@ export default Vue.extend({
         </div>
 
         <div v-for="action in options()" :key="action.type">
-          <label class="small">{{upper(action.type)}}: {{action.desc}} [{{action.max}}]</label>
+          <label class="small">{{ upper(action.type) }}: {{ action.desc }} [{{ action.max }}]</label>
           <input
             type="number"
             v-model.number="actions[action.type].value"
@@ -172,92 +150,112 @@ export default Vue.extend({
           />
         </div>
 
-        <div>
-          <h3>
-            Tasks
+        <div class="createlock__tasks">
+          <div><h3>Tasks</h3></div>
+          <div>
             <button @click="addTask">Add Task</button>
-          </h3>
+          </div>
         </div>
         <div style="text-align: left;">
           Tasks are given randomly to the player when a task card is drawn.
           <br />If no tasks are provided here, the task "Perform a task for the key holder!" will be given.
         </div>
-        <div v-for="(task, i) in tasks" :key="i">
-          <div style="height: 42px; display: flex;">
-            <button @click="removeTask(i)" style="width: 42px">-</button>
+        <div class="createlock__task" v-for="(task, i) in tasks" :key="i">
+          <div class="createlock__item" style="height: 42px; display: flex;">
+            <button class="createlock__button" @click="removeTask(i)" style="width: 42px">-</button>
             <input
+              class="createlock__input"
               type="text"
               v-model="tasks[i]"
-              style="width: 300px"
               maxlength="255"
               v-on:keyup.enter="addTask"
             />
           </div>
         </div>
       </div>
-    </content>
+    </div>
 
-    <div class="lock__create">
+    <div class="createlock__submit">
       <button style="width: 120px; margin-bottom: 24px" @click="create" :disabled="loading">Create</button>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.page {
-  max-width: 800px;
-}
+.createlock {
+  width: 100%;
 
-.lock__create {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-
-content {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-
-  > div {
+  &__tasks {
     display: flex;
     justify-content: space-between;
-    text-align: center;
-    margin-bottom: 8px;
   }
 
-  label {
-    font-size: 16px;
-    text-align: left;
-    padding: 12px 0;
-
-    > span {
-      font-size: 12px;
+  &__task {
+    .createlock__item {
+      width: 100%;
+      height: 40px;
+      display: flex;
     }
 
-    &.small {
-      font-size: 14px;
-      padding: 8px 0;
+    .createlock__button {
+      height: 40px;
+    }
+
+    .createlock__input {
+      width: 100%;
     }
   }
 
-  label.small + input {
-    width: 40px;
-    height: 30px;
-  }
-
-  .variable {
-    width: 100%;
+  &__content {
     display: flex;
     flex-direction: column;
-
     text-align: center;
 
     > div {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 4px;
+      text-align: center;
+      margin-bottom: 8px;
     }
+
+    label {
+      font-size: 16px;
+      text-align: left;
+      padding: 12px 0;
+
+      > span {
+        font-size: 12px;
+      }
+
+      &.small {
+        font-size: 14px;
+        padding: 8px 0;
+      }
+    }
+
+    label.small + input {
+      width: 40px;
+    }
+
+    .createlock__variable {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+
+      text-align: center;
+
+      > div {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+    }
+  }
+
+  &__submit {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
   }
 }
 </style>

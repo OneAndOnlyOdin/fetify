@@ -14,8 +14,6 @@ const cardConfig: { [type in ActionType]: number } = {
   freeze: 0,
   increase: 0,
   decrease: 0,
-  double: 0,
-  half: 0,
   unlock: 0,
   task: 0,
   reset: 0,
@@ -118,8 +116,8 @@ export default Vue.extend({
   <Modal v-model="isOpen" :onHide="onHide">
     <template slot="header">Lock Options</template>
 
-    <div class="input__group">
-      <div @click="renameLock" class="input__prefix--btn" :class="{ disabled: nameLoading }">Rename</div>
+    <div class="group">
+      <div @click="renameLock" class="group__button" :class="{ disabled: nameLoading }">Rename</div>
       <input type="text" v-model="newName" v-on:keyup.enter="renameLock" :disabled="nameLoading" />
     </div>
 
@@ -135,8 +133,8 @@ export default Vue.extend({
       <h3>Add Cards</h3>
 
       <div class="add__grid">
-        <div class="input__group" v-for="type in Object.keys(cards.config)" :key="type">
-          <div class="input__prefix" style="width: 72px">{{type}}</div>
+        <div class="group" v-for="type in Object.keys(cards.config)" :key="type">
+          <div class="group__prefix" style="width: 72px">{{ type }}</div>
           <input
             type="number"
             style="width: 40px"
@@ -157,12 +155,7 @@ export default Vue.extend({
       </div>
     </template>
 
-    <DeleteLock
-      :id="lock.id"
-      :isOpen="isDeleteOpen"
-      :confirm="confirmDelete"
-      :onHide="closeDelete"
-    />
+    <DeleteLock :id="lock.id" :isOpen="isDeleteOpen" :confirm="confirmDelete" :onHide="closeDelete" />
 
     <LockInvite v-if="invite.open" :lock="lock" :isOpen="invite.open" :onHide="closeInvite" />
   </Modal>

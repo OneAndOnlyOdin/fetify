@@ -17,20 +17,23 @@ export default Vue.extend({
 select {
   border-radius: 0;
   outline: 0;
-  height: 42px;
+  height: 40px;
 }
 
 .select {
   position: relative;
   display: inline-block;
-  height: 42px;
+  height: 40px;
 }
 
 .select select {
+  height: 40px;
   background-color: white;
   font-size: 14px;
-  padding: 12px;
-  border: 1px solid $color-accent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
   min-width: 120px;
   text-overflow: '';
   -webkit-appearance: button; /* hide default arrow in chrome OSX */
@@ -48,7 +51,7 @@ select {
   height: 1em;
   font-size: 0.8em;
   line-height: 0;
-  right: 16px;
+  right: 14px;
   top: 23px;
 }
 
@@ -58,9 +61,9 @@ select {
 
 .select::before {
   border: 0;
-  width: 42px;
-  height: 41px;
-  right: 1px;
+  width: 40px;
+  height: 40px;
+  right: 0;
 
   background-color: $color-accent;
 }

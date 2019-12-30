@@ -122,8 +122,8 @@ function isVisible(lock: ClientLock) {
         <div>
           <Dropdown text="Options ▼">
             <a>
-              <div class="input__group">
-                <div class="input__prefix--btn" @click="joinLock">Join</div>
+              <div class="group">
+                <div class="group__button" @click="joinLock">Join</div>
                 <input type="text" style="width: 92px" placeholder="Enter Lock ID" v-model="joinLockId" />
               </div>
             </a>

@@ -12,6 +12,7 @@ export type LockSchema = {
   config: LockConfig
   actions: LockAction[]
   history: LockHistory[]
+  unlocksFound: number
   isOpen: boolean
   version: number
 }
@@ -28,9 +29,7 @@ export function getLockState(id: string) {
   return lockState.then(tbl => tbl.findOne({ aggregateId: id }))
 }
 
-export const lockState = database.then(db =>
-  db.collection<LockState>('lockState')
-)
+export const lockState = database.then(db => db.collection<LockState>('lockState'))
 
 export async function getLocks(userId: string) {
   const query = {
@@ -53,21 +52,15 @@ export async function getLocks(userId: string) {
 }
 
 export async function upsertLock(lock: LockSchema) {
-  await coll.then(coll =>
-    coll.updateOne({ id: lock.id }, { $set: lock }, { upsert: true })
-  )
+  await coll.then(coll => coll.updateOne({ id: lock.id }, { $set: lock }, { upsert: true }))
 }
 
 export function getLock(lockId: string, version?: number) {
   if (!version) {
-    return coll.then(coll =>
-      coll.findOne({ id: lockId, deleted: { $ne: false } })
-    )
+    return coll.then(coll => coll.findOne({ id: lockId, deleted: { $ne: false } }))
   }
 
-  return coll.then(coll =>
-    coll.findOne({ id: lockId, version, deleted: { $ne: false } })
-  )
+  return coll.then(coll => coll.findOne({ id: lockId, version, deleted: { $ne: false } }))
 }
 
 export function updateLock(id: string, lock: Partial<LockSchema>) {

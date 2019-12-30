@@ -48,33 +48,34 @@ label {
   user-select: none;
 }
 
-.input__group {
+.group {
   display: flex;
   flex-direction: row;
-}
 
-.input__prefix {
-  background-color: $color-accent;
-  border: 0;
-  font-size: 16px;
-  padding: 12px 8px;
-  max-height: 16px;
-}
-.input__prefix--btn {
-  cursor: pointer;
-  background-color: $color-accent;
-  border: 0;
-  font-size: 16px;
-  padding: 12px 8px;
-  max-height: 16px;
-
-  &:hover {
-    background-color: lighten($color-accent, 10%);
+  &__prefix {
+    background-color: $color-accent;
+    border: 0;
+    font-size: 16px;
+    padding: 12px 8px;
+    max-height: 16px;
   }
 
-  &.disabled {
-    cursor: not-allowed;
-    background-color: darken($color-accent, 20%);
-    color: darken($color-text, 50%);
+  &__button {
+    cursor: pointer;
+    background-color: $color-accent;
+    border: 0;
+    font-size: 16px;
+    padding: 12px 8px;
+    max-height: 16px;
+
+    &:hover {
+      background-color: lighten($color-accent, 10%);
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+      background-color: darken($color-accent, 20%);
+      color: darken($color-text, 50%);
+    }
   }
 }

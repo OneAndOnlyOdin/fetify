@@ -11,6 +11,7 @@ pop.handle('LockCreated', async (id, event, { timestamp, version }) => {
     id,
     version,
     created: timestamp,
+    unlocksFound: 0,
     isOpen: false,
     actions: event.actions,
     config: event.config,
@@ -42,6 +43,14 @@ pop.handle('CardDrawn', async (id, event, { timestamp, version }) => {
     version,
     actions: event.actions,
     history: lock.history.concat(item),
+  }
+
+  if (event.cardType === 'unlock') {
+    nextLock.unlocksFound = lock.unlocksFound + 1
+  }
+
+  if (event.cardType === 'reset') {
+    nextLock.unlocksFound = 0
   }
 
   await updateLock(id, {

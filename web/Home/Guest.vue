@@ -26,12 +26,7 @@ export default Vue.extend({
       return !!this.username && !!this.password
     },
     canSignup(): boolean {
-      return (
-        !!this.username &&
-        !!this.password &&
-        !!this.confirm &&
-        this.password === this.confirm
-      )
+      return !!this.username && !!this.password && !!this.confirm && this.password === this.confirm
     },
   },
 
@@ -97,7 +92,7 @@ export default Vue.extend({
         />
       </div>
 
-      <div style="color: red" v-if="error.length > 0">{{error}}</div>
+      <div style="color: red" v-if="error.length > 0">{{ error }}</div>
 
       <div class="center">
         <button :disabled="!canSignin" @click="signin" v-if="!register">Login</button>
@@ -108,11 +103,6 @@ export default Vue.extend({
 </template>
 
 <style lang="scss" scoped>
-.page {
-  display: flex;
-  justify-content: space-around;
-}
-
 .box {
   display: flex;
   flex-direction: column;
