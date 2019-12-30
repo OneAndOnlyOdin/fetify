@@ -55,6 +55,7 @@ pop.handle('CardDrawn', async (id, event, { timestamp, version }) => {
 
   await updateLock(id, {
     version,
+    unlocksFound: nextLock.unlocksFound,
     actions: nextLock.actions,
     history: nextLock.history,
   })

@@ -44,6 +44,7 @@ export type LockDTO = {
   history: LockHistory[]
   counts?: LockCounts
   totalActions: number
+  unlocksFound: number
   isOpen: boolean
   unlockDate?: Date
   draw?: Date

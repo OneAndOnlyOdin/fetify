@@ -94,6 +94,7 @@ export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
     history: lock.history,
     ownerId: lock.ownerId,
     playerId: lock.playerId,
+    unlocksFound: lock.unlocksFound,
     draw,
     unlockDate,
     ...counts,
