@@ -13,9 +13,7 @@ export function createServer(id: number): void {
   const port = config.port
 
   const server = app.listen(port, () => {
-    log.info(
-      `App is running at http://localhost:${port}/ in ${app.get('env')} mode.`
-    )
+    log.info(`App is running at http://localhost:${port}/ in ${app.get('env')} mode.`)
     log.info('Press CTRL-C to stop.')
   })
 
@@ -47,12 +45,7 @@ export function createApp(id: number) {
   return { app, log }
 }
 
-function errorHandler(
-  err: any,
-  _req: express.Request,
-  res: express.Response,
-  _next: express.NextFunction
-) {
+function errorHandler(err: any, req: express.Request, res: express.Response, _next: express.NextFunction) {
   if (err instanceof CommandError) {
     const code = err.code || 'UNKNOWN'
     res.status(400).send({ message: err.message, code })
@@ -60,6 +53,7 @@ function errorHandler(
   }
 
   const message = err.status ? err.message : 'Internal server error'
+  req.log.error({ err }, 'Unhandled exception')
   res.status(err.status || 500).send({ message })
   return
 }
