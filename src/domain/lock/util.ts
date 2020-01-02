@@ -104,32 +104,29 @@ export function play(lock: LockAgg, card: number) {
 }
 
 function applyAction({ actions, config, drawHistory }: LockAgg, action: LockAction): LockAction[] {
-  const resets = config.actions.reset - drawHistory.filter(card => card.type === 'reset').length
-  const nextActions = actions.filter(card => card.type !== 'reset').concat(createActions(resets, 'reset'))
-
   switch (action.type) {
     case 'blank':
     case 'freeze':
     case 'task':
     case 'unlock':
-      return nextActions
+      return actions
 
     case 'decrease': {
-      return removeActions(nextActions, 1, 'blank')
+      return removeActions(actions, 1, 'blank')
     }
 
     case 'increase': {
-      return nextActions.concat(createActions(getRand(1, 3)))
+      return actions.concat(createActions(getRand(1, 3)))
     }
 
     case 'reset': {
-      // const resetsFound = drawHistory.filter(card => card.type === 'reset').length
-      // const resetsLeft = config.actions.reset - resetsFound
-      // const resets = createActions(resetsLeft, 'reset')
-      // const nextActions = createConfigActions({
-      //   ...config.actions,
-      //   reset: 0,
-      // }).concat(resets)
+      const resetsFound = drawHistory.filter(card => card.type === 'reset').length
+      const resetsLeft = config.actions.reset - resetsFound
+      const resets = createActions(resetsLeft, 'reset')
+      const nextActions = createConfigActions({
+        ...config.actions,
+        reset: 0,
+      }).concat(resets)
 
       return nextActions
     }
