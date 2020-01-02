@@ -1,4 +1,4 @@
-import { LockAction, LockConfig, LockHistory, ActionType, DrawHistory } from './types'
+import { LockAction, LockConfig, LockHistory, ActionType, DrawHistory, LockAgg } from './types'
 
 export const defaultTask = 'Perform a task for the key holder!'
 
@@ -93,9 +93,9 @@ export function getDrawCount(opts: DrawCountOpts) {
   return chances
 }
 
-export function play(actions: LockAction[], card: number, config: LockConfig) {
-  const action = actions[card]
-  const nextActions = applyAction(action, actions, config)
+export function play(lock: LockAgg, card: number) {
+  const action = lock.actions[card]
+  const nextActions = applyAction(lock, action)
 
   return {
     actions: shuffle(nextActions),
@@ -103,29 +103,33 @@ export function play(actions: LockAction[], card: number, config: LockConfig) {
   }
 }
 
-function applyAction(action: LockAction, actions: LockAction[], cfg: LockConfig): LockAction[] {
+function applyAction({ actions, config, drawHistory }: LockAgg, action: LockAction): LockAction[] {
+  const resets = config.actions.reset - drawHistory.filter(card => card.type === 'reset').length
+  const nextActions = actions.filter(card => card.type !== 'reset').concat(createActions(resets, 'reset'))
+
   switch (action.type) {
     case 'blank':
     case 'freeze':
     case 'task':
     case 'unlock':
-      return actions
+      return nextActions
 
     case 'decrease': {
-      return removeActions(actions, 1, 'blank')
+      return removeActions(nextActions, 1, 'blank')
     }
 
     case 'increase': {
-      return actions.concat(createActions(getRand(1, 3)))
+      return nextActions.concat(createActions(getRand(1, 3)))
     }
 
     case 'reset': {
-      const resetsLeft = actions.filter(act => act.type === 'reset').length - 1
-      const resets = createActions(resetsLeft, 'reset')
-      const nextActions = createConfigActions({
-        ...cfg.actions,
-        reset: 0,
-      }).concat(resets)
+      // const resetsFound = drawHistory.filter(card => card.type === 'reset').length
+      // const resetsLeft = config.actions.reset - resetsFound
+      // const resets = createActions(resetsLeft, 'reset')
+      // const nextActions = createConfigActions({
+      //   ...config.actions,
+      //   reset: 0,
+      // }).concat(resets)
 
       return nextActions
     }

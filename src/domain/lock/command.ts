@@ -54,7 +54,7 @@ export const command: CommandHandler<LockEvent, LockAgg, LockCommand> = {
       throw new CommandError('Card out of bounds')
     }
 
-    const { action, actions } = play(agg.actions, cmd.card, agg.config)
+    const { action, actions } = play(agg, cmd.card)
 
     let task: string | undefined
 
