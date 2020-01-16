@@ -108,8 +108,6 @@ function applyAction({ actions, config, drawHistory }: LockAgg, action: LockActi
     case 'blank':
     case 'freeze':
     case 'task':
-    case 'unlock':
-      return actions
 
     case 'decrease': {
       return removeActions(actions, 1, 'blank')
@@ -119,14 +117,14 @@ function applyAction({ actions, config, drawHistory }: LockAgg, action: LockActi
       return actions.concat(createActions(getRand(1, 3)))
     }
 
+    case 'unlock':
     case 'reset': {
       const resetsFound = drawHistory.filter(card => card.type === 'reset').length
       const resetsLeft = config.actions.reset - resetsFound
-      const resets = createActions(resetsLeft, 'reset')
       const nextActions = createConfigActions({
         ...config.actions,
-        reset: 0,
-      }).concat(resets)
+        reset: resetsLeft,
+      })
 
       return nextActions
     }
