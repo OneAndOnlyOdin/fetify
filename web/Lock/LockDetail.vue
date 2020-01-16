@@ -232,6 +232,10 @@ export default Vue.extend({
             <b>Unlocks found:</b>
             {{ lock.unlocksFound }} of {{ lock.config.actions.unlock }}
           </div>
+          <div>
+            <b>Cards drawn:</b>
+            {{ history.length }}
+          </div>
         </div>
 
         <div>
