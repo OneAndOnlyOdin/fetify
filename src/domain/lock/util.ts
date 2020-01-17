@@ -108,6 +108,7 @@ function applyAction({ actions, config, drawHistory }: LockAgg, action: LockActi
     case 'blank':
     case 'freeze':
     case 'task':
+      return actions
 
     case 'decrease': {
       return removeActions(actions, 1, 'blank')
