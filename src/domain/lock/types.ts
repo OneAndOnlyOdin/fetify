@@ -41,7 +41,9 @@ export type LockDTO = {
   ownerId: string
   playerId?: string
   config: LockConfig
-  history: LockHistory[]
+  history?: LockHistory[]
+  lastHistory?: LockHistory
+  historyCount: number
   counts?: LockCounts
   totalActions: number
   unlocksFound: number

@@ -12,6 +12,7 @@ export type LockSchema = {
   config: LockConfig
   actions: LockAction[]
   history: LockHistory[]
+  lastHistory?: LockHistory
   unlocksFound: number
   isOpen: boolean
   version: number
@@ -40,14 +41,10 @@ export async function getLocks(userId: string) {
       },
     ],
   }
+
   const count = await coll.then(coll => coll.find(query).count())
-  const locks = await coll.then(coll =>
-    coll
-      .find(query)
-      .project({ _id: 0 })
-      .sort({ created: -1 })
-      .toArray()
-  )
+  const locks = await coll.then(coll => coll.find(query).toArray())
+
   return { locks, count }
 }
 
@@ -69,8 +66,15 @@ export function updateLock(id: string, lock: Partial<LockSchema>) {
 
 type ActionCount = { [type in LockAction['type']]?: number }
 
-export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
-  const counts = getCounts(lock, forUser)
+type DtoOptions = {
+  forUser: string
+  page?: number
+  size?: number
+  history: boolean
+}
+
+export function toLockDto(lock: LockSchema, opts: DtoOptions): LockDTO {
+  const counts = getCounts(lock, opts.forUser)
   const seconds = secondsTilDraw({
     history: lock.history,
     since: new Date(Date.now()),
@@ -78,12 +82,11 @@ export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
   })
   const draw = seconds > 0 ? new Date(Date.now() + seconds * 1000) : undefined
 
-  const lastHistory = lock.history.slice(-1)[0]
+  const history = lock.history.slice().sort(sortTimeDesc)
+  const lastHistory = history[0]
   const unlockDate = lastHistory && lock.isOpen ? lastHistory.date : undefined
 
-  lock.history.slice().sort(sortTimeDesc)
-
-  return {
+  const dto: LockDTO = {
     id: lock.id,
     version: lock.version,
     name: lock.name,
@@ -91,14 +94,22 @@ export function toLockDto(lock: LockSchema, forUser: string): LockDTO {
     created: lock.created,
     isOpen: lock.isOpen,
     config: lock.config,
-    history: lock.history,
     ownerId: lock.ownerId,
     playerId: lock.playerId,
     unlocksFound: lock.unlocksFound,
+    lastHistory,
+    historyCount: lock.history.length,
     draw,
     unlockDate,
     ...counts,
   }
+
+  if (opts.history) {
+    const { page = 1, size = 20 } = opts
+    dto.history = history.slice((page - 1) * size, size)
+  }
+
+  return dto
 }
 
 function sortTimeDesc(l: LockHistory, r: LockHistory) {

@@ -77,20 +77,13 @@ export default Vue.extend({
       if (this.lock.config.owner === 'self') return false
       return authApi.state.userId === this.lock.ownerId
     },
-    async getLock(refresh?: boolean) {
-      if (refresh) {
-        await locksApi.getLocks()
-      }
+    async getLock() {
+      const lock = await locksApi.getLock(this.id)
 
-      const lock = locksApi.state.locks[this.id]
       if (lock) {
         this.lock = { ...lock }
         this.updateLock()
         this.$forceUpdate()
-      }
-
-      if (!this.lock && !refresh) {
-        this.getLock(true)
       }
     },
     validateManual(num: number) {
@@ -128,7 +121,7 @@ export default Vue.extend({
     },
     updateLock() {
       if (!this.lock) return
-      this.history = mapHistory(this.lock.history)
+      this.history = mapHistory(this.lock.history || [])
       this.counts = toCountsArray(this.lock.counts)
     },
     recvLock(dto: Payload<'lock'>) {
@@ -234,7 +227,7 @@ export default Vue.extend({
           </div>
           <div>
             <b>Cards drawn:</b>
-            {{ history.length }}
+            {{ lock.historyCount }}
           </div>
         </div>
 

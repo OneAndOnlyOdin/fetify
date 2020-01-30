@@ -1,6 +1,6 @@
 import { createLock, ClientLock } from '../store/lock'
 import { LockConfig, LockHistory, LockAction } from '../../src/domain/lock'
-import { getDrawCount, actionOptions } from '../../src/domain/lock/util'
+import { actionOptions } from '../../src/domain/lock/util'
 import { common } from '../common'
 
 export type Action = LockAction & { value: string; desc: string }
@@ -21,14 +21,14 @@ export interface CreateData {
   showActions: boolean
 }
 
-export function getLockDraws(lock: ClientLock) {
-  if (!lock) return 0
-  return getDrawCount({
-    created: new Date(lock.created),
-    history: lock.history,
-    intervalMins: lock.config.intervalMins,
-  })
-}
+// export function getLockDraws(lock: ClientLock) {
+//   if (!lock) return 0
+//   return getDrawCount({
+//     created: new Date(lock.created),
+//     history: lock.history,
+//     intervalMins: lock.config.intervalMins,
+//   })
+// }
 
 export function toLockConfig(data: CreateData) {
   const actions: LockConfig['actions'] = {

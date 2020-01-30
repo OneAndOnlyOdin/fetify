@@ -12,7 +12,6 @@ import ListCard from './ListCard.vue'
 type Data = {
   interval?: NodeJS.Timer
   joinLockId: string
-  knownLocks: Set<string>
   locks: ClientLock[]
   auth: AuthState
   filter: {
@@ -26,7 +25,6 @@ export default Vue.extend({
   data(): Data {
     return {
       joinLockId: '',
-      knownLocks: new Set<string>(),
       locks: [],
       auth: authApi.state,
       filter: {
@@ -67,15 +65,19 @@ export default Vue.extend({
     openCreate() {
       navigate('/locks/create')
     },
+
     toDuration: common.toDuration,
+
     updateLocks() {
       this.locks = this.locks.filter(isVisible)
+      const knownIds = this.locks.map(lock => lock.id)
 
-      for (const [id, lock] of Object.entries(locksApi.state.locks))
-        if (!this.knownLocks.has(id)) {
-          this.knownLocks.add(id)
+      for (const [, lock] of Object.entries(locksApi.state.locks)) {
+        const hasLock = knownIds.includes(lock.id)
+        if (!hasLock) {
           this.locks.unshift(lock)
         }
+      }
 
       for (const lock of this.locks) {
         lock.draw = locksApi.state.locks[lock.id].draw
@@ -97,9 +99,8 @@ export default Vue.extend({
       })
     },
   },
-  mounted() {
-    this.updateLocks()
-    if (!locksApi.state.locks.length) locksApi.getLocks()
+  async mounted() {
+    this.locks = await locksApi.getLocks()
     this.interval = setInterval(this.updateLocks, 1000)
 
     const persisted = common.hydrate<Partial<Data['filter']>>('lock-filters')
@@ -111,7 +112,7 @@ export default Vue.extend({
 })
 
 function isVisible(lock: ClientLock) {
-  return !locksApi.state.locks[lock.id].deleted && !lock.deleted
+  return !lock.deleted
 }
 </script>
 

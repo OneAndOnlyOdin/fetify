@@ -163,13 +163,13 @@ pop.handle('ActionsAdded', async (id, event, { timestamp, version }) => {
 function send(lock: LockSchema) {
   svcSockets.toUser(lock.ownerId, {
     type: 'lock',
-    payload: toLockDto(lock, lock.ownerId),
+    payload: toLockDto(lock, { forUser: lock.ownerId, history: true }),
   })
 
   if (lock.playerId) {
     svcSockets.toUser(lock.playerId, {
       type: 'lock',
-      payload: toLockDto(lock, lock.playerId),
+      payload: toLockDto(lock, { forUser: lock.playerId, history: true }),
     })
   }
 }

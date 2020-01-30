@@ -43,23 +43,32 @@ webSockets.on(msg => {
   return
 })
 
-let debounce = 0
 export async function getLocks() {
-  if (Date.now() - debounce < 5000) return
-  debounce = Date.now()
-
-  const { locks, count } = await api.get<{ locks: LockDTO[]; count: number }>(
-    '/api/lock'
-  )
+  const { locks, count } = await api.get<{ locks: LockDTO[]; count: number }>('/api/lock')
+  const clientLocks: ClientLock[] = []
   state.total = count
 
   for (const lock of locks) {
     state.locks[lock.id] = {
       ...lock,
-      drawSeconds: 0,
+      drawSeconds: getDrawSecs(lock.lastHistory?.date),
       created: new Date(lock.created),
     }
+    clientLocks.push(state.locks[lock.id])
   }
+
+  return clientLocks
+}
+
+export async function getLock(lockId: string) {
+  const res = await api.get<LockDTO>(`/api/lock/${lockId}`)
+  const lastDraw = new Date(res.lastHistory?.date ?? 0)
+  const lock: ClientLock = {
+    ...res,
+    created: new Date(res.created),
+    drawSeconds: getDrawSecs(lastDraw),
+  }
+  return lock
 }
 
 export async function getLatestLock(id: string, version: number) {
@@ -104,5 +113,4 @@ export function getDrawSecs(drawAt?: Date) {
 
 const win: any = window
 
-win.clearLocks = (events: boolean = false) =>
-  api.post('/api/admin/clear-lock', { events }).then(console.log)
+win.clearLocks = (events: boolean = false) => api.post('/api/admin/clear-lock', { events }).then(console.log)
