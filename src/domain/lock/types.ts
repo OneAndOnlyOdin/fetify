@@ -78,6 +78,7 @@ export type LockAction =
   | { type: 'unlock' }
   | { type: 'task' }
   | { type: 'reset' }
+  | { type: 'double' }
 
 export type LockTime = { type: 'fixed'; durationHrs: number } | { type: 'variable' }
 

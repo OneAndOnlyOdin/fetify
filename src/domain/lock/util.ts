@@ -1,11 +1,13 @@
 import { LockAction, LockConfig, LockHistory, ActionType, DrawHistory, LockAgg } from './types'
 
+const MAX_BLANKS = 365
+
 export const defaultTask = 'Perform a task for the key holder!'
 
 export const actionOptions: {
-  [type in ActionType]: { value: number; desc: string; max?: number }
+  [type in ActionType]: { value: number; desc: string; max: number }
 } = {
-  blank: { value: 10, desc: 'the lock is frozen for the interval', max: 365 },
+  blank: { value: 10, desc: 'the lock is frozen for the interval', max: MAX_BLANKS },
   decrease: {
     value: 10,
     desc: 'decrease the number of BLANK cards by 1-3',
@@ -26,6 +28,11 @@ export const actionOptions: {
     value: 0,
     desc: 'do a task! the lock is also frozen for the interval',
     max: 100,
+  },
+  double: {
+    value: 0,
+    desc: `double the number of blanks! blanks cannot exceed ${MAX_BLANKS}`,
+    max: 20,
   },
   unlock: { value: 1, desc: 'collect all of these to unlock', max: 20 },
 }
@@ -54,6 +61,7 @@ export function secondsTilDraw(opts: Opts): number {
 
     case 'decrease':
     case 'increase':
+    case 'double':
     case 'unlock':
     case 'reset':
       return 0
@@ -95,7 +103,15 @@ export function getDrawCount(opts: DrawCountOpts) {
 
 export function play(lock: LockAgg, card: number) {
   const action = lock.actions[card]
-  const nextActions = applyAction(lock, action)
+  const counts = new Map<ActionType, number>()
+  const nextActions = applyAction(lock, action).reduce<LockAction[]>((prev, action) => {
+    const count = counts.get(action.type) || 0
+    if (count === actionOptions[action.type].max) return prev
+
+    prev.push(action)
+    counts.set(action.type, count + 1)
+    return prev
+  }, [])
 
   return {
     actions: shuffle(nextActions),
@@ -116,6 +132,11 @@ function applyAction({ actions, config, drawHistory }: LockAgg, action: LockActi
 
     case 'increase': {
       return actions.concat(createActions(getRand(1, 3)))
+    }
+
+    case 'double': {
+      const blanks = actions.filter(action => action.type === 'blank').length
+      return actions.concat(createActions(blanks, 'blank'))
     }
 
     case 'unlock':
@@ -163,6 +184,7 @@ export function toActionConfig(cfg: { [key: string]: number }): LockConfig['acti
     task: min(cfg.task),
     reset: min(cfg.reset),
     unlock: min(cfg.unlock),
+    double: min(cfg.double),
   }
 }
 
@@ -175,6 +197,8 @@ export function isValidType(type: ActionType): boolean {
     case 'task':
     case 'unlock':
     case 'reset':
+    case 'double':
+      true
       return true
   }
 

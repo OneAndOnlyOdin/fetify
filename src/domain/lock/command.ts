@@ -146,6 +146,7 @@ function canDraw(agg: LockAgg): boolean {
     case 'increase':
     case 'unlock':
     case 'reset':
+    case 'double':
       return true
 
     case 'blank':

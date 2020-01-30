@@ -39,6 +39,7 @@ export function toLockConfig(data: CreateData) {
     task: zero(data.actions.task.value),
     reset: zero(data.actions.reset.value),
     unlock: zero(data.actions.unlock.value),
+    double: zero(data.actions.double.value),
   }
 
   const cfg: LockConfig = {
