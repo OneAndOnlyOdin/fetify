@@ -101,7 +101,7 @@ export function getDrawCount(opts: DrawCountOpts) {
   return chances
 }
 
-export function play(lock: LockAgg, card: number) {
+export function play(lock: LockAgg, card: number): { actions: LockAction[]; action: LockAction } {
   const action = lock.actions[card]
   const counts = new Map<ActionType, number>()
   const nextActions = applyAction(lock, action).reduce<LockAction[]>((prev, action) => {
@@ -113,19 +113,37 @@ export function play(lock: LockAgg, card: number) {
     return prev
   }, [])
 
-  return {
-    actions: shuffle(nextActions),
-    action,
+  switch (action.type) {
+    case 'task':
+    case 'blank':
+    case 'freeze': {
+      return {
+        actions: nextActions,
+        action,
+      }
+    }
+
+    case 'double':
+    case 'decrease':
+    case 'increase':
+    case 'unlock':
+    case 'reset': {
+      return {
+        actions: shuffle(nextActions),
+        action,
+      }
+    }
   }
 }
 
 function applyAction({ actions, config, drawHistory }: LockAgg, action: LockAction): LockAction[] {
   switch (action.type) {
-    case 'blank':
     case 'freeze':
-    case 'task':
-      return actions
+    case 'task': {
+      return removeActions(actions, 1, action.type)
+    }
 
+    case 'blank':
     case 'decrease': {
       return removeActions(actions, 1, 'blank')
     }
@@ -136,7 +154,8 @@ function applyAction({ actions, config, drawHistory }: LockAgg, action: LockActi
 
     case 'double': {
       const blanks = actions.filter(action => action.type === 'blank').length
-      return actions.concat(createActions(blanks, 'blank'))
+      const nextActions = actions.concat(createActions(blanks, 'blank'))
+      return removeActions(nextActions, 1, 'double')
     }
 
     case 'unlock':
