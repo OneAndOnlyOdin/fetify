@@ -103,15 +103,7 @@ export function getDrawCount(opts: DrawCountOpts) {
 
 export function play(lock: LockAgg, card: number): { actions: LockAction[]; action: LockAction } {
   const action = lock.actions[card]
-  const counts = new Map<ActionType, number>()
-  const nextActions = applyAction(lock, action).reduce<LockAction[]>((prev, action) => {
-    const count = counts.get(action.type) || 0
-    if (count === actionOptions[action.type].max) return prev
-
-    prev.push(action)
-    counts.set(action.type, count + 1)
-    return prev
-  }, [])
+  const nextActions = applyAction(lock, action)
 
   switch (action.type) {
     case 'task':
@@ -149,18 +141,19 @@ function applyAction({ actions, config, drawHistory }: LockAgg, action: LockActi
     }
 
     case 'increase': {
-      return removeActions(actions, 1, 'increase').concat(createActions(getRand(1, 3)))
+      const nextActions = addActions(actions, getRand(1, 3), 'blank')
+      return removeActions(nextActions, 1, 'increase')
     }
 
     case 'double': {
-      const blanks = actions.filter(action => action.type === 'blank').length
-      const nextActions = actions.concat(createActions(blanks, 'blank'))
+      const blanks = countActions(actions, 'blank')
+      const nextActions = addActions(actions, blanks, 'blank')
       return removeActions(nextActions, 1, 'double')
     }
 
     case 'unlock':
     case 'reset': {
-      const resetsFound = drawHistory.filter(card => card.type === 'reset').length
+      const resetsFound = countActions(drawHistory, 'reset')
       const resetsLeft = config.actions.reset - resetsFound
       const nextActions = createConfigActions({
         ...config.actions,
@@ -195,6 +188,14 @@ function removeActions(actions: LockAction[], amount: number, ...types: ActionTy
   return actions
 }
 
+function countActions<T extends { type: string }>(actions: T[], type: ActionType = 'blank') {
+  let count = 0
+  for (const action of actions) {
+    if (action.type === type) count++
+  }
+  return count
+}
+
 export function toActionConfig(cfg: { [key: string]: number }): LockConfig['actions'] {
   return {
     blank: min(cfg.blank),
@@ -227,6 +228,16 @@ export function isValidType(type: ActionType): boolean {
 
 function throwNever(nv: never) {
   throw new Error(`Unexpected type: ${nv}`)
+}
+
+function addActions(actions: LockAction[], add: number, type: ActionType = 'blank') {
+  const max = actionOptions[type].max
+  const count = countActions(actions, type)
+
+  let toAdd = add
+  if (add + count > max) toAdd = max - count
+
+  return actions.concat(createActions(toAdd, type))
 }
 
 export function createActions(amount: number, type: ActionType = 'blank'): LockAction[] {
