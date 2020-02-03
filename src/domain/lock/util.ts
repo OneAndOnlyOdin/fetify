@@ -139,17 +139,17 @@ export function play(lock: LockAgg, card: number): { actions: LockAction[]; acti
 function applyAction({ actions, config, drawHistory }: LockAgg, action: LockAction): LockAction[] {
   switch (action.type) {
     case 'freeze':
+    case 'blank':
     case 'task': {
       return removeActions(actions, 1, action.type)
     }
 
-    case 'blank':
     case 'decrease': {
-      return removeActions(actions, 1, 'blank')
+      return removeActions(removeActions(actions, 1, 'decrease'), getRand(1, 3), 'blank')
     }
 
     case 'increase': {
-      return actions.concat(createActions(getRand(1, 3)))
+      return removeActions(actions, 1, 'increase').concat(createActions(getRand(1, 3)))
     }
 
     case 'double': {
@@ -179,15 +179,16 @@ export function getRand(min: number, max: number) {
   return rand + min
 }
 
-function removeActions(actions: LockAction[], amount: number, type: ActionType) {
-  let removed = 0
-
-  for (let i = 0; i < actions.length; i++) {
-    if (removed === amount) break
-    if (actions[i].type === type) {
-      removed++
-      actions.splice(i, 1)
-      i--
+function removeActions(actions: LockAction[], amount: number, ...types: ActionType[]) {
+  for (const type of types) {
+    let removed = 0
+    for (let i = 0; i < actions.length; i++) {
+      if (removed === amount) break
+      if (actions[i].type === type) {
+        removed++
+        actions.splice(i, 1)
+        i--
+      }
     }
   }
 
