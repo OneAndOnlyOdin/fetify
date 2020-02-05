@@ -17,8 +17,7 @@
   "scripts": {
     "prebuild": "yarn run clean",
     "build": "tsc",
-    "build:web": "REACT_APP_NODE_ENV=production webpack --config webpack.config.js",
-    "build:webprod": "REACT_APP_NODE_ENV=production webpack --config webpack.config.js --production",
+    "build:web": "env-cmd -f build.env webpack --config webpack.config.js",
     "clean": "rimraf build",
     "web": "REACT_APP_NODE_ENV=dev webpack --config webpack.config.js --watch",
     "serve": "REACT_APP_NODE_ENV=dev webpack-dev-server --host 0.0.0.0 --config webpack.config.js --watch",
