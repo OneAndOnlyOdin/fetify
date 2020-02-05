@@ -2,76 +2,6 @@
 # yarn lockfile v1
 
 
-"@pixi/app@^5.1.5":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@pixi/app/-/app-5.2.0.tgz#dd216fd3cfc2e290fbf62200639bc8ee3738ba3e"
-  integrity sha512-5rhjAGPruzC3w6+knySIWk4II1Td8Fw0LVfg1K48BRXI1mLXCrZ3tJb6hdFuBPhgeIDz1tUwecJ4KfkJOWgqPg==
-  dependencies:
-    "@pixi/core" "^5.2.0"
-    "@pixi/display" "^5.2.0"
-
-"@pixi/constants@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@pixi/constants/-/constants-5.2.0.tgz#2ddf7aa62d01412136f973dc9f316d0aabd845ba"
-  integrity sha512-dXwzkKAvgpvOJmDBe9OQiE+HPp4uMIL/3ijHlyW0fgMqDPhtQtFcSUdSUAoFwb23Uaq56j1ejuEmly8LehJ0aQ==
-
-"@pixi/core@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@pixi/core/-/core-5.2.0.tgz#5c89e52f96ebf95bf3408dd783d796972d7ccd58"
-  integrity sha512-h8UuVWHfbWVGEO3a4SQS4vk70LSFMUMPKCvVpPq/3LtIUgPVDZO3tGL4O2jFteKwbmWNIMDCpDmBMu3XlqPlNQ==
-  dependencies:
-    "@pixi/constants" "^5.2.0"
-    "@pixi/display" "^5.2.0"
-    "@pixi/math" "^5.2.0"
-    "@pixi/runner" "^5.2.0"
-    "@pixi/settings" "^5.2.0"
-    "@pixi/ticker" "^5.2.0"
-    "@pixi/utils" "^5.2.0"
-
-"@pixi/display@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@pixi/display/-/display-5.2.0.tgz#f6ca47c10db1379b62091e664b7a3a70c095e814"
-  integrity sha512-P+exW4aI7eyqhdmi0M3HmKJI+XzDYNYAiEsKMUyyONwbHYSVdjQF5hzPuvjUYotTNZ1stCWbf0457cNNSPLOzQ==
-  dependencies:
-    "@pixi/math" "^5.2.0"
-    "@pixi/settings" "^5.2.0"
-    "@pixi/utils" "^5.2.0"
-
-"@pixi/math@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@pixi/math/-/math-5.2.0.tgz#4c853b8621a31791be6ade9cdfcd4168c69b8079"
-  integrity sha512-Y21H/kMluJqZ/QWb8cdXuZlib6G26QfZtgc85KbSJmjpMVWw03g0OELqFqOhsMzNanXp3B4OL1ZsNXnp0lWROQ==
-
-"@pixi/runner@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@pixi/runner/-/runner-5.2.0.tgz#b93688e2ed22f59b1c779be450730f383cae5691"
-  integrity sha512-vy/SGG8QFHMrWAqebMQdhxl/l6WlIbHXMDNDCYBWwXKYjmKzycrrj2o/mK9cBko8WDuoTRZ0Pe3JZ3XDYEsn9w==
-
-"@pixi/settings@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@pixi/settings/-/settings-5.2.0.tgz#34e2a9ad25b34be75226846417c806a40d6c6615"
-  integrity sha512-AIxcUbgM3mh2QxS+nxNcPsqnJEBg3x/UO9ZpNMRhed9UPM/5mQ8CGZUMLTzIxhjSS16Do4uK9vZikMjV8dXm/Q==
-  dependencies:
-    ismobilejs "^0.5.1"
-
-"@pixi/ticker@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@pixi/ticker/-/ticker-5.2.0.tgz#6e0dae872d0c7dc5458067c10fd6743b0ce15960"
-  integrity sha512-6xX786cX/RWmQKeRQ3bNvg8JjS0VLA2LQy1sOmUctx2AwdZysI04k2xdw9Krtpn1mkudgAcNrTEsgPeGEjIF9Q==
-  dependencies:
-    "@pixi/settings" "^5.2.0"
-
-"@pixi/utils@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@pixi/utils/-/utils-5.2.0.tgz#11a8f00c6e52292cad7bd37110a4a2ec2571ea6c"
-  integrity sha512-oMLRlvx+vWHPR06uiOvfOhtkG/LDBR3Syea9QZoIbCJE/GLYgJX8f0cVfrdI0kCgfGj4luc8/CWI745MKafUqQ==
-  dependencies:
-    "@pixi/constants" "^5.2.0"
-    "@pixi/settings" "^5.2.0"
-    earcut "^2.1.5"
-    eventemitter3 "^3.1.0"
-    url "^0.11.0"
-
 "@types/bcrypt@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/bcrypt/-/bcrypt-3.0.0.tgz#851489a9065a067cb7f3c9cbe4ce9bed8bba0876"
@@ -1737,11 +1667,6 @@ duplexify@^3.4.2, duplexify@^3.6.0:
     readable-stream "^2.0.0"
     stream-shift "^1.0.0"
 
-earcut@^2.1.5:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/earcut/-/earcut-2.2.1.tgz#3bae0b1b6fec41853b56b126f03a42a34b28f1d5"
-  integrity sha512-5jIMi2RB3HtGPHcYd9Yyl0cczo84y+48lgKPxMijliNQaKAHEZJbdzLmKmdxG/mCdS/YD9DQ1gihL8mxzR0F9w==
-
 ecc-jsbn@~0.1.1:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/ecc-jsbn/-/ecc-jsbn-0.1.2.tgz#3a83a904e54353287874c564b7549386849a98c9"
@@ -1917,11 +1842,6 @@ etag@~1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha1-Qa4u62XvpiJorr/qg6x9eSmbCIc=
-
-eventemitter3@^3.1.0:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-3.1.2.tgz#2d3d48f9c346698fce83a85d7d664e98535df6e7"
-  integrity sha512-tvtQIeLVHjDkJYnzf2dgVMxfuSGJeM/7UCG17TT4EumTfNtF+0nebF/4zWOIkCreAbtNqhGEboB6BWrwqNaw4Q==
 
 eventemitter3@^4.0.0:
   version "4.0.0"
@@ -3147,11 +3067,6 @@ isexe@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha1-6PvzdNxVb/iUehDcsFctYz8s+hA=
-
-ismobilejs@^0.5.1:
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/ismobilejs/-/ismobilejs-0.5.2.tgz#e81bacf6187c532ad8348355f4fecd6e6adfdce1"
-  integrity sha512-ta9UdV60xVZk/ZafFtSFslQaE76SvNkcs1r73d2PVR21zVzx9xuYv9tNe4MxA1NN7WoeCc2RjGot3Bz1eHDx3Q==
 
 isobject@^2.0.0:
   version "2.1.0"

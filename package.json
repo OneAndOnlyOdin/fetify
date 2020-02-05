@@ -34,7 +34,6 @@
     "db:reconfig": "sleep 5s && docker exec -it fetdb mongo --eval \"cfg = rs.config(); cfg.members = [{ _id: 0, host: '127.0.0.1:27017' }]; rs.reconfig(cfg, { force: true });\""
   },
   "dependencies": {
-    "@pixi/app": "^5.1.5",
     "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
     "bunyan": "^1.8.12",
