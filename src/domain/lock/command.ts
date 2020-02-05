@@ -25,6 +25,7 @@ export const command: CommandHandler<LockEvent, LockAgg, LockCommand> = {
     }
   },
   JoinLock: async (cmd, agg) => {
+    if (agg.version === 0) throw new CommandError('Lock does not exist')
     if (agg.config.owner === 'self') {
       throw new CommandError('Lock is not joinable')
     }
