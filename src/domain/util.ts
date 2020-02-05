@@ -1,11 +1,14 @@
 import { collections } from '../db/event'
 import { Event } from 'evtstore'
 import { createProvider } from 'evtstore/provider/mongo'
+import { logger } from '../logger'
 
 export async function getProvider<T extends Event>() {
   const provider = createProvider<T>({
     bookmarks: collections.bookmarks,
     events: collections.events,
+    onError: (err, stream, bookmark) =>
+      logger.error({ err }, `Unhandled error in ${stream}:${bookmark}`),
   })
 
   return provider
