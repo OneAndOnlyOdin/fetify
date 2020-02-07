@@ -64,6 +64,7 @@ export function secondsTilDraw(opts: Opts): number {
     case 'double':
     case 'unlock':
     case 'reset':
+    case 'actions added':
       return 0
   }
 }
@@ -219,18 +220,17 @@ export function isValidType(type: ActionType): boolean {
     case 'unlock':
     case 'reset':
     case 'double':
-      true
       return true
   }
 
   throwNever(type)
 }
 
-function throwNever(nv: never) {
-  throw new Error(`Unexpected type: ${nv}`)
+function throwNever(_nv: never) {
+  return false
 }
 
-function addActions(actions: LockAction[], add: number, type: ActionType = 'blank') {
+export function addActions(actions: LockAction[], add: number, type: ActionType = 'blank') {
   const max = actionOptions[type].max
   const count = countActions(actions, type)
 

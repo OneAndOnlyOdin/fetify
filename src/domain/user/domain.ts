@@ -1,6 +1,7 @@
 import { createDomain } from 'evtstore'
 import { UserEvent, UserAggregate, UserCmd } from './types'
 import { getProvider } from '../util'
+import { v4 } from 'uuid'
 
 export const domain = createDomain<UserEvent, UserAggregate, UserCmd>(
   {
@@ -12,6 +13,7 @@ export const domain = createDomain<UserEvent, UserAggregate, UserCmd>(
       alias: '',
       email: '',
       version: 0,
+      apiKey: '',
     }),
     fold: ev => {
       switch (ev.type) {
@@ -23,6 +25,12 @@ export const domain = createDomain<UserEvent, UserAggregate, UserCmd>(
 
         case 'EmailUpdated':
           return { email: ev.email }
+
+        case 'KeyGenerated':
+          return { key: ev.key }
+
+        case 'KeyRemoved':
+          return { key: '' }
       }
     },
   },
@@ -49,6 +57,20 @@ export const domain = createDomain<UserEvent, UserAggregate, UserCmd>(
         aggregateId: cmd.aggregateId,
         email: cmd.email,
       }
+    },
+    GenerateKey: async (_, agg) => {
+      if (agg.state !== 'new') throw new Error('User does not exist')
+      const chars = v4()
+      const key = chars
+        .split('')
+        .map(char => (Math.random() > 0.5 ? char : char.toUpperCase()))
+        .join('')
+      return { type: 'KeyGenerated', key }
+    },
+    RemoveKey: async (_, agg) => {
+      if (agg.state !== 'new') throw new Error('User does not exist')
+      if (agg.apiKey === '') return
+      return { type: 'KeyRemoved' }
     },
   }
 )

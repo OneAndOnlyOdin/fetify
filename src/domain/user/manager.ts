@@ -8,6 +8,7 @@ userManager.handle('UserCreated', async id => {
     userId: id,
     alias: '',
     email: '',
+    apiKey: '',
   })
 })
 

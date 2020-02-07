@@ -7,6 +7,10 @@ export async function getUser(userId: string) {
   return coll.then(coll => coll.findOne({ userId }))
 }
 
+export async function getUserByKey(apiKey: string) {
+  return coll.then(coll => coll.findOne({ apiKey }))
+}
+
 export async function setUser(userId: string, profile: Partial<UserProfile>) {
   if (profile.userId) {
     throw new Error('Cannot change userId')

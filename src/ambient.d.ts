@@ -8,6 +8,7 @@ declare type BaseToken = {
   userId: string
   email?: string
   alias?: string
+  isApiUser?: boolean
 }
 
 declare type Msg<T extends string, P extends {}> = {

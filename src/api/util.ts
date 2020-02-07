@@ -1,6 +1,7 @@
 import * as jwt from 'jsonwebtoken'
 import { RequestHandler, Request } from 'express'
 import { config } from '../env'
+import { getUserByKey } from '../domain/user/store'
 
 export function wrap(handler: RequestHandler): RequestHandler {
   const wrapped: RequestHandler = async (req, res, next) => {
@@ -20,7 +21,25 @@ export class StatusError extends Error {
   }
 }
 
-export const authMiddleware: RequestHandler = (req, _, next) => {
+export const authMiddleware: RequestHandler = async (req, _, next) => {
+  const apiKey = req.header('x-api-key')
+  if (apiKey) {
+    const user = await getUserByKey(apiKey)
+    if (user) {
+      req.user = {
+        iat: 0,
+        exp: Infinity,
+        expires: Infinity,
+        userId: user.userId,
+        alias: user.userId,
+        email: user.email,
+        isApiUser: true,
+      }
+      next()
+      return
+    }
+  }
+
   const user = getToken(req)
   if (!user) {
     return next(new StatusError('Not authorized', 401))

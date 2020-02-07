@@ -9,6 +9,8 @@ export const createLock = wrap(async (req, res) => {
   const body: Body = req.body
   const user = req.user!
 
+  validateConfig(body, req.user?.isApiUser)
+
   const id = uuid.v4().slice(0, 7)
   res.json(id)
 
@@ -17,3 +19,9 @@ export const createLock = wrap(async (req, res) => {
     userId: user.userId,
   })
 })
+
+function validateConfig(cfg: Body, isApiUser?: boolean) {
+  if (isApiUser && cfg.owner !== 'self') {
+    throw new Error('API Users can only create "self" locks')
+  }
+}

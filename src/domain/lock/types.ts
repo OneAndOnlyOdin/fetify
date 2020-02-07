@@ -104,7 +104,9 @@ export type LockHistory = BaseHistory & {
   type: HistoryType
 }
 
-export type DrawHistory = BaseHistory & { type: ActionType }
+export type HistoryActionType = ActionType | 'actions added'
+
+export type DrawHistory = BaseHistory & { type: HistoryActionType }
 
 export type LockMessages =
   | Msg<'lock', LockDTO>

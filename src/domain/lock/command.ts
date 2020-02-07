@@ -1,4 +1,4 @@
-import { LockEvent, LockAgg, LockCommand, LockConfig } from './types'
+import { LockEvent, LockAgg, LockCommand, LockConfig, ActionType } from './types'
 import {
   createConfigActions,
   play,
@@ -8,6 +8,7 @@ import {
   shuffle,
   toActionConfig,
   filterLockActions,
+  addActions,
 } from './util'
 import { CommandHandler, CommandError } from 'evtstore'
 
@@ -99,13 +100,16 @@ export const command: CommandHandler<LockEvent, LockAgg, LockCommand> = {
     if (agg.state !== 'created') throw new CommandError('Lock not active', 'NOT_ACTIVE')
 
     const cfg = toActionConfig(cmd.actions)
-    const newActions = createConfigActions(cfg)
-    const actions = newActions.concat(agg.actions)
+    const next = agg.actions.slice()
+    for (const key in cfg) {
+      const type = key as ActionType
+      next.push(...addActions(next, cfg[type], type))
+    }
 
     return {
       type: 'ActionsAdded',
       aggregateId: cmd.aggregateId,
-      actions: shuffle(actions),
+      actions: shuffle(next),
       config: cfg,
     }
   },
@@ -148,6 +152,7 @@ function canDraw(agg: LockAgg): boolean {
     case 'unlock':
     case 'reset':
     case 'double':
+    case 'actions added':
       return true
 
     case 'blank':

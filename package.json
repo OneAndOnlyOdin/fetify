@@ -26,7 +26,7 @@
     "// Create an empty database with no migrations": "",
     "db:empty": "yarn db:remove || true && yarn db:start && sleep 2s && yarn db:init",
     "// Database helpers": "",
-    "db:start": "docker run --network fet --name fetdb -d  --restart=always -p 27017:27017 mongo:latest mongod --replSet rs0 --bind_ip 0.0.0.0 && sleep 5s",
+    "db:start": "docker run --name fetdb -d  --restart=always -p 27017:27017 mongo:4.0 mongod --replSet rs0 --bind_ip 0.0.0.0 && sleep 5s",
     "db:init": "docker exec -it fetdb mongo --eval \"rs.initiate()\" && sleep 5s",
     "db:shell": "docker exec -it fetdb mongo",
     "db:kill": "docker kill fetdb",
