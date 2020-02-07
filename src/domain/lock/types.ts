@@ -22,13 +22,13 @@ export type LockEvent =
 export type LockCommand =
   | DomainCmd<'CreateLock', { userId: string; config: LockConfig }>
   | DomainCmd<'JoinLock', { userId: string }>
-  | DomainCmd<'DrawCard', { card: number }>
+  | DomainCmd<'DrawCard', { userId: string; card: number }>
   | DomainCmd<'CancelLock'>
   | DomainCmd<'CompleteLock'>
-  | DomainCmd<'RenameLock', { name: string }>
-  | DomainCmd<'DeleteLock'>
-  | DomainCmd<'AddActions', { actions: ActionConfig }>
-  | DomainCmd<'ChangeInterval', { intervalMins: number }>
+  | DomainCmd<'RenameLock', { userId: string; name: string }>
+  | DomainCmd<'DeleteLock', { userId: string }>
+  | DomainCmd<'AddActions', { userId: string; actions: ActionConfig }>
+  | DomainCmd<'ChangeInterval', { userId: string; intervalMins: number }>
 
 export type LockCounts = { [type in ActionType]?: number }
 

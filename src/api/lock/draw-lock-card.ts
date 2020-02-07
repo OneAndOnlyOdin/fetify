@@ -5,6 +5,9 @@ import { LockSchema } from '../../domain/lock/store'
 type Body = { card: number }
 
 export const drawLockCard = wrap(async (req, res) => {
+  const user = req.user
+  if (!user) throw new StatusError('Unauthorized', 401)
+
   const id: string = req.params.id
   const { card }: Body = req.body
 
@@ -27,7 +30,7 @@ export const drawLockCard = wrap(async (req, res) => {
     throw new StatusError('Not allowed to draw on this lock', 403)
   }
 
-  await lockDomain.cmd.DrawCard(id, { card })
+  await lockDomain.cmd.DrawCard(id, { card, userId: user.userId })
 
   res.json({ message: 'OK' })
 })

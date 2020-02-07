@@ -46,6 +46,8 @@ export const command: CommandHandler<LockEvent, LockAgg, LockCommand> = {
     }
   },
   DrawCard: async (cmd, agg) => {
+    if (cmd.userId !== agg.playerId && cmd.userId !== agg.ownerId)
+      throw new CommandError('Cannot modify unassociated lock')
     if (agg.state === 'opened') return
     if (!canDraw(agg)) {
       throw new CommandError('Cannot draw yet', 'CANNOT_DRAW')
@@ -85,7 +87,10 @@ export const command: CommandHandler<LockEvent, LockAgg, LockCommand> = {
 
     return { type: 'LockCancelled', aggregateId: cmd.aggregateId }
   },
-  RenameLock: async cmd => {
+  RenameLock: async (cmd, agg) => {
+    if (cmd.userId !== agg.playerId && cmd.userId !== agg.ownerId)
+      throw new CommandError('Cannot modify unassociated lock')
+
     return {
       type: 'LockRenamed',
       aggregateId: cmd.aggregateId,
@@ -94,10 +99,15 @@ export const command: CommandHandler<LockEvent, LockAgg, LockCommand> = {
   },
   DeleteLock: async (cmd, agg) => {
     if (agg.state === 'deleted') return
+    if (cmd.userId !== agg.playerId && cmd.userId !== agg.ownerId)
+      throw new CommandError('Cannot modify unassociated lock')
+
     return { type: 'LockDeleted', aggregateId: cmd.aggregateId }
   },
   AddActions: async (cmd, agg) => {
     if (agg.state !== 'created') throw new CommandError('Lock not active', 'NOT_ACTIVE')
+    if (cmd.userId !== agg.playerId && cmd.userId !== agg.ownerId)
+      throw new CommandError('Cannot modify unassociated lock')
 
     const cfg = toActionConfig(cmd.actions)
     const next = agg.actions.slice()
@@ -115,6 +125,9 @@ export const command: CommandHandler<LockEvent, LockAgg, LockCommand> = {
   },
   ChangeInterval: async (cmd, agg) => {
     if (agg.state !== 'created') throw new CommandError('Lock not active', 'NOT_ACTIVE')
+    if (cmd.userId !== agg.playerId && cmd.userId !== agg.ownerId)
+      throw new CommandError('Cannot modify unassociated lock')
+
     const intervalMins = Number(cmd.intervalMins)
 
     if (isNaN(intervalMins)) throw new CommandError('Interval is not a valid number')

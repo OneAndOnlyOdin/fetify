@@ -10,10 +10,9 @@ export const renameLock = wrap(async (req, res) => {
   if (!name) throw new StatusError('No name provided', 400)
   if (!lock) throw new StatusError('Lock not found', 404)
 
-  const canRename =
-    lock.ownerId === user.userId || lock.playerId === user.userId
+  const canRename = lock.ownerId === user.userId || lock.playerId === user.userId
   if (!canRename) throw new StatusError('Unauthorized', 403)
 
-  await lockDomain.cmd.RenameLock(lock.id, { name })
+  await lockDomain.cmd.RenameLock(lock.id, { name, userId: user.userId })
   res.json({ message: 'OK' })
 })
