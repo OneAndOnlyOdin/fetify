@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcryptjs'
 import * as jwt from 'jsonwebtoken'
 import { database } from './event'
 import { config } from '../env'
@@ -56,7 +56,7 @@ async function createToken(userId: string) {
   const payload: BaseToken = {
     expires,
     userId,
-    ...(profile || {})
+    ...(profile || {}),
   }
 
   const expiresIn = (ONE_HOUR_MS * config.jwtExpiry) / 1000
@@ -68,5 +68,5 @@ export const auth = {
   createUser,
   createToken,
   getUser,
-  compare
+  compare,
 }

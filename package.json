@@ -34,7 +34,7 @@
     "db:reconfig": "sleep 5s && docker exec -it fetdb mongo --eval \"cfg = rs.config(); cfg.members = [{ _id: 0, host: '127.0.0.1:27017' }]; rs.reconfig(cfg, { force: true });\""
   },
   "dependencies": {
-    "bcrypt": "^3.0.6",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "bunyan": "^1.8.12",
     "bunyan-prettystream": "^0.1.3",
@@ -52,7 +52,7 @@
     "ws": "^7.1.2"
   },
   "devDependencies": {
-    "@types/bcrypt": "^3.0.0",
+    "@types/bcryptjs": "^2.4.2",
     "@types/bunyan": "^1.8.6",
     "@types/cors": "^2.8.6",
     "@types/dotenv": "^6.1.1",
