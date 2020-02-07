@@ -26,12 +26,17 @@ export const getLocks = wrap(async (req, res) => {
   }
 
   const lock = await lockDomain.store.getLock(id, version)
-  if (lock) {
-    res.json(toDto(lock, user.userId, true))
+  if (!lock) {
+    return res.status(404).send()
+  }
+
+  if (lock.ownerId !== user.userId && lock.playerId !== user.userId) {
+    res.status(404).send()
     return
   }
 
-  return res.status(304).send()
+  res.json(toDto(lock, user.userId, true))
+  return
 })
 
 /**

@@ -113,4 +113,5 @@ export function getDrawSecs(drawAt?: Date) {
 
 const win: any = window
 
-win.clearLocks = (events: boolean = false) => api.post('/api/admin/clear-lock', { events }).then(console.log)
+win.clearLocks = (events: boolean = false) =>
+  api.post('/api/admin/clear-lock', { events }).then(console.log)

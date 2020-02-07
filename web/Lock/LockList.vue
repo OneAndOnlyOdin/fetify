@@ -70,14 +70,6 @@ export default Vue.extend({
 
     updateLocks() {
       this.locks = this.locks.filter(isVisible)
-      const knownIds = this.locks.map(lock => lock.id)
-
-      for (const [, lock] of Object.entries(locksApi.state.locks)) {
-        const hasLock = knownIds.includes(lock.id)
-        if (!hasLock) {
-          this.locks.unshift(lock)
-        }
-      }
 
       for (const lock of this.locks) {
         lock.draw = locksApi.state.locks[lock.id].draw

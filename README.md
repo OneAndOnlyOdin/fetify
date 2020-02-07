@@ -7,6 +7,8 @@
 - Node.JS 12.x
 - Yarn: package manager (`npm install yarn -g`)
 - Docker or MongoDB
+- Create a `.env` file in the root directy with a `JWT_SECRET` environment variable
+  - Set the value to anything
 
 ## Setup
 
@@ -26,6 +28,7 @@
 
 # Serve the front-end
 > yarn serve
+
 ```
 
 ## Development
