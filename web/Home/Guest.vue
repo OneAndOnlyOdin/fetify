@@ -28,6 +28,9 @@ export default Vue.extend({
     canSignup(): boolean {
       return !!this.username && !!this.password && !!this.confirm && this.password === this.confirm
     },
+    firstPasswordAutocomple(): string {
+      return this.register ? "new-password" : "current-password"
+    },
   },
 
   methods: {
@@ -65,39 +68,42 @@ export default Vue.extend({
 <template>
   <div class="page">
     <div class="box">
-      <div class="center">
-        <div class="pointer" :class="{ selected: !register }" @click="register = false">
-          <h3>Login</h3>
+      <form>
+        <div class="center">
+          <div class="pointer" :class="{ selected: !register }" @click="register = false">
+            <h3>Login</h3>
+          </div>
+          <div class="pointer" :class="{ selected: register }" @click="register = true">
+            <h3>Register</h3>
+          </div>
         </div>
-        <div class="pointer" :class="{ selected: register }" @click="register = true">
-          <h3>Register</h3>
+
+        <div>
+          <input type="text" autoComplete="username" placeholder="Username" v-model="username" v-on:keyup.enter="signin" />
         </div>
-      </div>
 
-      <div>
-        <input type="text" placeholder="Username" v-model="username" v-on:keyup.enter="signin" />
-      </div>
+        <div>
+          <input type="password" :autoComplete="firstPasswordAutocomple" placeholder="Password" v-on:keyup.enter="signin" v-model="password" />
+        </div>
 
-      <div>
-        <input type="password" placeholder="Password" v-on:keyup.enter="signin" v-model="password" />
-      </div>
+        <div>
+          <input
+            type="password"
+            autoComplete="new-password"
+            placeholder="Confirm"
+            v-on:keyup.enter="register"
+            :disabled="!register"
+            v-model="confirm"
+          />
+        </div>
 
-      <div>
-        <input
-          type="password"
-          placeholder="Confirm"
-          v-on:keyup.enter="register"
-          :disabled="!register"
-          v-model="confirm"
-        />
-      </div>
+        <div style="color: red" v-if="error.length > 0">{{ error }}</div>
 
-      <div style="color: red" v-if="error.length > 0">{{ error }}</div>
-
-      <div class="center">
-        <button :disabled="!canSignin" @click="signin" v-if="!register">Login</button>
-        <button :disabled="!canSignup" @click="signup" v-if="register">Register</button>
-      </div>
+        <div class="center">
+          <button :disabled="!canSignin" @click="signin" v-if="!register">Login</button>
+          <button :disabled="!canSignup" @click="signup" v-if="register">Register</button>
+        </div>
+      </form>
     </div>
   </div>
 </template>
@@ -109,6 +115,10 @@ export default Vue.extend({
   border: 1px solid $color-accent;
 
   > div {
+    padding: 12px;
+  }
+
+  > form > div {
     padding: 12px;
   }
 }
