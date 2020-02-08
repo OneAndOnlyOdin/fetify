@@ -1,0 +1,346 @@
+openapi: 3.0.0
+info:
+  description: "This is an api for fet.getdit.lol"
+  version: "1.0.0"
+  title: "Fet.Geddit.lol"
+
+servers:
+  - url: http://fet.geddit/api
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+paths:
+  /lock:
+    post:
+      tags:
+        - Lock
+      summary: "Create a lock"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/LockInfo"
+      responses:
+        200:
+          headers: {}
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: string
+                description: The lock id
+    get:
+      tags:
+        - Lock
+      responses:
+        200:
+          headers: {}
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/LockInfo"
+
+  /lock/{id}:
+    get:
+      summary: Get details about a lock
+      tags:
+        - Lock
+      responses:
+        200:
+          headers: {}
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/Lock"
+
+  /lock/{id}/rename:
+    get:
+      summary: Rename a lock
+      tags:
+        - Lock
+      responses:
+        200:
+          $ref: "#/definitions/ResponseOk"
+
+  /lock/{id}/delete:
+    get:
+      summary: Delete a lock
+      tags:
+        - Lock
+      responses:
+        200:
+          $ref: "#/definitions/ResponseOk"
+
+  /lock/{id}/draw:
+    get:
+      summary: Draw a card on the lock
+      tags:
+        - Lock
+      requestBody:
+        content:
+          application/josn:
+            schema:
+              type: object
+              properties:
+                card:
+                  type: number
+                  description: The index of the card that should be drawn
+              required:
+                - card
+      responses:
+        200:
+          $ref: "#/definitions/ResponseOk"
+
+  /lock/{id}/add:
+    post:
+      summary: Add card
+      tags:
+        - Lock
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cards:
+                  type: object
+                  properties:
+                    blank:
+                      type: number
+                      minimum: 0
+                    freeze:
+                      type: number
+                      minimum: 0
+                    increase:
+                      type: number
+                      minimum: 0
+                    decrease:
+                      type: number
+                      minimum: 0
+                    unlock:
+                      type: number
+                      minimum: 0
+                    task:
+                      type: number
+                      minimum: 0
+                    reset:
+                      type: number
+                      minimum: 0
+                  required:
+                    - blank
+                    - freeze
+                    - increase
+                    - decrease
+                    - unlock
+                    - task
+                    - reset
+              required:
+                - cards
+      responses:
+        200:
+          $ref: "#/definitions/ResponseOk"
+
+  /user/login:
+    post:
+      security: [] # No authentication bearer header required for this route
+      summary: Optain a JWT access token
+      tags:
+        - User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        200:
+          headers: {}
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: string
+                description: The JWT access token
+
+  /user/renew:
+    get:
+      summary: "???"
+      tags:
+        - User
+      responses:
+        200:
+          headers: {}
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: "false"
+
+  /healthcheck:
+    get:
+      security: [] # No authentication bearer header required for this route
+      summary: Check if the api is up
+      responses:
+        200:
+          headers: {}
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  now:
+                    type: string
+                    format: date-time
+                required:
+                  - status
+                  - now
+
+definitions:
+  LockInfo:
+    type: object
+    properties:
+      type:
+        type: string
+      accumulate:
+        type: boolean
+      intervalMins:
+        type: number
+      maxUsers:
+        type: number
+      owner:
+        type: string
+      enum:
+        - other
+        - self
+      showActions:
+        type: boolean
+      time:
+        type: object
+      properties:
+        type: string
+      actions:
+        type: object
+        properties:
+          blank:
+            type: number
+            minimum: 0
+          decrease:
+            type: number
+            minimum: 0
+          increase:
+            type: number
+            minimum: 0
+          freeze:
+            type: number
+            minimum: 0
+          task:
+            type: number
+            minimum: 0
+          reset:
+            type: number
+            minimum: 0
+          unlock:
+            type: number
+            minimum: 0
+          double:
+            type: number
+            minimum: 0
+      tasks:
+        type: array
+        items:
+          type: string
+  Lock:
+    type: object
+    properties:
+      locks:
+        type: object
+        properties:
+          id:
+            type: string
+          version:
+            type: string
+          created:
+            type: string
+            format: date-time
+          isOpen:
+            type: boolean
+          config:
+            $ref: "#/definitions/Lock"
+          ownerId:
+            type: string
+          unlocksFound:
+            type: string
+            minimum: 0
+          historyCount:
+            type: number
+            minimum: 0
+          counts:
+            type: object
+            properties:
+              blank:
+                type: number
+              decrease:
+                type: number
+              unlock:
+                type: number
+              increase:
+                type: number
+              freeze:
+                type: number
+            required:
+              - blank
+              - decrease
+              - unlock
+              - increase
+              - freeze
+          totalActions:
+            type: number
+          history:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                date:
+                  type: string
+                  format: date-time
+      count:
+        type: number
+
+  ResponseOk:
+    headers: {}
+    description: ""
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              enum:
+                - OK
+          required:
+            - message
